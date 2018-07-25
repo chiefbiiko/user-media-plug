@@ -1,0 +1,32 @@
+{
+  "name": "user-media-plug",
+  "version": "0.0.0",
+  "description": "servers that manage user media connections",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiefbiiko/user-media-plug.git"
+  },
+  "keywords": [
+    "user-media",
+    "chat",
+    "two-party",
+    "multi-party",
+    "stream"
+  ],
+  "author": "Noah Anabiik Schwarz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chiefbiiko/user-media-plug/issues"
+  },
+  "homepage": "https://github.com/chiefbiiko/user-media-plug#readme",
+  "devDependencies": {
+    "tape": "^4.9.0"
+  },
+  "dependencies": {
+    "length-prefixed-stream": "^1.5.2"
+  }
+}
