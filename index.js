@@ -1,41 +1,205 @@
-var Server = require('net').Server
-var inherits = require('util').inherits
-var lpstream = require('length-prefixed-stream')
+/*
 
-/* AGENDA
-  develop a metadataserver that manages online clients.
-  and emits 'pair' and 'unpair' events.
- + maintained data structure of the metadataserver:
-   -> [ { id: string, media: boolean, desktop: boolean }, ... ]
- + to go online, user writes:
-   -> { cmd: 'online', user: { id: string, media: boolean, desktop: boolean } }
- + to go offline, user writes:
-   -> { cmd: 'offline', user: { id: string } }
- + for userA to call userB, userA writes:
-   -> { cmd: 'call', user: { id: userA }, peers: [ { id: userB } ] }
- + for userB to accept userA, userB writes:
-   -> { cmd: 'accept', user: { id: userB }, peer: { id: userA } }
- + for userB to reject userA, userB writes:
-   -> { cmd: 'reject', user: { id: userB }, peer: { id: userA } }
+  # agenda
+
+  **develop**
+
+  + a metadataserver that emits 'pair' and 'unpair' events
+  + a mediadataserver that dis/connects peers according to the events above
+  + a simple client api
+
+  app has 3 data layers:
+  + dynamic mediadata
+  + dynamic metadata
+  + static user data
+
+  dynamic metadata structure, sth like:
+
+  ``` js
+  [ { id: string, media: boolean, desktop: boolean }, ... ]
+  ```
+
+  static user data, sth like:
+
+  ``` js
+  { [userIdA]: { peers: [ userIdB, userIdC ] }, ... }
+  ```
+
+  ## ...
+
+  `upd`s do not get responses, only `req`s.
+
+  + for userA to be registered, userA writes:
+    -> { type: 'upd', msg: 'reg-user', user: id, peers: [] }
+  + for userA to have userB..Z be persisted as peers, userA writes:
+    -> { type: 'upd', msg: 'add-peers', user: id, peers: [] }
+  + for userA to have userB..Z be discarded as peers, userA writes:
+    -> { type: 'upd', msg: 'del-peers', user: id, peers: [] }
+
+  + to go online, user writes:
+   -> { type: 'upd', msg: 'online', user: id }
+  + to go offline, user writes:
+   -> { type: 'upd', msg: 'offline', user: id }
+
+  + for userA to call userB, userA writes:
+   -> { type: 'req', msg: 'call', user: id, peer: id, tx: id }
+  + for userB to accept userA, userB writes:
+   -> { type: 'res', msg: 'accept', user: id, peer: id, tx: id }
+  + for userB to reject userA, userB writes:
+   -> { type: 'res', msg: 'reject', user: id, peer: id, tx: id }
+
+  { type: 'req', msg: 'peers-online', user: id, tx: id }
+  { type: 'res', msg: 'peers-online', tx: id, 'peers-online': [] }
+
+  { type: 'cmd', msg: 'force-call', peer: id } // server to client
+
 */
 
-function MetaServer (opts) {
-  if (!(this instanceof MetaServer)) return new MetaServer(opts)
-  Server.call(this, opts)
-  this.users = []
-  this.on('connection', onconnection.bind(this))
+const inherits = require('util').inherits
+const lpstream = require('length-prefixed-stream')
+const http = require('http')
+const websocket = require('websocket-stream')
+const url = require('url')
+const { readFile, writeFile } = require('fs')
+
+const USERS_JSON_PATH = './users.json'
+
+const httpserver = http.createServer()
+
+const metaserver = new websocket.Server({
+  perMessageDeflate: false,
+  noServer: true
+})
+
+const mediaserver = new websocket.Server({
+  perMessageDeflate: false,
+  noServer: true
+})
+
+metaserver.on('stream', (stream, req) => {
+  stream.on('data', onMetadata)
+  stream.on('error', onStreamError)
+  stream.on('end', onStreamEnd)
+  // ...
+})
+
+mediaserver.on('stream', (stream, req) => {
+  // ...
+})
+
+function handleUpgrade (server, req, socket, head) {
+  server.handleUpgrade(req, socket, head, ws => {
+    server.emit('connection', ws, req)
+  })
 }
 
-inherits(MetaServer, Server)
+function onUpgrade (req, socket, head) {
+  const pathname = url.parse(req.url).pathname
 
+  if (pathname === '/meta') handleUpgrade(metaserver, req, socket, head)
+  else if (pathname === '/media') handleUpgrade(mediaserver, req, socket, head)
+  else socket.destroy()
+}
+
+httpserver.on('upgrade', onUpgrade)
+httpserver.listen(8080, () => {
+  const addy = httpserver.address()
+  console.log(`httpserver live @ ${addy.address}:${addy.port}`)
+})
+
+function onError (err) {
+  console.error(err)
+}
+
+function onStreamError (err) { // this === stream
+  onError(err)
+  this.destroy() // necessary?
+}
+
+function onStreamEnd () {
+  this.destroy() // necessary?
+}
+
+function readTransformWriteUsers (func) {
+  readFile(USERS_JSON_PATH, (err, buf) => {
+    if (err) return onError(err)
+
+    var users
+    try {
+      users = JSON.parse(buf)
+    } catch (err) {
+      return onError(err)
+    }
+
+    users = func(users)
+
+    writeFile(USERS_JSON_PATH, JSON.stringify(users), err => {
+      if (err) return onError(err)
+    })
+  })
+}
+
+function registerUser (metadata) {
+  // TODO: validate to make sure metadata has all required properties
+  readTransformWriteUsers(users => ({
+    [metadata.user]: metadata.peers,
+    ...users
+  }))
+}
+
+function addPeers (metadata) {
+  // TODO: validate to make sure metadata has all required properties
+  readTransformWriteUsers(users => {
+    for (const peer of metadata.peers) users[metadata.user].peers.push(peer)
+    return users
+  })
+}
+
+function deletePeers (metadata) {
+  // TODO: validate to make sure metadata has all required properties
+  readTransformWriteUsers(users => {
+    for (const peer of metadata.peers) {
+      const i = users[metadata.user].peers.indexOf(peer)
+      users[metadata.user].peers.splice(i, 1)
+    }
+    return users
+  })
+}
+
+function onMetadata (data) {
+  var metadata
+  try {
+    metadata = JSON.parse(data)
+  } catch (err) {
+    return onError(err)
+  }
+
+  switch (metadata.msg) {
+    case 'reg-user':
+      registerUser(metadata)
+      break
+    case 'add-peers':
+      addPeers(metadata)
+      break
+    case 'del-peers':
+      deletePeers(metadata)
+      break
+    default:
+      onError(new Error(`invalid property "metadata.msg": ${metadata.msg}`))
+  }
+}
+
+
+
+/*
 function onconnection (socket) {
-  var decode = lpstream.decode()
+  const decode = lpstream.decode()
   socket.pipe(decode)
   decode.on('data', ondata.bind(this))
 }
 
 function ondata (chunk) {
-  var data
+  const data
   try {
     data = JSON.parse(chunk)
   } catch (err) {
@@ -70,5 +234,6 @@ function ononline (data) {
 function onoffline (data) {
   this.users = this.users // ...
 }
+*/
 
-module.exports = MetaServer
+module.exports = {}

@@ -1,29 +1,31 @@
-var tape = require('tape')
-var MetaServer = require('./index')
-var net = require('net')
-var lpstream = require('length-prefixed-stream')
+const tape = require('tape')
+const child = require('child_process')
+const websocket = require('websocket-stream')
 
-tape('onconnection', function (t) {
-  var server = new MetaServer()
-  server.listen(419, function () {
-    var socket = net.connect(419, function () {
-      var payload = JSON.stringify({
-        cmd: 'online',
-        user : {
-          id: 'chiefbiiko',
-          media: true,
-          desktop: true
-        }
-      })
-      var encode = lpstream.encode()
-      encode.pipe(socket)
-      encode.end(payload, function () {
-        server.once('metadata', function (metadata) {
-          t.pass('noop')
-          server.close()
-          t.end()
-        })
-      })
-    })
-  })
+const { readFileSync, writeFileSync } = require('fs')
+
+tape.onFinish(() => {
+  del.sync([ './.users.json' ])
+})
+
+tape('user data related metadata', t => {
+  writeFileSync('./.users.json', '{}') // setup
+
+  child.exec('node ./index.js') // starting the servers
+
+  // TODO: connect as websocket client and send some metadata
+  ws = websocket('ws://localhost:8080')
+  ws.end(JSON.stringify({
+    type: 'upd',
+    msg: 'reg-user',
+    user: 'noop',
+    peers: []
+  }))
+  
+  setTimeout(() => { // allow server to process the msg
+    const users = JSON.parse(readFileSync('./.users.json'))
+    t.ok(users.noop, 'users.noop')
+    t.true(Array.isArray(users.noop.peers), 'users.noop.peers')
+    t.end()
+  }, 500)
 })
