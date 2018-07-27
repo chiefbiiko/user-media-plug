@@ -55,14 +55,18 @@
 
 */
 
-const inherits = require('util').inherits
-const lpstream = require('length-prefixed-stream')
+// const inherits = require('util').inherits
+// const lpstream = require('length-prefixed-stream')
 const http = require('http')
 const websocket = require('websocket-stream')
 const url = require('url')
 const { readFile, writeFile } = require('fs')
+const debug = require('debug')('user-media-plug')
 
 const USERS_JSON_PATH = './users.json'
+
+const { createReadTransformWriteUsers } = require('./utils.js')
+const readTransformWriteUsers = createReadTransformWriteUsers(USERS_JSON_PATH)
 
 const httpserver = http.createServer()
 
@@ -94,14 +98,21 @@ function handleUpgrade (server, req, socket, head) {
 }
 
 function onUpgrade (req, socket, head) {
+  debug('req.url::', req.url)
   const pathname = url.parse(req.url).pathname
-
-  if (pathname === '/meta') handleUpgrade(metaserver, req, socket, head)
-  else if (pathname === '/media') handleUpgrade(mediaserver, req, socket, head)
-  else socket.destroy()
+  debug('pathname::', pathname)
+  if (pathname === '/meta') {
+    debug('::inside /meta if block::')
+    handleUpgrade(metaserver, req, socket, head)
+  } else if (pathname === '/media') {
+    handleUpgrade(mediaserver, req, socket, head)
+  } else {
+    socket.destroy()
+  }
 }
 
 httpserver.on('upgrade', onUpgrade)
+
 httpserver.listen(8080, () => {
   const addy = httpserver.address()
   console.log(`httpserver live @ ${addy.address}:${addy.port}`)
@@ -118,25 +129,6 @@ function onStreamError (err) { // this === stream
 
 function onStreamEnd () {
   this.destroy() // necessary?
-}
-
-function readTransformWriteUsers (func) {
-  readFile(USERS_JSON_PATH, (err, buf) => {
-    if (err) return onError(err)
-
-    var users
-    try {
-      users = JSON.parse(buf)
-    } catch (err) {
-      return onError(err)
-    }
-
-    users = func(users)
-
-    writeFile(USERS_JSON_PATH, JSON.stringify(users), err => {
-      if (err) return onError(err)
-    })
-  })
 }
 
 function registerUser (metadata) {

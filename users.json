@@ -1,3 +1,1 @@
-{
-  "chiefbiiko": { "peers": [ "noop" ] }
-}
+{"noop":[],"chiefbiiko":{"peers":["noop"]}}
