@@ -92,7 +92,7 @@ mediaserver.on('stream', (stream, req) => {
 })
 
 function handleUpgrade (server, req, socket, head) {
-  server.handleUpgrade(req, socket, head, ws => {
+  server.handleUpgrade((req/*, socket, head*/, _a, _b, ws) => {
     server.emit('connection', ws, req)
   })
 }
@@ -112,8 +112,10 @@ function onUpgrade (req, socket, head) {
 }
 
 httpserver.on('upgrade', onUpgrade)
+// httpserver.on('request', (...args) => debug('onrequest ...args::', args))
+// httpserver.on('connection', (...args) => debug('onconnection ...args::', args))
 
-httpserver.listen(8080, () => {
+httpserver.listen(10000, 'localhost', () => {
   const addy = httpserver.address()
   console.log(`httpserver live @ ${addy.address}:${addy.port}`)
 })
