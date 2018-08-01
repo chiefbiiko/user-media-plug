@@ -32,6 +32,16 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 
 #### Client messages without responses
 
+##### Schema Z
+
+**_userA wants to identify itself, so userA writes:_**
+
+``` js
+{ type: 'whoami', user: id }
+```
+
+##### Schema A
+
 **_userA wants to be registered, so userA writes:_**
 
 ``` js
@@ -50,6 +60,8 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 { type: 'del-peers', user: id, peers: [] }
 ```
 
+##### Schema B
+
 **_userA wants to go online, so userA writes:_**
 
 ``` js
@@ -63,6 +75,8 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 ```
 
 #### Client messages with responses
+
+##### Schema C
 
 **_userA wants to call userB, so userA writes:_**
 
@@ -82,6 +96,8 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 { type: 'reject', user: id, peer: id, tx: id }
 ```
 
+##### Schema D
+
 **_userA wants to get its online peers, so userA writes:_**
 
 ``` js
@@ -90,11 +106,15 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 
 #### Server messages
 
+##### Schema E
+
 **_server responds to "online-peers" message with:_**
 
 ``` js
-{ type: 'peers-online', tx: id, peers-online: [] }
+{ type: 'peers-online', tx: id, peersOnline: [] }
 ```
+
+##### Schema F
 
 **_server wants to force a client to call a peer:_** ???????
 

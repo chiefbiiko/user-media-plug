@@ -1,8 +1,5 @@
 /*
-
-  # agenda
-
-  **develop**
+  # dev agenda
 
   + a metadataserver that emits 'pair' and 'unpair' events
   + a mediadataserver that dis/connects peers according to the events above
@@ -12,85 +9,59 @@
   + dynamic mediadata
   + dynamic metadata
   + static user data
-
-  dynamic metadata structure, sth like:
-
-  ``` js
-  [ { id: string, media: boolean, desktop: boolean }, ... ]
-  ```
-
-  static user data, sth like:
-
-  ``` js
-  { [userIdA]: { peers: [ userIdB, userIdC ] }, ... }
-  ```
-
-  ## ...
-
-  `upd`s do not get responses, only `req`s.
-
-  + for userA to be registered, userA writes:
-    -> { type: 'upd', msg: 'reg-user', user: id, peers: [] }
-  + for userA to have userB..Z be persisted as peers, userA writes:
-    -> { type: 'upd', msg: 'add-peers', user: id, peers: [] }
-  + for userA to have userB..Z be discarded as peers, userA writes:
-    -> { type: 'upd', msg: 'del-peers', user: id, peers: [] }
-
-  + to go online, user writes:
-   -> { type: 'upd', msg: 'online', user: id }
-  + to go offline, user writes:
-   -> { type: 'upd', msg: 'offline', user: id }
-
-  + for userA to call userB, userA writes:
-   -> { type: 'req', msg: 'call', user: id, peer: id, tx: id }
-  + for userB to accept userA, userB writes:
-   -> { type: 'res', msg: 'accept', user: id, peer: id, tx: id }
-  + for userB to reject userA, userB writes:
-   -> { type: 'res', msg: 'reject', user: id, peer: id, tx: id }
-
-  { type: 'req', msg: 'peers-online', user: id, tx: id }
-  { type: 'res', msg: 'peers-online', tx: id, 'peers-online': [] }
-
-  { type: 'cmd', msg: 'force-call', peer: id } // server to client
-
 */
 
 const http = require('http')
 const websocket = require('websocket-stream')
 const url = require('url')
+const jsonStream = require('duplex-json-stream')
+const streamSet = require('stream-set')
 const debug = require('debug')('user-media-plug')
 
 const USERS_JSON_PATH = './test.users.json'
 
-const { createReadTransformWriteUsers } = require('./utils.js')
+const {
+  createReadUsers,
+  createReadTransformWriteUsers,
+  isTruthyString,
+  valid,
+  OUTBOUND_MSGS
+} = require('./utils.js')
+
 const readTransformWriteUsers = createReadTransformWriteUsers(USERS_JSON_PATH)
+const readUsers = createReadUsers(USERS_JSON_PATH)
 
-const httpserver = http.createServer()
+const active_meta_streams = streamSet()
+const active_media_streams = streamSet()
+const ONLINE_USERS = new Set()
 
-const metaserver = new websocket.Server({
+const http_server = http.createServer()
+
+const meta_server = new websocket.Server({
   perMessageDeflate: false,
   noServer: true
 })
 
-const mediaserver = new websocket.Server({
+const media_server = new websocket.Server({
   perMessageDeflate: false,
   noServer: true
 })
 
-metaserver.on('stream', (stream, req) => {
-  debug('::metaserver.on("stream")::')
+meta_server.on('stream', (stream, req) => {
+  debug('::meta_server.on("stream")::')
   stream.on('data', handleMetadata)
   stream.on('error', handleError)
 })
 
-mediaserver.on('stream', (stream, req) => {
+media_server.on('stream', (stream, req) => {
+  debug('::media_server.on("stream")::')
   // ...
 })
 
-function handleUpgrade (server, req, socket, head) {
-  server.handleUpgrade(req, socket, head, ws => {
-    debug('::emitting connection::')
-    server.emit('connection', ws, req)
+function handleUpgrade (websocket_server, req, socket, head) {
+  websocket_server.handleUpgrade(req, socket, head, ws => {
+    debug('::websocket_server emitting connection::')
+    websocket_server.emit('connection', ws, req)
   })
 }
 
@@ -98,58 +69,110 @@ function onUpgrade (req, socket, head) {
   const pathname = url.parse(req.url).pathname
   debug(`pathname:: ${pathname}`)
   if (pathname === '/meta') {
-    debug(`::${req.url} routed to metaserver::`)
-    handleUpgrade(metaserver, req, socket, head)
+    debug(`::${req.url} routed to meta_server::`)
+    handleUpgrade(meta_server, req, socket, head)
   } else if (pathname === '/media') {
-    debug(`::${req.url} routed to mediaserver::`)
-    handleUpgrade(mediaserver, req, socket, head)
+    debug(`::${req.url} routed to media_server::`)
+    handleUpgrade(media_server, req, socket, head)
   } else {
     socket.destroy()
   }
 }
 
-httpserver.on('upgrade', onUpgrade)
+http_server.on('upgrade', onUpgrade)
 
-httpserver.listen(10000, 'localhost', () => {
-  const addy = httpserver.address()
-  console.log(`httpserver live @ ${addy.address}:${addy.port}`)
+http_server.listen(10000, 'localhost', () => {
+  const addy = http_server.address()
+  console.log(`http_server live @ ${addy.address}:${addy.port}`)
 })
 
 function handleError (err) {
   if (err) console.error(err)
 }
 
-function registerUser (metadata) {
-  // TODO: validate to make sure metadata has all required properties
-  debug('::registerUser::')
-  readTransformWriteUsers(users => ({
-    [metadata.user]: metadata.peers,
-    ...users
-  }), handleError)
+function metaWhoami (metadata, stream) {
+  debug('::metaWhoami::')
+  if (!valid.schemaZ(metadata)) return debug('invalid schema Z:', metadata)
+  stream.whoami = metadata.user
 }
 
-function addPeers (metadata) {
-  // TODO: validate to make sure metadata has all required properties
-  debug('::addPeers::')
+function registerUser (metadata) {
+  debug('::registerUser::')
+  if (!valid.schemaA(metadata)) return debug('invalid schema A:', metadata)
   readTransformWriteUsers(users => {
-    for (const peer of metadata.peers) users[metadata.user].peers.push(peer)
+    if (!users[metadata.user]) users[metadata.user] = { peers: metadata.peers }
     return users
   }, handleError)
 }
 
-function deletePeers (metadata) {
-  // TODO: validate to make sure metadata has all required properties
-  debug('::deletePeers::')
+function addPeers (metadata) {
+  debug('::addPeers::')
+  if (!valid.schemaA(metadata)) return debug('invalid schema A:', metadata)
   readTransformWriteUsers(users => {
-    for (const peer of metadata.peers) {
-      const i = users[metadata.user].peers.indexOf(peer)
-      users[metadata.user].peers.splice(i, 1)
+    if (users[metadata.user]) {
+      for (const peer of metadata.peers) users[metadata.user].peers.push(peer)
+      users[metadata.user].peers = [ ...new Set(users[metadata.user].peers) ]
     }
     return users
   }, handleError)
 }
 
-function handleMetadata (data) {
+function deletePeers (metadata) {
+  debug('::deletePeers::')
+  if (!valid.schemaA(metadata)) return debug('invalid schema A:', metadata)
+  readTransformWriteUsers(users => {
+    for (const peer of metadata.peers) {
+      const i = users[metadata.user].peers.indexOf(peer)
+      debug(`peer index:: ${i}`)
+      if (i !== -1) users[metadata.user].peers.splice(i, 1)
+    }
+    return users
+  }, handleError)
+}
+
+function online (metadata) {
+  debug('::online::')
+  if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
+  ONLINE_USERS.add(metadata.user)
+}
+
+function offline (metadata) {
+  debug('::offline::')
+  if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
+  ONLINE_USERS.delete(metadata.user)
+}
+
+function call (metadata) {
+  debug('::call::')
+  if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  // find metadata.peer within active_meta_streams and simply forward the msg!
+  active_meta_streams // Set.find or similar?
+}
+
+function accept (metadata) {
+  debug('::accept::')
+}
+
+function reject (metadata) {
+  debug('::reject::')
+
+}
+
+function peersOnline (metadata, stream) {
+  debug('::peersOnline::')
+  if (!valid.schemaD(metadata)) return debug('invalid schema D:', metadata)
+  readUsers((err, users) => {
+    if (err) return handleError(err)
+    const peers_online = Array.from(ONLINE_USERS).filter(user => {
+      return users[metadata.user].peers.includes(user)
+    })
+    stream.write(JSON.stringify(
+      OUTBOUND_MSGS.peersOnline(metadata.tx, peers_online)
+    ))
+  })
+}
+
+function handleMetadata (data) { // this === websocket stream
   debug(`handleMetadata data:: ${data}`)
   var metadata
   try {
@@ -158,20 +181,22 @@ function handleMetadata (data) {
     return handleError(err)
   }
 
-  debug('handleMetadata metadata::', metadata)
+  if (!isTruthyString(this.whoami)/*!active_meta_streams.has(this)*/) {
+    return debug('ignoring data from unidentified stream')
+  }
 
-  switch (metadata.msg) {
-    case 'reg-user':
-      registerUser(metadata)
-      break
-    case 'add-peers':
-      addPeers(metadata)
-      break
-    case 'del-peers':
-      deletePeers(metadata)
-      break
-    default:
-      handleError(new Error(`invalid property "metadata.msg": ${metadata.msg}`))
+  switch (metadata.type) {
+    case 'whoami': metaWhoami(metadata, stream); break
+    case 'reg-user': registerUser(metadata); break
+    case 'add-peers': addPeers(metadata); break
+    case 'del-peers': deletePeers(metadata); break
+    case 'online': online(metadata); break
+    case 'offline': offline(metadata); break
+    case 'call': call(metadata); break
+    case 'accept': accept(metadata); break
+    case 'reject': reject(metadata); break
+    case 'peers-online': peersOnline(metadata, this); break
+    default: handleError(new Error(`invalid message type "${metadata.type}"`))
   }
 }
 

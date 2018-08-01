@@ -19,7 +19,7 @@ tape('metadata - reg-user', t => {
   }))`)
 
   setTimeout(() => { // allow 4 server
-    const users = JSON.parse(readFileSync('./.users.json'))
+    const users = JSON.parse(readFileSync('./test.users.json'))
 
     t.ok(users.noop, 'users.noop')
     t.true(Array.isArray(users.noop.peers), 'users.noop.peers')
