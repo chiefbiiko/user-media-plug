@@ -81,19 +81,19 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 **_userA wants to call userB, so userA writes:_**
 
 ``` js
-{ type: 'call', user: id, peer: id, tx: id }
+{ type: 'call', user: id, peer: id }
 ```
 
 **_userB wants to accept userA, so userB writes:_**
 
 ``` js
-{ type: 'accept', user: id, peer: id, tx: id }
+{ type: 'accept', user: id, peer: id }
 ```
 
 **_userB wants to reject userA, so userB writes:_**
 
 ``` js
-{ type: 'reject', user: id, peer: id, tx: id }
+{ type: 'reject', user: id, peer: id }
 ```
 
 ##### Schema D
@@ -101,7 +101,7 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 **_userA wants to get its online peers, so userA writes:_**
 
 ``` js
-{ type: 'peers-online', user: id, tx: id }
+{ type: 'peers-online', user: id }
 ```
 
 #### Server messages

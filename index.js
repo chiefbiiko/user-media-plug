@@ -12,45 +12,44 @@
 */
 
 const http = require('http')
-const websocket = require('websocket-stream')
-const url = require('url')
-const jsonStream = require('duplex-json-stream')
+const { parse } = require('url')
+const WebSocketServer = require('websocket-stream').Server
 const streamSet = require('stream-set')
-const debug = require('debug')('user-media-plug')
-
-const USERS_JSON_PATH = './test.users.json'
-
 const {
+  createForward,
+  createListOnlinePeers,
   createReadUsers,
   createReadTransformWriteUsers,
   isTruthyString,
+  createSendForceCall,
   valid,
-  OUTBOUND_MSGS
+  OUTBOUND_MSG
 } = require('./utils.js')
 
-const readTransformWriteUsers = createReadTransformWriteUsers(USERS_JSON_PATH)
-const readUsers = createReadUsers(USERS_JSON_PATH)
+const debug = require('debug')('user-media-plug')
+
+const USERS_JSON_PATH = './test.users.json'
+const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
 
 const active_meta_streams = streamSet()
 const active_media_streams = streamSet()
 const ONLINE_USERS = new Set()
 
 const http_server = http.createServer()
+const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
-const meta_server = new websocket.Server({
-  perMessageDeflate: false,
-  noServer: true
-})
+const readUsers = createReadUsers(USERS_JSON_PATH)
+const readTransformWriteUsers =
+  createReadTransformWriteUsers(USERS_JSON_PATH, readUsers)
+const listOnlinePeers = createListOnlinePeers(ONLINE_USERS, readUsers)
+const forward = createForward(active_meta_streams)
+const sendForceCall = createSendForceCall(active_meta_streams)
 
-const media_server = new websocket.Server({
-  perMessageDeflate: false,
-  noServer: true
-})
-
-meta_server.on('stream', (stream, req) => {
+meta_server.on('stream', (meta_stream, req) => {
   debug('::meta_server.on("stream")::')
-  stream.on('data', handleMetadata)
-  stream.on('error', handleError)
+  meta_stream.on('data', handleMetadata)
+  meta_stream.on('error', handleError)
 })
 
 media_server.on('stream', (stream, req) => {
@@ -66,16 +65,17 @@ function handleUpgrade (websocket_server, req, socket, head) {
 }
 
 function onUpgrade (req, socket, head) {
-  const pathname = url.parse(req.url).pathname
-  debug(`pathname:: ${pathname}`)
-  if (pathname === '/meta') {
-    debug(`::${req.url} routed to meta_server::`)
-    handleUpgrade(meta_server, req, socket, head)
-  } else if (pathname === '/media') {
-    debug(`::${req.url} routed to media_server::`)
-    handleUpgrade(media_server, req, socket, head)
-  } else {
-    socket.destroy()
+  debug('::onUpgrade::')
+  switch (parse(req.url).pathname) {
+    case '/meta':
+      debug('routed to meta_server:', req.url)
+      handleUpgrade(meta_server, req, socket, head); break
+    case '/media':
+      debug('routed to media_server:', req.url)
+      handleUpgrade(media_server, req, socket, head); break
+    default:
+      debug('invalid path:', req.url)
+      socket.destroy()
   }
 }
 
@@ -90,10 +90,18 @@ function handleError (err) {
   if (err) console.error(err)
 }
 
-function metaWhoami (metadata, stream) {
+function metaWhoami (metadata, meta_stream) {
   debug('::metaWhoami::')
   if (!valid.schemaZ(metadata)) return debug('invalid schema Z:', metadata)
-  stream.whoami = metadata.user
+  const alreadyActive = Array.from(active_meta_streams).some(meta_stream => {
+    return meta_stream.whoami === metadata.user
+  })
+  if (alreadyActive) {
+    return debug(`ignoring excess whoami for ${metadata.user}`)
+  }
+  meta_stream.whoami = metadata.user
+  active_meta_streams.add(meta_stream)
+  debug('identified:', metadata.user)
 }
 
 function registerUser (metadata) {
@@ -110,7 +118,9 @@ function addPeers (metadata) {
   if (!valid.schemaA(metadata)) return debug('invalid schema A:', metadata)
   readTransformWriteUsers(users => {
     if (users[metadata.user]) {
-      for (const peer of metadata.peers) users[metadata.user].peers.push(peer)
+      for (const peer of metadata.peers) {
+        if (peer !== metadata.user) users[metadata.user].peers.push(peer)
+      }
       users[metadata.user].peers = [ ...new Set(users[metadata.user].peers) ]
     }
     return users
@@ -123,7 +133,7 @@ function deletePeers (metadata) {
   readTransformWriteUsers(users => {
     for (const peer of metadata.peers) {
       const i = users[metadata.user].peers.indexOf(peer)
-      debug(`peer index:: ${i}`)
+      debug(`peer index: ${i}`)
       if (i !== -1) users[metadata.user].peers.splice(i, 1)
     }
     return users
@@ -134,46 +144,62 @@ function online (metadata) {
   debug('::online::')
   if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
   ONLINE_USERS.add(metadata.user)
+  listOnlinePeers(metadata.user, (err, online_peers) => {
+    if (err) return handleError(err)
+    debug(`online peers around ${metadata.user}:`, online_peers)
+    forward(metadata, online_peers, handleError)
+  })
 }
 
 function offline (metadata) {
   debug('::offline::')
   if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
   ONLINE_USERS.delete(metadata.user)
+  listOnlinePeers(metadata.user, (err, online_peers) => {
+    if (err) return handleError(err)
+    debug(`online peers around ${metadata.user}:`, online_peers)
+    forward(metadata, online_peers, handleError)
+  })
 }
 
 function call (metadata) {
   debug('::call::')
   if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
-  // find metadata.peer within active_meta_streams and simply forward the msg!
-  active_meta_streams // Set.find or similar?
+  forward(metadata, [ metadata.peer ], handleError)
 }
 
-function accept (metadata) {
+function accept (metadata, ) {
   debug('::accept::')
+  if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  forward(metadata, [ metadata.peer ], handleError)
+  // TODO: emit 'pair' && send force-calls
+  const a = metadata.peer, b = metadata.user
+  meta_server.emit('pair', a, b)
+  sendForceCall(b, a, handleError) // rx, user, cb
+  sendForceCall(a, b, handleError) // rx, user, cb
 }
 
 function reject (metadata) {
   debug('::reject::')
-
+  if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  forward(metadata, [ metadata.peer ], handleError)
 }
 
 function peersOnline (metadata, stream) {
   debug('::peersOnline::')
-  if (!valid.schemaD(metadata)) return debug('invalid schema D:', metadata)
+  if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
   readUsers((err, users) => {
     if (err) return handleError(err)
     const peers_online = Array.from(ONLINE_USERS).filter(user => {
       return users[metadata.user].peers.includes(user)
     })
-    stream.write(JSON.stringify(
-      OUTBOUND_MSGS.peersOnline(metadata.tx, peers_online)
-    ))
+    debug(`peers_online of ${metadata.user}:`, peers_online)
+    stream.write(OUTBOUND_MSG.peersOnline(peers_online))
   })
 }
 
 function handleMetadata (data) { // this === websocket stream
-  debug(`handleMetadata data:: ${data}`)
+  debug(`handleMetadata data: ${data}`)
   var metadata
   try {
     metadata = JSON.parse(data)
@@ -181,12 +207,14 @@ function handleMetadata (data) { // this === websocket stream
     return handleError(err)
   }
 
-  if (!isTruthyString(this.whoami)/*!active_meta_streams.has(this)*/) {
-    return debug('ignoring data from unidentified stream')
+  if (!isTruthyString(this.whoami) && metadata.type !== 'whoami') {
+    return debug('ignoring metadata from unidentified stream')
+  } else if (metadata.type !== 'whoami' && metadata.user !== this.whoami) {
+    return debug('ignoring metadata due to inconsistent user identifier')
   }
 
   switch (metadata.type) {
-    case 'whoami': metaWhoami(metadata, stream); break
+    case 'whoami': metaWhoami(metadata, this); break
     case 'reg-user': registerUser(metadata); break
     case 'add-peers': addPeers(metadata); break
     case 'del-peers': deletePeers(metadata); break
