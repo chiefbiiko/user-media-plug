@@ -107,7 +107,7 @@ function metaWhoami (metadata, meta_stream) {
   meta_stream.whoami = metadata.user
   active_meta_streams.add(meta_stream)
   debug(`identified: ${metadata.user}`)
-}
+} // moved
 
 function registerUser (metadata) {
   debug('::registerUser::')
@@ -118,7 +118,7 @@ function registerUser (metadata) {
     if (!users[metadata.user]) users[metadata.user] = { peers: metadata.peers }
     return users
   }, handleError)
-}
+} // moved
 
 function addPeers (metadata) {
   debug('::addPeers::')
@@ -134,7 +134,7 @@ function addPeers (metadata) {
     }
     return users
   }, handleError)
-}
+} // moved
 
 function deletePeers (metadata) {
   debug('::deletePeers::')
@@ -149,7 +149,7 @@ function deletePeers (metadata) {
     }
     return users
   }, handleError)
-}
+} // Moved
 
 function online (metadata) {
   debug('::online::')
