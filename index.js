@@ -70,13 +70,13 @@ function onUpgrade (req, socket, head) {
   debug('::onUpgrade::')
   switch (parse(req.url).pathname) {
     case '/meta':
-      debug('routed to meta_server:', req.url)
+      debug(`routed to meta_server: ${req.url}`)
       handleUpgrade(meta_server, req, socket, head); break
     case '/media':
-      debug('routed to media_server:', req.url)
+      debug(`routed to media_server: ${req.url}`)
       handleUpgrade(media_server, req, socket, head); break
     default:
-      debug('invalid path:', req.url)
+      debug(`invalid path on url: ${req.url}`)
       socket.destroy()
   }
 }
@@ -85,30 +85,35 @@ http_server.on('upgrade', onUpgrade)
 
 http_server.listen(10000, 'localhost', () => {
   const addy = http_server.address()
-  console.log(`http_server live @ ${addy.address}:${addy.port}`)
+  debug(`http_server live @ ${addy.address}:${addy.port}`)
 })
 
 function handleError (err) {
   if (err) console.error(err)
 }
 
+// TODO: give all these handlers a cb and swap "return debug(...)"s with da cb!
+
 function metaWhoami (metadata, meta_stream) {
   debug('::metaWhoami::')
-  if (!valid.schemaZ(metadata)) return debug('invalid schema Z:', metadata)
-  const alreadyActive = Array.from(active_meta_streams).some(meta_stream => {
-    return meta_stream.whoami === metadata.user
-  })
+  if (!valid.schemaZ(metadata)) {
+    return debug(`invalid schema Z: ${JSON.stringify(metadata)}`)
+  }
+  const alreadyActive = Array.from(active_meta_streams)
+    .some(meta_stream => meta_stream.whoami === metadata.user)
   if (alreadyActive) {
-    return debug(`ignoring excess whoami for ${metadata.user}`)
+    return debug(`ignoring excess whoami for: ${metadata.user}`)
   }
   meta_stream.whoami = metadata.user
   active_meta_streams.add(meta_stream)
-  debug('identified:', metadata.user)
+  debug(`identified: ${metadata.user}`)
 }
 
 function registerUser (metadata) {
   debug('::registerUser::')
-  if (!valid.schemaA(metadata)) return debug('invalid schema A:', metadata)
+  if (!valid.schemaA(metadata)) {
+    return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
+  }
   readTransformWriteUsers(users => {
     if (!users[metadata.user]) users[metadata.user] = { peers: metadata.peers }
     return users
@@ -117,7 +122,9 @@ function registerUser (metadata) {
 
 function addPeers (metadata) {
   debug('::addPeers::')
-  if (!valid.schemaA(metadata)) return debug('invalid schema A:', metadata)
+  if (!valid.schemaA(metadata)) {
+    return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
+  }
   readTransformWriteUsers(users => {
     if (users[metadata.user]) {
       for (const peer of metadata.peers) {
@@ -131,7 +138,9 @@ function addPeers (metadata) {
 
 function deletePeers (metadata) {
   debug('::deletePeers::')
-  if (!valid.schemaA(metadata)) return debug('invalid schema A:', metadata)
+  if (!valid.schemaA(metadata)) {
+    return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
+  }
   readTransformWriteUsers(users => {
     for (const peer of metadata.peers) {
       const i = users[metadata.user].peers.indexOf(peer)
@@ -144,38 +153,48 @@ function deletePeers (metadata) {
 
 function online (metadata) {
   debug('::online::')
-  if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
+  if (!valid.schemaB(metadata)) {
+    return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
+  }
   online_users.add(metadata.user)
   listOnlinePeers(metadata.user, (err, online_peers) => {
     if (err) return handleError(err)
-    debug(`online peers around ${metadata.user}:`, online_peers)
+    debug(`online_peers of ${metadata.user}: ${JSON.stringify(online_peers)}`)
     forward(metadata, online_peers, handleError)
   })
 }
 
 function offline (metadata) {
   debug('::offline::')
-  if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
+  if (!valid.schemaB(metadata)) {
+    return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
+  }
   online_users.delete(metadata.user)
   listOnlinePeers(metadata.user, (err, online_peers) => {
     if (err) return handleError(err)
-    debug(`online peers around ${metadata.user}:`, online_peers)
+    debug(`online_peers of ${metadata.user}: ${JSON.stringify(online_peers)}`)
     forward(metadata, online_peers, handleError)
   })
 }
 
 function call (metadata) {
   debug('::call::')
-  if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  if (!valid.schemaC(metadata)) {
+    return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
+  }
   if (!online_users.has(metadata.user) || !online_users.has(metadata.peer)) {
-    return debug('call attempt from/with an offline peer')
+    return debug(`call attempt from/with an offline peer\n`+
+      `online_users: ${JSON.stringify(online_users)}\n` +
+      `metadata: ${JSON.stringify(metadata)}`)
   }
   forward(metadata, [ metadata.peer ], handleError)
 }
 
 function accept (metadata) {
   debug('::accept::')
-  if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  if (!valid.schemaC(metadata)) {
+    return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
+  }
   forward(metadata, [ metadata.peer ], handleError)
   const a = metadata.peer, b = metadata.user
   meta_server.emit('pair', a, b)
@@ -185,16 +204,20 @@ function accept (metadata) {
 
 function reject (metadata) {
   debug('::reject::')
-  if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  if (!valid.schemaC(metadata)) {
+    return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
+  }
   if (!online_users.has(metadata.peer)) {
-    return debug('cannot forward "reject" metadata to an offline peer')
+    return debug(`cannot forward ${JSON.stringify(metadata)} to offline peer`)
   }
   forward(metadata, [ metadata.peer ], handleError)
 }
 
 function peersOnline (metadata, stream) {
   debug('::peersOnline::')
-  if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
+  if (!valid.schemaB(metadata)) {
+    return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
+  }
   readUsers((err, users) => {
     if (err) return handleError(err)
     const peers_online = Array.from(online_users).filter(user => {
@@ -217,7 +240,9 @@ function handleMetadata (data) { // this === websocket stream
   if (!isTruthyString(this.whoami) && metadata.type !== 'whoami') {
     return debug('ignoring metadata from unidentified stream')
   } else if (metadata.type !== 'whoami' && metadata.user !== this.whoami) {
-    return debug('ignoring metadata due to inconsistent user identifier')
+    return debug(`ignoring metadata due to inconsistent user identifier\n` +
+      `metadata.user: ${JSON.stringify(metadata.user)}\n` +
+      `meta_stream.whoami: ${JSON.stringify(this.whoami)}`)
   }
 
   switch (metadata.type) {
@@ -231,7 +256,7 @@ function handleMetadata (data) { // this === websocket stream
     case 'accept': accept(metadata); break
     case 'reject': reject(metadata); break
     case 'peers-online': peersOnline(metadata, this); break
-    default: handleError(new Error(`invalid message type "${metadata.type}"`))
+    default: debug(`invalid metadata.type: ${metadata.type}`)
   }
 }
 
