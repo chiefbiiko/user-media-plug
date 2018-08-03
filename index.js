@@ -17,36 +17,57 @@ const { parse } = require('url')
 const WebSocketServer = require('websocket-stream').Server
 const streamSet = require('stream-set')
 
+const levelup = require('levelup')
+const memdown = require('memdown')
+const enc = require('encoding-down')
+
 const outbound = require('./lib/outbound.js')
 const valid = require('./lib/valid.js')
 
 const { isTruthyString } = require('./lib/is.js')
 const { createForward, createSendForceCall } = require('./lib/notify.js')
+// const {
+//   createListOnlinePeers,
+//   createReadUsers,
+//   createReadTransformWriteUsers
+// } = require('./lib/data.js')
 const {
-  createListOnlinePeers,
-  createReadUsers,
-  createReadTransformWriteUsers
-} = require('./lib/data.js')
+  createMetaWhoami,
+  createOnline,
+  createOffline,
+  createCall,
+  createAccept,
+  createReject,
+  createRegisterUser,
+  createAddPeers,
+  createDeletePeers,
+  createPeersOnline
+} = require('./lib/handlers.js')
 
 const debug = require('debug')('user-media-plug')
 
-const USERS_JSON_PATH = './test.users.json'
-const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+// const USERS_JSON_PATH = './test.users.json'
 
+const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 const active_meta_streams = streamSet()
 const active_media_streams = streamSet()
 const online_users = new Set()
 
 const http_server = createServer()
+const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
 const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
-const readUsers = createReadUsers(USERS_JSON_PATH)
-const readTransformWriteUsers =
-  createReadTransformWriteUsers(USERS_JSON_PATH, readUsers)
-const listOnlinePeers = createListOnlinePeers(online_users, readUsers)
+// const readUsers = createReadUsers(USERS_JSON_PATH)
+// const readTransformWriteUsers =
+//   createReadTransformWriteUsers(USERS_JSON_PATH, readUsers)
+// const listOnlinePeers = createListOnlinePeers(online_users, readUsers)
 const forward = createForward(active_meta_streams)
 const sendForceCall = createSendForceCall(active_meta_streams)
+
+const metaWhoami = createMetaWhoami(active_meta_streams)
+const registerUser = createRegisterUser(db)
+// ...
 
 meta_server.on('stream', (meta_stream, req) => {
   debug('::meta_server.on("stream")::')
@@ -94,139 +115,139 @@ function handleError (err) {
 
 // TODO: give all these handlers a cb and swap "return debug(...)"s with da cb!
 
-function metaWhoami (metadata, meta_stream) {
-  debug('::metaWhoami::')
-  if (!valid.schemaZ(metadata)) {
-    return debug(`invalid schema Z: ${JSON.stringify(metadata)}`)
-  }
-  const alreadyActive = Array.from(active_meta_streams)
-    .some(meta_stream => meta_stream.whoami === metadata.user)
-  if (alreadyActive) {
-    return debug(`ignoring excess whoami for: ${metadata.user}`)
-  }
-  meta_stream.whoami = metadata.user
-  active_meta_streams.add(meta_stream)
-  debug(`identified: ${metadata.user}`)
-} // moved
-
-function registerUser (metadata) {
-  debug('::registerUser::')
-  if (!valid.schemaA(metadata)) {
-    return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
-  }
-  readTransformWriteUsers(users => {
-    if (!users[metadata.user]) users[metadata.user] = { peers: metadata.peers }
-    return users
-  }, handleError)
-} // moved
-
-function addPeers (metadata) {
-  debug('::addPeers::')
-  if (!valid.schemaA(metadata)) {
-    return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
-  }
-  readTransformWriteUsers(users => {
-    if (users[metadata.user]) {
-      for (const peer of metadata.peers) {
-        if (peer !== metadata.user) users[metadata.user].peers.push(peer)
-      }
-      users[metadata.user].peers = [ ...new Set(users[metadata.user].peers) ]
-    }
-    return users
-  }, handleError)
-} // moved
-
-function deletePeers (metadata) {
-  debug('::deletePeers::')
-  if (!valid.schemaA(metadata)) {
-    return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
-  }
-  readTransformWriteUsers(users => {
-    for (const peer of metadata.peers) {
-      const i = users[metadata.user].peers.indexOf(peer)
-      debug(`peer index: ${i}`)
-      if (i !== -1) users[metadata.user].peers.splice(i, 1)
-    }
-    return users
-  }, handleError)
-} // Moved
-
-function online (metadata) {
-  debug('::online::')
-  if (!valid.schemaB(metadata)) {
-    return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
-  }
-  online_users.add(metadata.user)
-  listOnlinePeers(metadata.user, (err, online_peers) => {
-    if (err) return handleError(err)
-    debug(`online_peers of ${metadata.user}: ${JSON.stringify(online_peers)}`)
-    forward(metadata, online_peers, handleError)
-  })
-}
-
-function offline (metadata) {
-  debug('::offline::')
-  if (!valid.schemaB(metadata)) {
-    return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
-  }
-  online_users.delete(metadata.user)
-  listOnlinePeers(metadata.user, (err, online_peers) => {
-    if (err) return handleError(err)
-    debug(`online_peers of ${metadata.user}: ${JSON.stringify(online_peers)}`)
-    forward(metadata, online_peers, handleError)
-  })
-}
-
-function call (metadata) {
-  debug('::call::')
-  if (!valid.schemaC(metadata)) {
-    return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
-  }
-  if (!online_users.has(metadata.user) || !online_users.has(metadata.peer)) {
-    return debug(`call attempt from/with an offline peer\n`+
-      `online_users: ${JSON.stringify(online_users)}\n` +
-      `metadata: ${JSON.stringify(metadata)}`)
-  }
-  forward(metadata, [ metadata.peer ], handleError)
-}
-
-function accept (metadata) {
-  debug('::accept::')
-  if (!valid.schemaC(metadata)) {
-    return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
-  }
-  forward(metadata, [ metadata.peer ], handleError)
-  const a = metadata.peer, b = metadata.user
-  meta_server.emit('pair', a, b)
-  sendForceCall(a, b, handleError) // rx, user, cb
-  sendForceCall(b, a, handleError) // rx, user, cb
-}
-
-function reject (metadata) {
-  debug('::reject::')
-  if (!valid.schemaC(metadata)) {
-    return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
-  }
-  if (!online_users.has(metadata.peer)) {
-    return debug(`cannot forward ${JSON.stringify(metadata)} to offline peer`)
-  }
-  forward(metadata, [ metadata.peer ], handleError)
-}
-
-function peersOnline (metadata, stream) {
-  debug('::peersOnline::')
-  if (!valid.schemaB(metadata)) {
-    return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
-  }
-  readUsers((err, users) => {
-    if (err) return handleError(err)
-    const peers_online = Array.from(online_users).filter(user => {
-      return users[metadata.user].peers.includes(user)
-    })
-    debug(`peers_online of ${metadata.user}:`, peers_online)
-    stream.write(outbound.peersOnline(peers_online))
-  })
-}
+// function metaWhoami (metadata, meta_stream) {
+//   debug('::metaWhoami::')
+//   if (!valid.schemaZ(metadata)) {
+//     return debug(`invalid schema Z: ${JSON.stringify(metadata)}`)
+//   }
+//   const alreadyActive = Array.from(active_meta_streams)
+//     .some(meta_stream => meta_stream.whoami === metadata.user)
+//   if (alreadyActive) {
+//     return debug(`ignoring excess whoami for: ${metadata.user}`)
+//   }
+//   meta_stream.whoami = metadata.user
+//   active_meta_streams.add(meta_stream)
+//   debug(`identified: ${metadata.user}`)
+// } // moved
+//
+// function registerUser (metadata) {
+//   debug('::registerUser::')
+//   if (!valid.schemaA(metadata)) {
+//     return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
+//   }
+//   readTransformWriteUsers(users => {
+//     if (!users[metadata.user]) users[metadata.user] = { peers: metadata.peers }
+//     return users
+//   }, handleError)
+// } // moved
+//
+// function addPeers (metadata) {
+//   debug('::addPeers::')
+//   if (!valid.schemaA(metadata)) {
+//     return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
+//   }
+//   readTransformWriteUsers(users => {
+//     if (users[metadata.user]) {
+//       for (const peer of metadata.peers) {
+//         if (peer !== metadata.user) users[metadata.user].peers.push(peer)
+//       }
+//       users[metadata.user].peers = [ ...new Set(users[metadata.user].peers) ]
+//     }
+//     return users
+//   }, handleError)
+// } // moved
+//
+// function deletePeers (metadata) {
+//   debug('::deletePeers::')
+//   if (!valid.schemaA(metadata)) {
+//     return debug(`invalid schema A: ${JSON.stringify(metadata)}`)
+//   }
+//   readTransformWriteUsers(users => {
+//     for (const peer of metadata.peers) {
+//       const i = users[metadata.user].peers.indexOf(peer)
+//       debug(`peer index: ${i}`)
+//       if (i !== -1) users[metadata.user].peers.splice(i, 1)
+//     }
+//     return users
+//   }, handleError)
+// } // Moved
+//
+// function online (metadata) {
+//   debug('::online::')
+//   if (!valid.schemaB(metadata)) {
+//     return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
+//   }
+//   online_users.add(metadata.user)
+//   listOnlinePeers(metadata.user, (err, online_peers) => {
+//     if (err) return handleError(err)
+//     debug(`online_peers of ${metadata.user}: ${JSON.stringify(online_peers)}`)
+//     forward(metadata, online_peers, handleError)
+//   })
+// } // moved
+//
+// function offline (metadata) {
+//   debug('::offline::')
+//   if (!valid.schemaB(metadata)) {
+//     return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
+//   }
+//   online_users.delete(metadata.user)
+//   listOnlinePeers(metadata.user, (err, online_peers) => {
+//     if (err) return handleError(err)
+//     debug(`online_peers of ${metadata.user}: ${JSON.stringify(online_peers)}`)
+//     forward(metadata, online_peers, handleError)
+//   })
+// } // moved
+//
+// function call (metadata) {
+//   debug('::call::')
+//   if (!valid.schemaC(metadata)) {
+//     return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
+//   }
+//   if (!online_users.has(metadata.user) || !online_users.has(metadata.peer)) {
+//     return debug(`call attempt from/with an offline peer\n`+
+//       `online_users: ${JSON.stringify(online_users)}\n` +
+//       `metadata: ${JSON.stringify(metadata)}`)
+//   }
+//   forward(metadata, [ metadata.peer ], handleError)
+// }
+//
+// function accept (metadata) {
+//   debug('::accept::')
+//   if (!valid.schemaC(metadata)) {
+//     return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
+//   }
+//   forward(metadata, [ metadata.peer ], handleError)
+//   const a = metadata.peer, b = metadata.user
+//   meta_server.emit('pair', a, b)
+//   sendForceCall(a, b, handleError) // rx, user, cb
+//   sendForceCall(b, a, handleError) // rx, user, cb
+// }
+//
+// function reject (metadata) {
+//   debug('::reject::')
+//   if (!valid.schemaC(metadata)) {
+//     return debug(`invalid schema C: ${JSON.stringify(metadata)}`)
+//   }
+//   if (!online_users.has(metadata.peer)) {
+//     return debug(`cannot forward ${JSON.stringify(metadata)} to offline peer`)
+//   }
+//   forward(metadata, [ metadata.peer ], handleError)
+// }
+//
+// function peersOnline (metadata, stream) {
+//   debug('::peersOnline::')
+//   if (!valid.schemaB(metadata)) {
+//     return debug(`invalid schema B: ${JSON.stringify(metadata)}`)
+//   }
+//   readUsers((err, users) => {
+//     if (err) return handleError(err)
+//     const peers_online = Array.from(online_users).filter(user => {
+//       return users[metadata.user].peers.includes(user)
+//     })
+//     debug(`peers_online of ${metadata.user}:`, peers_online)
+//     stream.write(outbound.peersOnline(peers_online))
+//   })
+// }
 
 function handleMetadata (data) { // this === websocket stream
   debug(`handleMetadata data: ${data}`)
