@@ -13,12 +13,14 @@
 
 const { createServer } = require('http')
 const { parse } = require('url')
+
 const WebSocketServer = require('websocket-stream').Server
 const streamSet = require('stream-set')
 
-const { isTruthyString } = require('./lib/is.js')
 const outbound = require('./lib/outbound.js')
 const valid = require('./lib/valid.js')
+
+const { isTruthyString } = require('./lib/is.js')
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 const {
   createListOnlinePeers,
