@@ -11,20 +11,20 @@
   + static user data
 */
 
-const http = require('http')
+const { createServer } = require('http')
 const { parse } = require('url')
 const WebSocketServer = require('websocket-stream').Server
 const streamSet = require('stream-set')
+
+const { isTruthyString } = require('./lib/is.js')
+const outbound = require('./lib/outbound.js')
+const valid = require('./lib/valid.js')
+const { createForward, createSendForceCall } = require('./lib/notify.js')
 const {
-  createForward,
   createListOnlinePeers,
   createReadUsers,
-  createReadTransformWriteUsers,
-  isTruthyString,
-  createSendForceCall,
-  valid,
-  OUTBOUND_MSG
-} = require('./utils.js')
+  createReadTransformWriteUsers
+} = require('./lib/data.js')
 
 const debug = require('debug')('user-media-plug')
 
@@ -33,16 +33,16 @@ const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
 
 const active_meta_streams = streamSet()
 const active_media_streams = streamSet()
-const ONLINE_USERS = new Set()
+const online_users = new Set()
 
-const http_server = http.createServer()
+const http_server = createServer()
 const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
 const readUsers = createReadUsers(USERS_JSON_PATH)
 const readTransformWriteUsers =
   createReadTransformWriteUsers(USERS_JSON_PATH, readUsers)
-const listOnlinePeers = createListOnlinePeers(ONLINE_USERS, readUsers)
+const listOnlinePeers = createListOnlinePeers(online_users, readUsers)
 const forward = createForward(active_meta_streams)
 const sendForceCall = createSendForceCall(active_meta_streams)
 
@@ -143,7 +143,7 @@ function deletePeers (metadata) {
 function online (metadata) {
   debug('::online::')
   if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
-  ONLINE_USERS.add(metadata.user)
+  online_users.add(metadata.user)
   listOnlinePeers(metadata.user, (err, online_peers) => {
     if (err) return handleError(err)
     debug(`online peers around ${metadata.user}:`, online_peers)
@@ -154,7 +154,7 @@ function online (metadata) {
 function offline (metadata) {
   debug('::offline::')
   if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
-  ONLINE_USERS.delete(metadata.user)
+  online_users.delete(metadata.user)
   listOnlinePeers(metadata.user, (err, online_peers) => {
     if (err) return handleError(err)
     debug(`online peers around ${metadata.user}:`, online_peers)
@@ -165,23 +165,28 @@ function offline (metadata) {
 function call (metadata) {
   debug('::call::')
   if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  if (!online_users.has(metadata.user) || !online_users.has(metadata.peer)) {
+    return debug('call attempt from/with an offline peer')
+  }
   forward(metadata, [ metadata.peer ], handleError)
 }
 
-function accept (metadata, ) {
+function accept (metadata) {
   debug('::accept::')
   if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
   forward(metadata, [ metadata.peer ], handleError)
-  // TODO: emit 'pair' && send force-calls
   const a = metadata.peer, b = metadata.user
   meta_server.emit('pair', a, b)
-  sendForceCall(b, a, handleError) // rx, user, cb
   sendForceCall(a, b, handleError) // rx, user, cb
+  sendForceCall(b, a, handleError) // rx, user, cb
 }
 
 function reject (metadata) {
   debug('::reject::')
   if (!valid.schemaC(metadata)) return debug('invalid schema C:', metadata)
+  if (!online_users.has(metadata.peer)) {
+    return debug('cannot forward "reject" metadata to an offline peer')
+  }
   forward(metadata, [ metadata.peer ], handleError)
 }
 
@@ -190,11 +195,11 @@ function peersOnline (metadata, stream) {
   if (!valid.schemaB(metadata)) return debug('invalid schema B:', metadata)
   readUsers((err, users) => {
     if (err) return handleError(err)
-    const peers_online = Array.from(ONLINE_USERS).filter(user => {
+    const peers_online = Array.from(online_users).filter(user => {
       return users[metadata.user].peers.includes(user)
     })
     debug(`peers_online of ${metadata.user}:`, peers_online)
-    stream.write(OUTBOUND_MSG.peersOnline(peers_online))
+    stream.write(outbound.peersOnline(peers_online))
   })
 }
 
@@ -227,5 +232,7 @@ function handleMetadata (data) { // this === websocket stream
     default: handleError(new Error(`invalid message type "${metadata.type}"`))
   }
 }
+
+meta_server.on('pair', (a, b) => debug('pair:', a, b))
 
 module.exports = {}
