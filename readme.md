@@ -108,10 +108,10 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 
 ##### Schema E
 
-**_server responds to "online-peers" message with:_**
+**_server responds to "peers-online" message with:_**
 
 ``` js
-{ type: 'peers-online', tx: id, peersOnline: [] }
+{ type: 'peers-online', tx: id, peers_online: [] }
 ```
 
 ##### Schema F
