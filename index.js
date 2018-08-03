@@ -48,6 +48,9 @@ const debug = require('debug')('user-media-plug')
 
 // const USERS_JSON_PATH = './test.users.json'
 
+const PORT = process.env.PORT || 10000
+const HOST = process.env.HOST || 'localhost'
+
 const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 const active_meta_streams = streamSet()
 const active_media_streams = streamSet()
@@ -67,7 +70,69 @@ const sendForceCall = createSendForceCall(active_meta_streams)
 
 const metaWhoami = createMetaWhoami(active_meta_streams)
 const registerUser = createRegisterUser(db)
-// ...
+const addPeers = createAddPeers(db)
+const deletePeers = createDeletePeers(db)
+const online = createOnline(db, online_users, forward)
+const offline = createOffline(db, online_users, forward)
+const call = createCall(online_users, forward)
+const accept = createAccept(meta_server, forward, sendForceCall)
+const reject = createReject(forward)
+const peersOnline = createPeersOnline(db, online_users)
+
+function handleError (err) {
+  if (err) debug(err)
+}
+
+function _handleUpgrade (websocket_server, req, socket, head) {
+  websocket_server.handleUpgrade(req, socket, head, ws => {
+    websocket_server.emit('connection', ws, req)
+  })
+}
+
+function handleUpgrade (req, socket, head) {
+  debug('::handleUpgrade::')
+  switch (parse(req.url).pathname) {
+    case '/meta': _handleUpgrade(meta_server, req, socket, head); break
+    case '/media': _handleUpgrade(media_server, req, socket, head); break
+    default:
+      debug(`invalid path on req.url: ${req.url}`)
+      socket.destroy()
+  }
+}
+
+
+function handleMetadata (data) { // this === websocket stream
+  debug(`handleMetadata data: ${data}`)
+  var metadata
+  try {
+    metadata = JSON.parse(data)
+  } catch (err) {
+    return handleError(err)
+  }
+
+  if (!isTruthyString(this.whoami) && metadata.type !== 'whoami')
+    return debug('ignoring metadata from unidentified stream')
+  else if (metadata.type !== 'whoami' && metadata.user !== this.whoami)
+    return debug(`ignoring metadata due to inconsistent user identifier\n` +
+      `metadata.user: ${JSON.stringify(metadata.user)}\n` +
+      `meta_stream.whoami: ${JSON.stringify(this.whoami)}`)
+
+  switch (metadata.type) {
+    case 'whoami': metaWhoami(metadata, this, handleError); break
+    case 'reg-user': registerUser(metadata, handleError); break
+    case 'add-peers': addPeers(metadata, handleError); break
+    case 'del-peers': deletePeers(metadata, handleError); break
+    case 'online': online(metadata, handleError); break
+    case 'offline': offline(metadata, handleError); break
+    case 'call': call(metadata, handleError); break
+    case 'accept': accept(metadata, handleError); break
+    case 'reject': reject(metadata, handleError); break
+    case 'peers-online': peersOnline(metadata, this, handleError); break
+    default: debug(`invalid metadata.type: ${metadata.type}`)
+  }
+}
+
+meta_server.on('pair', (a, b) => debug('pair:', a, b))
 
 meta_server.on('stream', (meta_stream, req) => {
   debug('::meta_server.on("stream")::')
@@ -80,40 +145,14 @@ media_server.on('stream', (stream, req) => {
   // ...
 })
 
-function handleUpgrade (websocket_server, req, socket, head) {
-  websocket_server.handleUpgrade(req, socket, head, ws => {
-    debug('::websocket_server emitting connection::')
-    websocket_server.emit('connection', ws, req)
-  })
-}
+http_server.on('upgrade', handleUpgrade)
 
-function onUpgrade (req, socket, head) {
-  debug('::onUpgrade::')
-  switch (parse(req.url).pathname) {
-    case '/meta':
-      debug(`routed to meta_server: ${req.url}`)
-      handleUpgrade(meta_server, req, socket, head); break
-    case '/media':
-      debug(`routed to media_server: ${req.url}`)
-      handleUpgrade(media_server, req, socket, head); break
-    default:
-      debug(`invalid path on url: ${req.url}`)
-      socket.destroy()
-  }
-}
-
-http_server.on('upgrade', onUpgrade)
-
-http_server.listen(10000, 'localhost', () => {
+http_server.listen(PORT, process.env.HOST || 'localhost', () => {
   const addy = http_server.address()
   debug(`http_server live @ ${addy.address}:${addy.port}`)
 })
 
-function handleError (err) {
-  if (err) console.error(err)
-}
-
-// TODO: give all these handlers a cb and swap "return debug(...)"s with da cb!
+// _TODO: give all these handlers a cb and swap "return debug(...)"s with da cb!
 
 // function metaWhoami (metadata, meta_stream) {
 //   debug('::metaWhoami::')
@@ -248,39 +287,3 @@ function handleError (err) {
 //     stream.write(outbound.peersOnline(peers_online))
 //   })
 // }
-
-function handleMetadata (data) { // this === websocket stream
-  debug(`handleMetadata data: ${data}`)
-  var metadata
-  try {
-    metadata = JSON.parse(data)
-  } catch (err) {
-    return handleError(err)
-  }
-
-  if (!isTruthyString(this.whoami) && metadata.type !== 'whoami') {
-    return debug('ignoring metadata from unidentified stream')
-  } else if (metadata.type !== 'whoami' && metadata.user !== this.whoami) {
-    return debug(`ignoring metadata due to inconsistent user identifier\n` +
-      `metadata.user: ${JSON.stringify(metadata.user)}\n` +
-      `meta_stream.whoami: ${JSON.stringify(this.whoami)}`)
-  }
-
-  switch (metadata.type) {
-    case 'whoami': metaWhoami(metadata, this); break
-    case 'reg-user': registerUser(metadata); break
-    case 'add-peers': addPeers(metadata); break
-    case 'del-peers': deletePeers(metadata); break
-    case 'online': online(metadata); break
-    case 'offline': offline(metadata); break
-    case 'call': call(metadata); break
-    case 'accept': accept(metadata); break
-    case 'reject': reject(metadata); break
-    case 'peers-online': peersOnline(metadata, this); break
-    default: debug(`invalid metadata.type: ${metadata.type}`)
-  }
-}
-
-meta_server.on('pair', (a, b) => debug('pair:', a, b))
-
-module.exports = {}
