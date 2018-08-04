@@ -72,8 +72,9 @@ const metaWhoami = createMetaWhoami(active_meta_streams)
 const registerUser = createRegisterUser(db)
 const addPeers = createAddPeers(db)
 const deletePeers = createDeletePeers(db)
-const online = createOnline(db, online_users, forward)
-const offline = createOffline(db, online_users, forward)
+// const online = createOnline(db, online_users, forward)
+// const offline = createOffline(db, online_users, forward)
+const status = createStatus(db, online_users, active_meta_streams, forward)
 const call = createCall(online_users, forward)
 const accept = createAccept(meta_server, forward, sendForceCall)
 const reject = createReject(forward)
@@ -122,8 +123,9 @@ function handleMetadata (data) { // this === websocket stream
     case 'reg-user': registerUser(metadata, handleError); break
     case 'add-peers': addPeers(metadata, handleError); break
     case 'del-peers': deletePeers(metadata, handleError); break
-    case 'online': online(metadata, handleError); break
-    case 'offline': offline(metadata, handleError); break
+    // case 'online': online(metadata, handleError); break
+    // case 'offline': offline(metadata, handleError); break
+    case 'status': status(metadata, handleError); break
     case 'call': call(metadata, handleError); break
     case 'accept': accept(metadata, handleError); break
     case 'reject': reject(metadata, handleError); break
