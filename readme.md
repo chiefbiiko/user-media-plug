@@ -45,33 +45,27 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 **_userA wants to be registered, so userA writes:_**
 
 ``` js
-{ type: 'reg-user', user: id, peers: [] }
+{ type: 'reg-user', user: 'userA', peers: [] }
 ```
 
 **_userA wants userB..Z be persisted as peers, so userA writes:_**
 
 ``` js
-{ type: 'add-peers', user: id, peers: [] }
+{ type: 'add-peers', user: 'userA', peers: [] }
 ```
 
 **_userA wants userB..Z be discarded as peers, so userA writes:_**
 
 ``` js
-{ type: 'del-peers', user: id, peers: [] }
+{ type: 'del-peers', user: 'userA', peers: [] }
 ```
 
-##### Schema B
+##### Schema F
 
-**_userA wants to go online, so userA writes:_**
-
-``` js
-{ type: 'online', user: id }
-```
-
-**_userA wants to go offline, so userA writes:_**
+**_userA wants to change status, so userA writes:_**
 
 ``` js
-{ type: 'offline', user: id }
+{ type: 'status', user: 'userA', status: 'online' }
 ```
 
 #### Client messages with responses
@@ -81,43 +75,49 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 **_userA wants to call userB, so userA writes:_**
 
 ``` js
-{ type: 'call', user: id, peer: id }
+{ type: 'call', user: 'userA', peer: 'userB' }
 ```
 
 **_userB wants to accept userA, so userB writes:_**
 
 ``` js
-{ type: 'accept', user: id, peer: id }
+{ type: 'accept', user: 'userB', peer: 'userA' }
 ```
 
 **_userB wants to reject userA, so userB writes:_**
 
 ``` js
-{ type: 'reject', user: id, peer: id }
+{ type: 'reject', user: 'userB', peer: 'userA' }
 ```
 
-##### Schema D
+##### Schema B
+
+**_userA wants to get its peers, so userA writes:_**
+
+``` js
+{ type: 'peers', user: 'userA' }
+```
 
 **_userA wants to get its online peers, so userA writes:_**
 
 ``` js
-{ type: 'peers-online', user: id }
+{ type: 'peers-online', user: 'userA' }
 ```
 
 #### Server messages
 
-##### Schema E
+##### Schema D
 
 **_server responds to "peers-online" message with:_**
 
 ``` js
-{ type: 'peers-online', tx: id, peers_online: [] }
+{ type: 'peers-online', peers_online: [] }
 ```
 
-##### Schema F
+##### Schema E
 
 **_server wants to force a client to call a peer:_** ???????
 
 ``` js
-{ type: 'force-call', peer: id }
+{ type: 'force-call', peer: 'peerX' }
 ```
