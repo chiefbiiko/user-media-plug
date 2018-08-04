@@ -33,18 +33,19 @@ const { createForward, createSendForceCall } = require('./lib/notify.js')
 // } = require('./lib/data.js')
 const {
   createMetaWhoami,
-  createOnline,
-  createOffline,
+  // createOnline,
+  // createOffline,
+  createStatus,
   createCall,
   createAccept,
   createReject,
   createRegisterUser,
   createAddPeers,
   createDeletePeers,
-  createPeersOnline
+  createPeers
 } = require('./lib/handlers.js')
 
-const debug = require('debug')('user-media-plug')
+const debug = require('debug')('user-media-plug:index')
 
 // const USERS_JSON_PATH = './test.users.json'
 
@@ -78,7 +79,7 @@ const status = createStatus(db, online_users, active_meta_streams, forward)
 const call = createCall(online_users, forward)
 const accept = createAccept(meta_server, forward, sendForceCall)
 const reject = createReject(forward)
-const peersOnline = createPeersOnline(db, online_users)
+const peers = createPeers(db, online_users)
 
 function handleError (err) {
   if (err) debug(err)
@@ -129,7 +130,8 @@ function handleMetadata (data) { // this === websocket stream
     case 'call': call(metadata, handleError); break
     case 'accept': accept(metadata, handleError); break
     case 'reject': reject(metadata, handleError); break
-    case 'peers-online': peersOnline(metadata, this, handleError); break
+    case 'peers': peers(metadata, this, handleError); break
+    case 'peers-online': peers(metadata, this, handleError); break
     default: debug(`invalid metadata.type: ${metadata.type}`)
   }
 }
