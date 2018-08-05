@@ -121,12 +121,12 @@ function handleMetadata (data) { // this === websocket stream
 
   switch (metadata.type) {
     case 'whoami': metaWhoami(metadata, this, handleError); break
-    case 'reg-user': registerUser(metadata, handleError); break
-    case 'add-peers': addPeers(metadata, handleError); break
-    case 'del-peers': deletePeers(metadata, handleError); break
+    case 'reg-user': registerUser(metadata, this, handleError); break
+    case 'add-peers': addPeers(metadata, this, handleError); break
+    case 'del-peers': deletePeers(metadata, this, handleError); break
     // case 'online': online(metadata, handleError); break
     // case 'offline': offline(metadata, handleError); break
-    case 'status': status(metadata, handleError); break
+    case 'status': status(metadata, this, handleError); break
     case 'call': call(metadata, handleError); break
     case 'accept': accept(metadata, handleError); break
     case 'reject': reject(metadata, handleError); break

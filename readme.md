@@ -37,7 +37,7 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 **_userA wants to identify itself, so userA writes:_**
 
 ``` js
-{ type: 'whoami', user: id }
+{ type: 'whoami', user: id, tx: random }
 ```
 
 ##### Schema A
@@ -45,19 +45,19 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 **_userA wants to be registered, so userA writes:_**
 
 ``` js
-{ type: 'reg-user', user: 'userA', peers: [] }
+{ type: 'reg-user', user: 'userA', peers: [], tx: random }
 ```
 
 **_userA wants userB..Z be persisted as peers, so userA writes:_**
 
 ``` js
-{ type: 'add-peers', user: 'userA', peers: [] }
+{ type: 'add-peers', user: 'userA', peers: [], tx: random }
 ```
 
 **_userA wants userB..Z be discarded as peers, so userA writes:_**
 
 ``` js
-{ type: 'del-peers', user: 'userA', peers: [] }
+{ type: 'del-peers', user: 'userA', peers: [], tx: random }
 ```
 
 ##### Schema F
@@ -112,6 +112,18 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 
 ``` js
 { type: 'peers-online', peers_online: [] }
+```
+
+**_server responds to "peers" message with:_**
+
+``` js
+{ type: 'peers', peers: [] }
+```
+
+**_server respondes to any response-demanding message with:_**
+
+``` js
+{ type: 'res', for: 'xyz' tx: random, ok: true|false } // + optional fields
 ```
 
 ##### Schema E
