@@ -1,12 +1,10 @@
-# user-media-plug
+# user-media-plug design
 
-## TODO
+**TODO**
 
 + a metadataserver that emits 'pair' and 'unpair' events
 + a mediadataserver that dis/connects peers according to the events above
 + a simple client api
-
-## Design
 
 `user-media-plug` has 3 data layers:
 
@@ -14,7 +12,7 @@
 + dynamic metadata
 + static user data
 
-### Static user data
+## Static user data
 
 Persisted in a JSON file on the server.
 
@@ -22,17 +20,17 @@ Persisted in a JSON file on the server.
 { [userIdA]: { peers: [ userIdB, userIdC ] }, ... }
 ```
 
-### Dynamic metadata
+## Dynamic metadata
 
 The metadata server primarily acts as a broker that forwards messages between peers.
 
 Some metadata messages require a response from a receiving end, whereas others do not.
 
-Metadata is exchanged via events/messages. These are plain, non-nested objects that must have a `type` property, plus event-specific additional data.
+Metadata is exchanged via events/messages. These are plain, non-nested objects that must have a `type` property, plus event-specific additional data. All client messages get a server response following schema
 
-#### Client messages without responses
+### Client messages
 
-##### Schema Z
+#### Schema Z
 
 **_userA wants to identify itself, so userA writes:_**
 
@@ -40,7 +38,7 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 { type: 'whoami', user: id, tx: random }
 ```
 
-##### Schema A
+#### Schema A
 
 **_userA wants to be registered, so userA writes:_**
 
@@ -60,7 +58,7 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 { type: 'del-peers', user: 'userA', peers: [], tx: random }
 ```
 
-##### Schema F
+#### Schema F
 
 **_userA wants to change status, so userA writes:_**
 
@@ -68,9 +66,7 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 { type: 'status', user: 'userA', status: 'online' }
 ```
 
-#### Client messages with responses
-
-##### Schema C
+#### Schema C
 
 **_userA wants to call userB, so userA writes:_**
 
@@ -90,7 +86,7 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 { type: 'reject', user: 'userB', peer: 'userA' }
 ```
 
-##### Schema B
+#### Schema B
 
 **_userA wants to get its peers, so userA writes:_**
 
@@ -104,31 +100,19 @@ Metadata is exchanged via events/messages. These are plain, non-nested objects t
 { type: 'peers-online', user: 'userA' }
 ```
 
-#### Server messages
+### Server messages
 
-##### Schema D
+#### Schema R
 
-**_server responds to "peers-online" message with:_**
-
-``` js
-{ type: 'peers-online', peers_online: [] }
-```
-
-**_server responds to "peers" message with:_**
-
-``` js
-{ type: 'peers', peers: [] }
-```
-
-**_server respondes to any response-demanding message with:_**
+**_server respondes to all messages with:_**
 
 ``` js
 { type: 'res', for: 'xyz' tx: random, ok: true|false } // + optional fields
 ```
 
-##### Schema E
+#### Schema F
 
-**_server wants to force a client to call a peer:_** ???????
+**_server wants to force a client to call a peerX:_** ???????
 
 ``` js
 { type: 'force-call', peer: 'peerX' }

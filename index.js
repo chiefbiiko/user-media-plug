@@ -127,9 +127,9 @@ function handleMetadata (data) { // this === websocket stream
     // case 'online': online(metadata, handleError); break
     // case 'offline': offline(metadata, handleError); break
     case 'status': status(metadata, this, handleError); break
-    case 'call': call(metadata, handleError); break
-    case 'accept': accept(metadata, handleError); break
-    case 'reject': reject(metadata, handleError); break
+    case 'call': call(metadata, this, handleError); break
+    case 'accept': accept(metadata, this, handleError); break
+    case 'reject': reject(metadata, this, handleError); break
     case 'peers': peers(metadata, this, handleError); break
     case 'peers-online': peers(metadata, this, handleError); break
     default: debug(`invalid metadata.type: ${metadata.type}`)
