@@ -5,10 +5,7 @@
   + a mediadataserver that dis/connects peers according to the events above
   + a simple client api
 
-  app has 3 data layers:
-  + dynamic mediadata
-  + dynamic metadata
-  + static user data
+  app has 3 data layers: dynamic mediadata, dynamic metadata, static user data
 */
 
 const { createServer } = require('http')
@@ -91,6 +88,7 @@ const handleUpgrade = (req, socket, head) => {
   }
 }
 
+// TODO: pass meta_stream as explicit arg and convert to anonymous func
 function handleMetadata (data) { // this === websocket meta_stream
   debug(`handleMetadata data: ${data}`)
   var metadata
