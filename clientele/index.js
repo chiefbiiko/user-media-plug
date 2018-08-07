@@ -9,23 +9,19 @@ const debug = require('debug')('clientele')
 const isTruthyString = x => x && typeof x === 'string'
 const isStringArray = x => Array.isArray(x) && x.every(isTruthyString)
 
-const onceMatch = (emitter, eventName, pred, handler) => {
-  var leftover = Buffer.alloc(0)
-  emitter.on(eventName, function proxy (data) {
-    var metadata
-    try {
-      if (leftover.length) {
-        data = Buffer.concat([ leftover, data ])
-        leftover = Buffer.alloc(0)
+const onceParsedJSONStreamPayloadPasses = (readable, pred) => {
+  return new Promise((resolve, reject) => {
+    readable.on('data', function proxy (data) {
+      var metadata
+      try {
+        metadata = JSON.parse(data)
+      } catch (err) {
+        reject(err)
       }
-      metadata = JSON.parse(data)
-    } catch (err) {
-      leftover = Buffer.concat([ leftover, data ])
-    }
-    if (pred(metadata)) {
-      emitter.removeListener(eventName, proxy)
-      return handler(metadata)
-    }
+      if (!pred(metadata)) return
+      readable.removeListener('data', proxy)
+      resolve(metadata)
+    })
   })
 }
 
@@ -44,13 +40,16 @@ Clientele.prototype.whoami = function (username, cb) {
     return cb(new TypeError('username is not a truthy string'))
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
-  this._username = username
+  var self = this
+  self._username = username
   // TODO: write to socket and return response in cb
   const tx = Math.random()
-  this._websocket.write(outbound.whoami(username, tx))
-  onceMatch(this._websocket, 'data',
-    res => res.tx === tx,
-    res => cb(res.ok ? null : new Error('response status not ok')))
+  self._websocket.write(outbound.whoami(username, tx), err => {
+    if (err) return cb(err)
+    onceParsedJSONStreamPayloadPasses(self._websocket, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
 }
 
 Clientele.prototype.login = function (username, password, cb) {}
