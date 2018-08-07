@@ -3,6 +3,8 @@ const child = require('child_process')
 const websocket = require('websocket-stream')
 const { readFileSync, writeFileSync } = require('fs')
 
+// TODO: test as client in browser with tape-run asserting server responses!!!
+
 // tape.onFinish(() => {
 //   del.sync([ './.users.json' ])
 // })
@@ -11,12 +13,15 @@ var browser = require('browser-run');
 
 tape('metadata - reg-user', t => {
 
-  browser().end(`websocket('ws://localhost:10000/meta').end(JSON.stringify({
-    type: 'upd',
-    msg: 'reg-user',
-    user: 'noop',
-    peers: []
-  }))`)
+  browser().end(
+    `window.onload = () => {
+      websocket('ws://localhost:10000/meta').end(JSON.stringify({
+        type: 'upd',
+        msg: 'reg-user',
+        user: 'noop',
+        peers: []
+      }))
+    }`)
 
   setTimeout(() => { // allow 4 server
     const users = JSON.parse(readFileSync('./test.users.json'))

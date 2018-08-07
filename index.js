@@ -69,7 +69,7 @@ const accept = createAccept(meta_server, forward, sendForceCall)
 const reject = createReject(forward)
 const peers = createPeers(db, online_users)
 
-const handleError = err => err && debug(`unhandled error: ${err.message}`)
+const handleError = err => err && debug(`error: ${err.message}`)
 
 const _handleUpgrade = (websocket_server, req, socket, head) => {
   websocket_server.handleUpgrade(req, socket, head, ws => {
@@ -88,9 +88,9 @@ const handleUpgrade = (req, socket, head) => {
   }
 }
 
-// TODO: pass meta_stream as explicit arg and convert to anonymous func
-function handleMetadata (data) { // this === websocket meta_stream
-  debug(`handleMetadata data: ${data}`)
+const handleMetadata = (meta_stream, data) => { // this === websocket meta_stream
+  debug('::handleMetadata::')
+  debug(`incoming data: ${data}`)
   var metadata
   try {
     metadata = JSON.parse(data)
@@ -98,34 +98,35 @@ function handleMetadata (data) { // this === websocket meta_stream
     return handleError(err)
   }
 
-  if (!isTruthyString(this.whoami) && metadata.type !== 'whoami') {
-    this.write(outbound.res(metadata.type, metadata.tx, false))
+  if (!isTruthyString(meta_stream.whoami) && metadata.type !== 'whoami') {
+    meta_stream.write(outbound.res(metadata.type, metadata.tx, false))
     return debug('ignoring metadata from unidentified stream')
-  } else if (metadata.type !== 'whoami' && metadata.user !== this.whoami) {
-    this.write(outbound.res(metadata.type, metadata.tx, false))
+  } else if (metadata.type !== 'whoami' &&
+             metadata.user !== meta_stream.whoami) {
+    meta_stream.write(outbound.res(metadata.type, metadata.tx, false))
     return debug(`ignoring metadata due to inconsistent user identifier; ` +
                  `metadata.user: ${JSON.stringify(metadata.user)}; ` +
-                 `meta_stream.whoami: ${JSON.stringify(this.whoami)}`)
+                 `meta_stream.whoami: ${JSON.stringify(meta_stream.whoami)}`)
   } else if (![ 'reg-user', 'whoami', 'login' ].includes(metadata.type) &&
              !logged_in_users.has(metadata.user)) {
-    this.write(outbound.res(metadata.type, metadata.tx, false))
+    meta_stream.write(outbound.res(metadata.type, metadata.tx, false))
     return debug(`ignoring metadata bc ${metadata.user} is not logged in; ` +
                  `metadata: ${JSON.stringify(metadata)}`)
   }
 
   switch (metadata.type) {
-    case 'whoami': metaWhoami(metadata, this, handleError); break
-    case 'login': login(metadata, this, cb); break
-    case 'logoff': logoff(metadata, this, cb); break
-    case 'reg-user': registerUser(metadata, this, handleError); break
-    case 'add-peers': addPeers(metadata, this, handleError); break
-    case 'del-peers': deletePeers(metadata, this, handleError); break
-    case 'status': status(metadata, this, handleError); break
-    case 'call': call(metadata, this, handleError); break
-    case 'accept': accept(metadata, this, handleError); break
-    case 'reject': reject(metadata, this, handleError); break
-    case 'peers': peers(metadata, this, handleError); break
-    case 'peers-online': peers(metadata, this, handleError); break
+    case 'whoami': metaWhoami(meta_stream, metadata, handleError); break
+    case 'login': login(meta_stream, metadata, handleError); break
+    case 'logoff': logoff(meta_stream, metadata, handleError); break
+    case 'reg-user': registerUser(meta_stream, metadata, handleError); break
+    case 'add-peers': addPeers(meta_stream, metadata, handleError); break
+    case 'del-peers': deletePeers(meta_stream, metadata, handleError); break
+    case 'status': status(meta_stream, metadata, handleError); break
+    case 'call': call(meta_stream, metadata, handleError); break
+    case 'accept': accept(meta_stream, metadata, handleError); break
+    case 'reject': reject(meta_stream, metadata, handleError); break
+    case 'peers': peers(meta_stream, metadata, handleError); break
+    case 'peers-online': peers(meta_stream, metadata, handleError); break
     default: debug(`invalid metadata.type: ${metadata.type}`)
   }
 }
@@ -134,7 +135,7 @@ meta_server.on('pair', (a, b) => debug('pair:', a, b))
 
 meta_server.on('stream', (meta_stream, req) => {
   debug('::meta_server.on("stream")::')
-  meta_stream.on('data', handleMetadata)
+  meta_stream.on('data', handleMetadata.bind(null, meta_stream))
   meta_stream.on('error', handleError)
 })
 

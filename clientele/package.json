@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "test": "browserify ./test.js | tape-run"
+  },
+  "dependencies": {
+    "websocket-stream": "^5.1.2"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.2",
+    "tape": "^4.9.1",
+    "tape-run": "^4.0.0"
+  }
+}
