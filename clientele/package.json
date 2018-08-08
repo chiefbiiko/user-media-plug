@@ -3,6 +3,7 @@
     "test": "browserify ./test.js | tape-run"
   },
   "dependencies": {
+    "duplex-json-stream": "^1.0.1",
     "websocket-stream": "^5.1.2"
   },
   "devDependencies": {

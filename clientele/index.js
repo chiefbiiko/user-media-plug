@@ -1,6 +1,7 @@
 const { EventEmitter } = require('events')
 const { inherits } = require('util')
 const websocket = require('websocket-stream')
+const jsonStream = require('duplex-json-stream')
 
 const outbound = require('./lib/outbound.js')
 
@@ -9,15 +10,9 @@ const debug = require('debug')('clientele')
 const isTruthyString = x => x && typeof x === 'string'
 const isStringArray = x => Array.isArray(x) && x.every(isTruthyString)
 
-const onceParsedJSONStreamPayloadPasses = (readable, pred) => {
+const onceStreamPayloadPasses = (readable, pred) => {
   return new Promise((resolve, reject) => {
-    readable.on('data', function proxy (data) {
-      var metadata
-      try {
-        metadata = JSON.parse(data)
-      } catch (err) {
-        reject(err)
-      }
+    readable.on('data', function proxy (metadata) {
       if (!pred(metadata)) return
       readable.removeListener('data', proxy)
       resolve(metadata)
@@ -28,7 +23,8 @@ const onceParsedJSONStreamPayloadPasses = (readable, pred) => {
 function Clientele (url) {
   if (!(this instanceof Clientele)) return new Clientele(url)
   EventEmitter.call(this)
-  this._websocket = websocket(url)
+
+  this._websocket = jsonStream(websocket(url))
   this._websocket.on('error', this.emit.bind(this, 'error'))
   this._username = ''
 }
@@ -40,13 +36,14 @@ Clientele.prototype.whoami = function (username, cb) {
     return cb(new TypeError('username is not a truthy string'))
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
+
   var self = this
   self._username = username
-  // TODO: write to socket and return response in cb
   const tx = Math.random()
+
   self._websocket.write(outbound.whoami(username, tx), err => {
     if (err) return cb(err)
-    onceParsedJSONStreamPayloadPasses(self._websocket, res => res.tx === tx)
+    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })

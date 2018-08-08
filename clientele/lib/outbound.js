@@ -1,10 +1,10 @@
 const outbound = Object.freeze({
   whoami (username, tx) {
-    return JSON.stringify({
+    return {
       type: 'whoami',
       user: username,
       tx
-    })
+    }
   }
 })
 

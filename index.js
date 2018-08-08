@@ -13,6 +13,7 @@ const { parse } = require('url')
 
 const WebSocketServer = require('websocket-stream').Server
 const streamSet = require('stream-set')
+const jsonStream = require('duplex-json-stream')
 
 const levelup = require('levelup')
 const memdown = require('memdown')
@@ -39,6 +40,8 @@ const {
 } = require('./lib/handlers.js')
 
 const debug = require('debug')('user-media-plug:index')
+const i = msg => debug(`inbound msg: ${JSON.stringify(msg)}`) || msg
+const o = msg => debug(`outbound msg: ${JSON.stringify(msg)}`) || msg
 
 const PORT = process.env.PORT || 10000
 const HOST = process.env.HOST || 'localhost'
@@ -69,49 +72,28 @@ const accept = createAccept(meta_server, forward, sendForceCall)
 const reject = createReject(forward)
 const peers = createPeers(db, online_users)
 
-const handleError = err => err && debug(`error: ${err.message}`)
-
-const _handleUpgrade = (websocket_server, req, socket, head) => {
-  websocket_server.handleUpgrade(req, socket, head, ws => {
-    websocket_server.emit('connection', ws, req)
-  })
-}
-
-const handleUpgrade = (req, socket, head) => {
-  debug('::handleUpgrade::')
-  switch (parse(req.url).pathname) {
-    case '/meta': _handleUpgrade(meta_server, req, socket, head); break
-    case '/media': _handleUpgrade(media_server, req, socket, head); break
-    default:
-      debug(`invalid path on req.url: ${req.url}`)
-      socket.destroy()
-  }
-}
-
-const handleMetadata = (meta_stream, data) => { // this === websocket meta_stream
+const handleMetadata = (meta_stream, metadata) => {
   debug('::handleMetadata::')
-  debug(`incoming data: ${data}`)
-  var metadata
-  try {
-    metadata = JSON.parse(data)
-  } catch (err) {
-    return handleError(err)
-  }
+  i(metadata)
 
   if (!isTruthyString(meta_stream.whoami) && metadata.type !== 'whoami') {
-    meta_stream.write(outbound.res(metadata.type, metadata.tx, false))
-    return debug('ignoring metadata from unidentified stream')
+    meta_stream.write(o(outbound.res(metadata.type, metadata.tx, false)))
+    return handleError(new Error('ignoring metadata from unidentified stream'))
   } else if (metadata.type !== 'whoami' &&
              metadata.user !== meta_stream.whoami) {
-    meta_stream.write(outbound.res(metadata.type, metadata.tx, false))
-    return debug(`ignoring metadata due to inconsistent user identifier; ` +
-                 `metadata.user: ${JSON.stringify(metadata.user)}; ` +
-                 `meta_stream.whoami: ${JSON.stringify(meta_stream.whoami)}`)
+    meta_stream.write(o(outbound.res(metadata.type, metadata.tx, false)))
+    return handleError(new Error(
+      `ignoring metadata due to inconsistent user identifier; ` +
+      `metadata.user: ${JSON.stringify(metadata.user)}; ` +
+      `meta_stream.whoami: ${JSON.stringify(meta_stream.whoami)}`
+    ))
   } else if (![ 'reg-user', 'whoami', 'login' ].includes(metadata.type) &&
              !logged_in_users.has(metadata.user)) {
-    meta_stream.write(outbound.res(metadata.type, metadata.tx, false))
-    return debug(`ignoring metadata bc ${metadata.user} is not logged in; ` +
-                 `metadata: ${JSON.stringify(metadata)}`)
+    meta_stream.write(o(outbound.res(metadata.type, metadata.tx, false)))
+    return handleError(new Error(
+      `ignoring metadata bc ${metadata.user} is not logged in; ` +
+      `metadata: ${JSON.stringify(metadata)}`
+    ))
   }
 
   switch (metadata.type) {
@@ -131,10 +113,31 @@ const handleMetadata = (meta_stream, data) => { // this === websocket meta_strea
   }
 }
 
+const handleUpgrade = (req, socket, head) => {
+  debug('::handleUpgrade::')
+
+  switch (parse(req.url).pathname) {
+    case '/meta': _handleUpgrade(meta_server, req, socket, head); break
+    case '/media': _handleUpgrade(media_server, req, socket, head); break
+    default:
+      handleError(new Error(`invalid path on req.url: ${req.url}`))
+      socket.destroy()
+  }
+}
+
+const _handleUpgrade = (websocket_server, req, socket, head) => {
+  websocket_server.handleUpgrade(req, socket, head, ws => {
+    websocket_server.emit('connection', ws, req)
+  })
+}
+
+const handleError = err => err && debug(`error: ${err.message}`)
+
 meta_server.on('pair', (a, b) => debug('pair:', a, b))
 
 meta_server.on('stream', (meta_stream, req) => {
   debug('::meta_server.on("stream")::')
+  meta_stream = jsonStream(meta_stream)
   meta_stream.on('data', handleMetadata.bind(null, meta_stream))
   meta_stream.on('error', handleError)
 })
