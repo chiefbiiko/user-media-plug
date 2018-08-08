@@ -1,51 +1,207 @@
 const tape = require('tape')
-const child = require('child_process')
-const websocket = require('websocket-stream')
-const { readFileSync, writeFileSync } = require('fs')
 
-// TODO: test as client in browser with tape-run asserting server responses!!!
+const { PassThrough } = require('stream')
 
-// tape.onFinish(() => {
-//   del.sync([ './.users.json' ])
-// })
+const WebSocketServer = require('websocket-stream').Server
+const streamSet = require('stream-set')
+const jsonStream = require('duplex-json-stream')
 
-var browser = require('browser-run');
+const levelup = require('levelup')
+const memdown = require('memdown')
+const enc = require('encoding-down')
 
-tape('metadata - reg-user', t => {
+const valid = require('./lib/valid.js')
 
-  browser().end(
-    `window.onload = () => {
-      websocket('ws://localhost:10000/meta').end(JSON.stringify({
-        type: 'upd',
-        msg: 'reg-user',
-        user: 'noop',
-        peers: []
-      }))
-    }`)
+const { createForward, createSendForceCall } = require('./lib/notify.js')
 
-  setTimeout(() => { // allow 4 server
-    const users = JSON.parse(readFileSync('./test.users.json'))
+const {
+  createMetaWhoami,
+  createLogin,
+  createLogoff,
+  createStatus,
+  createCall,
+  createAccept,
+  createReject,
+  createRegisterUser,
+  createAddPeers,
+  createDeletePeers,
+  createPeers,
+  createHandleMetadata,
+  createHandleUpgrade
+} = require('./lib/handlers.js')
 
-    t.ok(users.noop, 'users.noop')
-    t.true(Array.isArray(users.noop.peers), 'users.noop.peers')
+const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+const active_meta_streams = streamSet()
+const active_media_streams = streamSet()
+const online_users = new Set()
+const logged_in_users = new Set()
 
+const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+const forward = createForward(active_meta_streams)
+const sendForceCall = createSendForceCall(active_meta_streams)
+
+tape('handleMetadata - initial assertions - fail example pt1', t => {
+  const handleMetadata = createHandleMetadata({
+    metaWhoami: createMetaWhoami(active_meta_streams),
+    login: createLogin(db, online_users, logged_in_users),
+    logoff: createLogoff(db, online_users, logged_in_users),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    status: createStatus(db, online_users, active_meta_streams, forward),
+    call: createCall(online_users, forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward),
+    peers: createPeers(db, online_users)
+  }, new Set())
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc "whoami" must be the inital msg sent thru a socket')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
     t.end()
-  }, 5000)
+  })
 
-  // setTimeout(() => { // allow 4 server
-  //   ws = websocket('ws://localhost:10000/meta')
-  //   ws.end(JSON.stringify({
-  //     type: 'upd',
-  //     msg: 'reg-user',
-  //     user: 'noop',
-  //     peers: []
-  //   }))
-  //
-  //   const users = JSON.parse(readFileSync('./.users.json'))
-  //
-  //   t.ok(users.noop, 'users.noop')
-  //   t.true(Array.isArray(users.noop.peers), 'users.noop.peers')
-  //
-  //   t.end()
-  // }, 1000)
+  handleMetadata(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
+})
+
+tape('handleMetadata - initial assertions - fail example pt2', t => {
+  const handleMetadata = createHandleMetadata({
+    metaWhoami: createMetaWhoami(active_meta_streams),
+    login: createLogin(db, online_users, logged_in_users),
+    logoff: createLogoff(db, online_users, logged_in_users),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    status: createStatus(db, online_users, active_meta_streams, forward),
+    call: createCall(online_users, forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward),
+    peers: createPeers(db, online_users)
+  }, new Set())
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
+
+  meta_stream.whoami = 'noop'
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc meta_stream.whoami !== metadata.user')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    t.end()
+  })
+
+  handleMetadata(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
+})
+
+tape('handleMetadata - initial assertions - fail example pt3', t => {
+  const handleMetadata = createHandleMetadata({
+    metaWhoami: createMetaWhoami(active_meta_streams),
+    login: createLogin(db, online_users, logged_in_users),
+    logoff: createLogoff(db, online_users, logged_in_users),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    status: createStatus(db, online_users, active_meta_streams, forward),
+    call: createCall(online_users, forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward),
+    peers: createPeers(db, online_users)
+  }, new Set()) // set is logged_in_users
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+
+  meta_stream.whoami = 'chiefbiiko'
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc metadata.user is not logged in')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    t.end()
+  })
+
+  handleMetadata(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
+})
+
+tape('handleMetadata - switch fallthru', t => {
+  const handleMetadata = createHandleMetadata({
+    metaWhoami: createMetaWhoami(active_meta_streams),
+    login: createLogin(db, online_users, logged_in_users),
+    logoff: createLogoff(db, online_users, logged_in_users),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    status: createStatus(db, online_users, active_meta_streams, forward),
+    call: createCall(online_users, forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward),
+    peers: createPeers(db, online_users)
+  }, new Set())
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'unknown', user: 'chiefbiiko', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc of an unknown metadata.type')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    t.end()
+  })
+
+  handleMetadata(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
+})
+
+tape('handleMetadata - initial assertions - pass example', t => {
+  const handleMetadata = createHandleMetadata({
+    metaWhoami: createMetaWhoami(active_meta_streams),
+    login: createLogin(db, online_users, logged_in_users),
+    logoff: createLogoff(db, online_users, logged_in_users),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    status: createStatus(db, online_users, active_meta_streams, forward),
+    call: createCall(online_users, forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward),
+    peers: createPeers(db, online_users)
+  }, new Set())
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'whoami', user: 'chiefbiiko', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(res.ok, 'response status ok')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    t.end()
+  })
+
+  handleMetadata(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
 })

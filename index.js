@@ -33,8 +33,6 @@ const {
 } = require('./lib/handlers.js')
 
 const debug = require('debug')('user-media-plug:index')
-const i = msg => debug(`inbound msg: ${JSON.stringify(msg)}`) || msg
-const o = msg => debug(`outbound msg: ${JSON.stringify(msg)}`) || msg
 
 const PORT = process.env.PORT || 10000
 const HOST = process.env.HOST || 'localhost'
@@ -67,7 +65,7 @@ const handleMetadata = createHandleMetadata({
   accept: createAccept(meta_server, forward, sendForceCall),
   reject: createReject(forward),
   peers: createPeers(db, online_users)
-})
+}, logged_in_users)
 
 meta_server.on('pair', (a, b) => debug('pair:', a, b))
 

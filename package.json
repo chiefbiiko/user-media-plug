@@ -4,7 +4,7 @@
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
-    "test": ""
+    "test": "tape ./test.js"
   },
   "repository": {
     "type": "git",
