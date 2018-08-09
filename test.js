@@ -30,24 +30,24 @@ const {
   createHandleUpgrade
 } = require('./lib/handlers.js')
 
-const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-const active_meta_streams = streamSet()
-const active_media_streams = streamSet()
-const online_users = new Set()
-const logged_in_users = new Set()
-
-const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-
-const forward = createForward(active_meta_streams)
-const sendForceCall = createSendForceCall(active_meta_streams)
-
 tape('handleMetadata - initial assertions - fail example pt1', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, online_users, logged_in_users),
-    logoff: createLogoff(db, online_users, logged_in_users),
+    login: createLogin(db, logged_in_users),
+    logoff: createLogoff(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -76,10 +76,23 @@ tape('handleMetadata - initial assertions - fail example pt1', t => {
 })
 
 tape('handleMetadata - initial assertions - fail example pt2', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, online_users, logged_in_users),
-    logoff: createLogoff(db, online_users, logged_in_users),
+    login: createLogin(db, logged_in_users),
+    logoff: createLogoff(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -110,10 +123,23 @@ tape('handleMetadata - initial assertions - fail example pt2', t => {
 })
 
 tape('handleMetadata - initial assertions - fail example pt3', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, online_users, logged_in_users),
-    logoff: createLogoff(db, online_users, logged_in_users),
+    login: createLogin(db, logged_in_users),
+    logoff: createLogoff(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -144,10 +170,23 @@ tape('handleMetadata - initial assertions - fail example pt3', t => {
 })
 
 tape('handleMetadata - switch fallthru', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, online_users, logged_in_users),
-    logoff: createLogoff(db, online_users, logged_in_users),
+    login: createLogin(db, logged_in_users),
+    logoff: createLogoff(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -175,11 +214,24 @@ tape('handleMetadata - switch fallthru', t => {
   })
 })
 
-tape('handleMetadata - initial assertions - pass example', t => {
+tape('whoami', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, online_users, logged_in_users),
-    logoff: createLogoff(db, online_users, logged_in_users),
+    login: createLogin(db, logged_in_users),
+    logoff: createLogoff(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -204,4 +256,40 @@ tape('handleMetadata - initial assertions - pass example', t => {
   handleMetadata(meta_stream, metadata, err => {
     if (err) t.end(err)
   })
+})
+
+tape('login - pass', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const login = createLogin(db, logged_in_users)
+
+  db.put('chiefbiiko', { password: 'abc', peers: [] }, err => {
+    if (err) t.end(err)
+
+    const tx = Math.random()
+    const meta_stream = jsonStream(new PassThrough())
+    const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
+
+    meta_stream.whoami = 'chiefbiiko'
+
+    meta_stream.once('data', res => {
+      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.true(res.ok, 'response status ok')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      t.end()
+    })
+
+    login(meta_stream, metadata, err => {
+      if (err) t.end(err)
+    })
+
+  })
+})
+
+tape.skip('login - fail', t => {
+  // ...
 })

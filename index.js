@@ -55,8 +55,8 @@ const handleError = err => err && debug(`error: ${err.message}`)
 const handleUpgrade = createHandleUpgrade(meta_server, media_server)
 const handleMetadata = createHandleMetadata({
   metaWhoami: createMetaWhoami(active_meta_streams),
-  login: createLogin(db, online_users, logged_in_users),
-  logoff: createLogoff(db, online_users, logged_in_users),
+  login: createLogin(db, logged_in_users),
+  logoff: createLogoff(db, logged_in_users),
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
   deletePeers: createDeletePeers(db),
