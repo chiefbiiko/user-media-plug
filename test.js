@@ -30,7 +30,7 @@ const {
   createHandleUpgrade
 } = require('./lib/handlers.js')
 
-tape('handleMetadata - initial assertions - fail example pt1', t => {
+tape('handleMetadata - initial assertions - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
   const active_media_streams = streamSet()
@@ -75,7 +75,7 @@ tape('handleMetadata - initial assertions - fail example pt1', t => {
   })
 })
 
-tape('handleMetadata - initial assertions - fail example pt2', t => {
+tape('handleMetadata - initial assertions - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
   const active_media_streams = streamSet()
@@ -122,7 +122,7 @@ tape('handleMetadata - initial assertions - fail example pt2', t => {
   })
 })
 
-tape('handleMetadata - initial assertions - fail example pt3', t => {
+tape('handleMetadata - initial assertions - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
   const active_media_streams = streamSet()
@@ -290,6 +290,73 @@ tape('login - pass', t => {
   })
 })
 
-tape.skip('login - fail', t => {
-  // ...
+tape('login - fail pt1', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const login = createLogin(db, logged_in_users)
+
+  db.put('chiefbiiko', { password: 'abc', peers: [] }, err => {
+    if (err) t.end(err)
+
+    const tx = Math.random()
+    const meta_stream = jsonStream(new PassThrough())
+    const metadata = { type: 'login', user: 'chiefbiiko', password: 'abz', tx }
+
+    meta_stream.whoami = 'chiefbiiko'
+
+    meta_stream.once('data', res => {
+      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.false(res.ok, 'response status not ok')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      t.end()
+    })
+
+    login(meta_stream, metadata, err => {
+      t.equal(err.message, 'invalid password provided for chiefbiiko')
+    })
+
+  })
 })
+
+tape('login - fail pt2', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = streamSet()
+  const online_users = new Set()
+  const logged_in_users = new Set()
+
+  const login = createLogin(db, logged_in_users)
+
+  db.put('chiefbiiko', { password: 'abc', peers: [] }, err => {
+    if (err) t.end(err)
+
+    const tx = Math.random()
+    const meta_stream = jsonStream(new PassThrough())
+    const metadata = { msg: 'login', user: 'chiefbiiko', password: 'abz', tx }
+
+    meta_stream.whoami = 'chiefbiiko'
+
+    meta_stream.once('data', res => {
+      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.false(res.ok, 'response status not ok')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      t.end()
+    })
+
+    login(meta_stream, metadata, err => {
+      t.true(/invalid schema [A-Z]{1,2}/i.test(err.message), 'cb err')
+    })
+
+  })
+})
+
+/*
+  write tests for all remaining handlers (./lib/handlers/*)
+  keep test coverage high -> test metadata validation if blocks,
+    run into db errors where possible; fx: trigger a notFound err
+  do not share instances across test cases; see above
+*/
