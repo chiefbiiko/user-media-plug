@@ -33,13 +33,11 @@ const {
 tape('handleMetadata - initial assertions - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
   const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
   const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_meta_streams)
   const sendForceCall = createSendForceCall(active_meta_streams)
@@ -78,13 +76,11 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
 tape('handleMetadata - initial assertions - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
   const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
   const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_meta_streams)
   const sendForceCall = createSendForceCall(active_meta_streams)
@@ -125,13 +121,11 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
 tape('handleMetadata - initial assertions - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
   const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
   const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_meta_streams)
   const sendForceCall = createSendForceCall(active_meta_streams)
@@ -172,13 +166,11 @@ tape('handleMetadata - initial assertions - fail pt3', t => {
 tape('handleMetadata - switch fallthru', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
   const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
   const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_meta_streams)
   const sendForceCall = createSendForceCall(active_meta_streams)
@@ -217,30 +209,11 @@ tape('handleMetadata - switch fallthru', t => {
 tape('whoami', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
-  const online_users = new Set()
-  const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
   const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
-  const forward = createForward(active_meta_streams)
-  const sendForceCall = createSendForceCall(active_meta_streams)
-
-  const handleMetadata = createHandleMetadata({
-    metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, logged_in_users),
-    logoff: createLogoff(db, logged_in_users),
-    registerUser: createRegisterUser(db),
-    addPeers: createAddPeers(db),
-    deletePeers: createDeletePeers(db),
-    status: createStatus(db, online_users, active_meta_streams, forward),
-    call: createCall(online_users, forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward),
-    peers: createPeers(db, online_users)
-  }, new Set())
+  const metaWhoami = createMetaWhoami(active_meta_streams)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -253,7 +226,7 @@ tape('whoami', t => {
     t.end()
   })
 
-  handleMetadata(meta_stream, metadata, err => {
+  metaWhoami(meta_stream, metadata, err => {
     if (err) t.end(err)
   })
 })
@@ -261,7 +234,6 @@ tape('whoami', t => {
 tape('login - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
   const online_users = new Set()
   const logged_in_users = new Set()
 
@@ -293,7 +265,6 @@ tape('login - pass', t => {
 tape('login - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
   const online_users = new Set()
   const logged_in_users = new Set()
 
@@ -325,7 +296,6 @@ tape('login - fail pt1', t => {
 tape('login - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = streamSet()
   const online_users = new Set()
   const logged_in_users = new Set()
 
@@ -359,4 +329,7 @@ tape('login - fail pt2', t => {
   keep test coverage high -> test metadata validation if blocks,
     run into db errors where possible; fx: trigger a notFound err
   do not share instances across test cases; see above
+  @Balou: you can start by testing ./lib/handlers::registerUser|addPeers|deletePeers
+    or    implementing ./lib/handlers::logOff
+  @Biiko: test all remaining handlers
 */
