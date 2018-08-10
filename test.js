@@ -233,8 +233,6 @@ tape('whoami', t => {
 
 tape('login - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  const active_meta_streams = streamSet()
-  const online_users = new Set()
   const logged_in_users = new Set()
 
   const login = createLogin(db, logged_in_users)
@@ -258,14 +256,11 @@ tape('login - pass', t => {
     login(meta_stream, metadata, err => {
       if (err) t.end(err)
     })
-
   })
 })
 
 tape('login - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  const active_meta_streams = streamSet()
-  const online_users = new Set()
   const logged_in_users = new Set()
 
   const login = createLogin(db, logged_in_users)
@@ -281,7 +276,8 @@ tape('login - fail pt1', t => {
 
     meta_stream.once('data', res => {
       t.true(valid.schemaR(res), 'response is valid schema R')
-      t.false(res.ok, 'response status not ok')
+      t.false(res.ok, 'response status not ok...')
+      t.comment('...wrong password')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       t.end()
     })
@@ -289,46 +285,43 @@ tape('login - fail pt1', t => {
     login(meta_stream, metadata, err => {
       t.equal(err.message, 'invalid password provided for chiefbiiko')
     })
-
   })
 })
 
 tape('login - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  const active_meta_streams = streamSet()
-  const online_users = new Set()
   const logged_in_users = new Set()
 
   const login = createLogin(db, logged_in_users)
 
-  db.put('chiefbiiko', { password: 'abc', peers: [] }, err => {
-    if (err) t.end(err)
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { msg: 'login', user: 'chiefbiiko', password: 'abc', tx }
 
-    const tx = Math.random()
-    const meta_stream = jsonStream(new PassThrough())
-    const metadata = { msg: 'login', user: 'chiefbiiko', password: 'abz', tx }
+  meta_stream.whoami = 'chiefbiiko'
 
-    meta_stream.whoami = 'chiefbiiko'
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...invalid schema')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    t.end()
+  })
 
-    meta_stream.once('data', res => {
-      t.true(valid.schemaR(res), 'response is valid schema R')
-      t.false(res.ok, 'response status not ok')
-      t.equal(res.tx, tx, 'transaction identifiers equal')
-      t.end()
-    })
-
-    login(meta_stream, metadata, err => {
-      t.true(/invalid schema [A-Z]{1,2}/i.test(err.message), 'cb err')
-    })
-
+  login(meta_stream, metadata, err => {
+    t.true(/invalid schema [A-Z]{1,2}/i.test(err.message), 'cb err')
   })
 })
 
-/*
-  write tests for all remaining handlers (./lib/handlers/*)
-  keep test coverage high -> test metadata validation if blocks,
+/* TODO:
+  + write tests for all remaining handlers (./lib/handlers/*)
+  + keep test coverage high -> test metadata validation if blocks,
     run into db errors where possible; fx: trigger a notFound err
-  do not share instances across test cases; see above
+  + do not share instances across test cases; see above
+  + add comments to responses that are not ok
+  + remove unused variables if you find some
+  + ...
+
   @Balou: you can start by testing ./lib/handlers::registerUser|addPeers|deletePeers
     or    implementing ./lib/handlers::logOff
   @Biiko: test all remaining handlers
