@@ -313,6 +313,10 @@ tape('login - fail pt2', t => {
   })
 })
 
+tape('peers', t => {
+  
+})
+
 /* TODO:
   + write tests for all remaining handlers (./lib/handlers/*)
   + keep test coverage high -> test metadata validation if blocks,

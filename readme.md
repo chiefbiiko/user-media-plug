@@ -99,6 +99,7 @@ Metadata is exchanged via events/messages. These are plain, flat objects that mu
 **_userA wants to get its online peers, so userA writes:_**
 
 ``` js
+// OBSOLETE...
 { type: 'peers-online', user: 'userA', tx: Math.random() }
 ```
 
