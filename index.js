@@ -40,7 +40,6 @@ const HOST = process.env.HOST || 'localhost'
 const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 const active_meta_streams = streamSet()
 const active_media_streams = streamSet()
-const online_users = new Set()
 const logged_in_users = new Set()
 
 const http_server = createServer()
@@ -60,8 +59,8 @@ const handleMetadata = createHandleMetadata({
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
   deletePeers: createDeletePeers(db),
-  status: createStatus(db, /*online_users, */active_meta_streams, forward),
-  call: createCall(online_users, forward),
+  status: createStatus(db, active_meta_streams, forward),
+  call: createCall(forward),
   accept: createAccept(meta_server, forward, sendForceCall),
   reject: createReject(forward),
   peers: createPeers(db)

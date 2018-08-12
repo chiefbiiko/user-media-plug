@@ -49,12 +49,12 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, /*online_users, */active_meta_streams, forward),
-    call: createCall(online_users, forward),
+    status: createStatus(db, active_meta_streams, forward),
+    call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
     peers: createPeers(db, online_users)
-  }, new Set())
+  }, logged_in_users)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -92,12 +92,12 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, /*online_users, */active_meta_streams, forward),
-    call: createCall(online_users, forward),
+    status: createStatus(db, active_meta_streams, forward),
+    call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
     peers: createPeers(db, online_users)
-  }, new Set())
+  }, logged_in_users)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -137,12 +137,12 @@ tape('handleMetadata - initial assertions - fail pt3', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, /*online_users, */active_meta_streams, forward),
-    call: createCall(online_users, forward),
+    status: createStatus(db, active_meta_streams, forward),
+    call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
     peers: createPeers(db, online_users)
-  }, new Set()) // set is logged_in_users
+  }, logged_in_users)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -182,12 +182,12 @@ tape('handleMetadata - switch fallthru', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, /*online_users, */active_meta_streams, forward),
-    call: createCall(online_users, forward),
+    status: createStatus(db, active_meta_streams, forward),
+    call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
     peers: createPeers(db, online_users)
-  }, new Set())
+  }, logged_in_users)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
