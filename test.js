@@ -49,7 +49,7 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, online_users, active_meta_streams, forward),
+    status: createStatus(db, /*online_users, */active_meta_streams, forward),
     call: createCall(online_users, forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
@@ -92,7 +92,7 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, online_users, active_meta_streams, forward),
+    status: createStatus(db, /*online_users, */active_meta_streams, forward),
     call: createCall(online_users, forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
@@ -137,7 +137,7 @@ tape('handleMetadata - initial assertions - fail pt3', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, online_users, active_meta_streams, forward),
+    status: createStatus(db, /*online_users, */active_meta_streams, forward),
     call: createCall(online_users, forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
@@ -182,7 +182,7 @@ tape('handleMetadata - switch fallthru', t => {
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
-    status: createStatus(db, online_users, active_meta_streams, forward),
+    status: createStatus(db, /*online_users, */active_meta_streams, forward),
     call: createCall(online_users, forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
@@ -313,6 +313,48 @@ tape('login - fail pt2', t => {
   })
 })
 
+// ... remaining handlers ...
+
+tape('status', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
+  const active_meta_streams = streamSet()
+
+  const forward = createForward(active_meta_streams)
+  const status = createStatus(db, active_meta_streams, forward)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const peer_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'status', user: 'chiefbiiko', status: 'cool', tx }
+
+  peer_stream.whoami = 'noop'
+  active_meta_streams.add(peer_stream)
+
+  db.put('chiefbiiko', { peers: [ 'noop' ], status: 'none' }, err => {
+    if (err) t.end(err)
+
+    var pending = 2
+
+    meta_stream.once('data', res => {
+      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.true(res.ok, 'response status ok')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      if (!--pending) t.end()
+    })
+
+    peer_stream.once('data', notif => {
+      t.same(notif, metadata, 'forwarded metadata to peer noop')
+      t.equal(notif.status, 'cool', 'got the status update in a notification')
+      if (!--pending) t.end()
+    })
+
+    status(meta_stream, metadata, err => {
+      if (err) t.end(err)
+    })
+  })
+})
+
 tape('peers', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
@@ -336,6 +378,8 @@ tape('peers', t => {
         ]
 
         meta_stream.once('data', res => {
+          t.true(valid.schemaRP(res), 'response is valid schema RP')
+          t.true(res.ok, 'response status ok')
           t.true(Array.isArray(res.peers), 'peer array')
           t.same(res.peers, expected, 'peer n status')
           t.equal(res.tx, tx, 'transaction identifiers equal')

@@ -19,7 +19,14 @@ Lives in an abstract-leveldown compliant store, with levelup as db interface.
 Database schema:
 
 ``` js
-{ userA: { password: 'sesameopen', peers: [ 'userB', 'userC' ] }, ...userB_Z }
+{
+  userA: {
+    password: 'sesameopen',
+    peers: [ 'userB', 'userC' ],
+    status: 'busy'
+  },
+  ...userB_Z
+}
 ```
 
 ## Dynamic metadata

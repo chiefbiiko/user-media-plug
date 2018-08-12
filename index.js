@@ -60,7 +60,7 @@ const handleMetadata = createHandleMetadata({
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
   deletePeers: createDeletePeers(db),
-  status: createStatus(db, online_users, active_meta_streams, forward),
+  status: createStatus(db, /*online_users, */active_meta_streams, forward),
   call: createCall(online_users, forward),
   accept: createAccept(meta_server, forward, sendForceCall),
   reject: createReject(forward),
