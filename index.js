@@ -64,7 +64,7 @@ const handleMetadata = createHandleMetadata({
   call: createCall(online_users, forward),
   accept: createAccept(meta_server, forward, sendForceCall),
   reject: createReject(forward),
-  peers: createPeers(db, online_users)
+  peers: createPeers(db)
 }, logged_in_users)
 
 meta_server.on('pair', (a, b) => debug('pair:', a, b))

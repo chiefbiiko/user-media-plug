@@ -313,8 +313,41 @@ tape('login - fail pt2', t => {
   })
 })
 
-tape.skip('peers', t => {
+tape('peers', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
 
+  const peers = createPeers(db)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+
+  db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'offline' }, err => {
+    if (err) t.end(err)
+    db.put('noop', { peers: [], status: 'online' }, err => {
+      if (err) t.end(err)
+      db.put('og', { peers: [], status: 'busy' }, err => {
+        if (err) t.end(err)
+
+        const expected = [
+          { peer: 'noop', status: 'online' },
+          { peer: 'og', status: 'busy' }
+        ]
+
+        meta_stream.once('data', res => {
+          t.true(Array.isArray(res.peers), 'peer array')
+          t.same(res.peers, expected, 'peer n status')
+          t.equal(res.tx, tx, 'transaction identifiers equal')
+          t.end()
+        })
+
+        peers(meta_stream, metadata, err => {
+          if (err) t.end(err)
+        })
+      })
+    })
+  })
 })
 
 /* TODO:
