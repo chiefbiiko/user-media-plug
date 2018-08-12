@@ -50,7 +50,7 @@ Clientele.prototype.whoami = function (username, cb) {
 }
 
 Clientele.prototype.login = function (username, password, cb) {}
-Clientele.prototype.logoff = function (cb) {}
+Clientele.prototype.logout = function (cb) {}
 Clientele.prototype.register = function (username, password, peers, cb) {}
 Clientele.prototype.addPeers = function (peers, cb) {}
 Clientele.prototype.deletePeers = function (peers, cb) {}

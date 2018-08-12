@@ -17,7 +17,7 @@ const { createForward, createSendForceCall } = require('./lib/notify.js')
 const {
   createMetaWhoami,
   createLogin,
-  createLogoff,
+  createLogout,
   createStatus,
   createCall,
   createAccept,
@@ -45,7 +45,7 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
     login: createLogin(db, logged_in_users),
-    logoff: createLogoff(db, logged_in_users),
+    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -88,7 +88,7 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
     login: createLogin(db, logged_in_users),
-    logoff: createLogoff(db, logged_in_users),
+    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -133,7 +133,7 @@ tape('handleMetadata - initial assertions - fail pt3', t => {
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
     login: createLogin(db, logged_in_users),
-    logoff: createLogoff(db, logged_in_users),
+    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -178,7 +178,7 @@ tape('handleMetadata - switch fallthru', t => {
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
     login: createLogin(db, logged_in_users),
-    logoff: createLogoff(db, logged_in_users),
+    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -404,6 +404,6 @@ tape('peers', t => {
   + ...
 
   @Balou: you can start by testing ./lib/handlers::registerUser|addPeers|deletePeers
-    or    implementing ./lib/handlers::logOff
+    or    implementing ./lib/handlers::logout
   @Biiko: test all remaining handlers
 */

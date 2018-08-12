@@ -19,7 +19,7 @@ const { createForward, createSendForceCall } = require('./lib/notify.js')
 const {
   createMetaWhoami,
   createLogin,
-  createLogoff,
+  createLogout,
   createStatus,
   createCall,
   createAccept,
@@ -55,7 +55,7 @@ const handleUpgrade = createHandleUpgrade(meta_server, media_server)
 const handleMetadata = createHandleMetadata({
   metaWhoami: createMetaWhoami(active_meta_streams),
   login: createLogin(db, logged_in_users),
-  logoff: createLogoff(db, logged_in_users),
+  logout: createLogout(db, logged_in_users),
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
   deletePeers: createDeletePeers(db),
