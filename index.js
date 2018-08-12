@@ -55,7 +55,7 @@ const handleUpgrade = createHandleUpgrade(meta_server, media_server)
 const handleMetadata = createHandleMetadata({
   metaWhoami: createMetaWhoami(active_meta_streams),
   login: createLogin(db, logged_in_users),
-  logout: createLogout(db, logged_in_users),
+  logout: createLogout(logged_in_users),
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
   deletePeers: createDeletePeers(db),

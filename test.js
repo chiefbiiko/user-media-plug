@@ -244,8 +244,6 @@ tape('login - pass', t => {
     const meta_stream = jsonStream(new PassThrough())
     const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
 
-    meta_stream.whoami = 'chiefbiiko'
-
     meta_stream.once('data', res => {
       t.true(valid.schemaR(res), 'response is valid schema R')
       t.true(res.ok, 'response status ok')
@@ -272,8 +270,6 @@ tape('login - fail pt1', t => {
     const meta_stream = jsonStream(new PassThrough())
     const metadata = { type: 'login', user: 'chiefbiiko', password: 'abz', tx }
 
-    meta_stream.whoami = 'chiefbiiko'
-
     meta_stream.once('data', res => {
       t.true(valid.schemaR(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
@@ -298,8 +294,6 @@ tape('login - fail pt2', t => {
   const meta_stream = jsonStream(new PassThrough())
   const metadata = { msg: 'login', user: 'chiefbiiko', password: 'abc', tx }
 
-  meta_stream.whoami = 'chiefbiiko'
-
   meta_stream.once('data', res => {
     t.true(valid.schemaR(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
@@ -310,6 +304,28 @@ tape('login - fail pt2', t => {
 
   login(meta_stream, metadata, err => {
     t.true(/invalid schema [A-Z]{1,2}/i.test(err.message), 'cb err')
+  })
+})
+
+tape('logout - pass', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
+
+  const logout = createLogout(logged_in_users)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'logout', user: 'chiefbiiko', password: 'abc', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(res.ok, 'response status ok')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    t.end()
+  })
+
+  logout(meta_stream, metadata, err => {
+    if (err) t.end(err)
   })
 })
 
