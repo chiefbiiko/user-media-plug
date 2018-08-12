@@ -313,8 +313,8 @@ tape('login - fail pt2', t => {
   })
 })
 
-tape('peers', t => {
-  
+tape.skip('peers', t => {
+
 })
 
 /* TODO:
