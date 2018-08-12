@@ -14,7 +14,7 @@ const valid = require('./lib/valid.js')
 
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
-const {
+const { // TODO: all "pending"
   createMetaWhoami,
   createLogin,
   createLogout,
@@ -244,9 +244,9 @@ tape('whoami - fail pt1', t => {
 
   meta_stream.once('data', res => {
     t.true(valid.schemaR(res), 'response is valid schema R')
-    t.true(res.ok, 'response status ok')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc the sent whoami identifier (user) already exists')
     t.equal(res.tx, tx, 'transaction identifiers equal')
-    // t.end()
   })
 
   metaWhoami(meta_stream, metadata, err => {
@@ -267,9 +267,9 @@ tape('whoami - fail pt2', t => {
 
   meta_stream.once('data', res => {
     t.true(valid.schemaR(res), 'response is valid schema R')
-    t.true(res.ok, 'response status ok')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc the sent metadata did not adhere to the required schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
-    // t.end()
   })
 
   metaWhoami(meta_stream, metadata, err => {
@@ -278,7 +278,7 @@ tape('whoami - fail pt2', t => {
   })
 })
 
-tape.skip('login - pass', t => {
+tape('login - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
 
@@ -322,7 +322,6 @@ tape('login - fail pt1', t => {
       t.false(res.ok, 'response status not ok...')
       t.comment('...wrong password')
       t.equal(res.tx, tx, 'transaction identifiers equal')
-      // t.end()
     })
 
     login(meta_stream, metadata, err => {
@@ -347,7 +346,6 @@ tape('login - fail pt2', t => {
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
-    // t.end()
   })
 
   login(meta_stream, metadata, err => {
@@ -465,10 +463,11 @@ tape('status - fail pt1', t => {
     meta_stream.once('data', res => {
       t.true(valid.schemaR(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
-      t.comment('...bc of an unknown user (db notFound err)')
+      t.comment('...bc the sent metadata did not adhere to the required schema')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
     })
 
-    status(meta_stream, metadata, err => { // the err here is expected
+    status(meta_stream, metadata, err => {
       t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
       t.end()
     })
@@ -486,7 +485,7 @@ tape('status - fail pt2', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'status', user: 'biiko', status: '', tx }
+  const metadata = { type: 'status', user: 'biiko', status: 'boss', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -497,18 +496,19 @@ tape('status - fail pt2', t => {
     meta_stream.once('data', res => {
       t.true(valid.schemaR(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
-      t.comment('...bc of an invalid message schema')
+      t.comment('...bc of a db error (notFound)')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
     })
 
-    status(meta_stream, metadata, err => { // the err here is expected
-      t.ok(err, 'cb err expected')
+    status(meta_stream, metadata, err => {
+      t.ok(err.notFound, 'db triggered cb err not found')
       t.end()
     })
   })
 })
 
 // TODO: test failing peer requests!
-tape('peers', t => {
+tape('peers - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
 
