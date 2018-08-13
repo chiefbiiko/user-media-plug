@@ -44,7 +44,7 @@ Metadata is exchanged via events/messages. These are plain, flat objects that mu
 **_userA wants to identify itself, so userA writes:_**
 
 ``` js
-{ type: 'whoami', user: id, tx: Math.random() }
+{ type: 'whoami', user: 'userA', tx: Math.random() }
 ```
 
 #### Schema A

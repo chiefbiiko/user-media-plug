@@ -19,21 +19,19 @@ const { // TODO: all "pending"
   createLogin,
   createLogout,
   createStatus,
-  createCall, // pending
-  createAccept, // pending
-  createReject, // pending
+  createCall,
+  createAccept,
+  createReject,
   createRegisterUser, // pending
   createAddPeers, // pending
   createDeletePeers, // pending
-  createPeers, // pending
-  createHandleMetadata,
-  createHandleUpgrade // pending
+  createPeers,
+  createHandleMetadata
 } = require('./lib/handlers.js')
 
 tape('handleMetadata - initial assertions - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -53,7 +51,7 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    peers: createPeers(db, online_users)
+    peers: createPeers(db)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -76,7 +74,6 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
 tape('handleMetadata - initial assertions - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -96,7 +93,7 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    peers: createPeers(db, online_users)
+    peers: createPeers(db)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -121,7 +118,6 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
 tape('handleMetadata - initial assertions - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -141,7 +137,7 @@ tape('handleMetadata - initial assertions - fail pt3', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    peers: createPeers(db, online_users)
+    peers: createPeers(db)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -166,7 +162,6 @@ tape('handleMetadata - initial assertions - fail pt3', t => {
 tape('handleMetadata - switch fallthru', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const online_users = new Set()
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -186,7 +181,7 @@ tape('handleMetadata - switch fallthru', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    peers: createPeers(db, online_users)
+    peers: createPeers(db)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -207,8 +202,6 @@ tape('handleMetadata - switch fallthru', t => {
 })
 
 tape('whoami - pass', t => {
-  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-
   const active_meta_streams = streamSet()
   const metaWhoami = createMetaWhoami(active_meta_streams)
 
@@ -229,7 +222,6 @@ tape('whoami - pass', t => {
 })
 
 tape('whoami - fail pt1', t => {
-  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
 
   const metaWhoami = createMetaWhoami(active_meta_streams)
@@ -256,7 +248,6 @@ tape('whoami - fail pt1', t => {
 })
 
 tape('whoami - fail pt2', t => {
-  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
 
   const metaWhoami = createMetaWhoami(active_meta_streams)
@@ -268,7 +259,7 @@ tape('whoami - fail pt2', t => {
   meta_stream.once('data', res => {
     t.true(valid.schemaR(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
-    t.comment('...bc the sent metadata did not adhere to the required schema')
+    t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
@@ -355,7 +346,6 @@ tape('login - fail pt2', t => {
 })
 
 tape('logout - pass', t => {
-  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
 
   const logout = createLogout(logged_in_users)
@@ -377,7 +367,6 @@ tape('logout - pass', t => {
 })
 
 tape('logout - fail', t => {
-  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
 
   const logout = createLogout(logged_in_users)
@@ -389,7 +378,7 @@ tape('logout - fail', t => {
   meta_stream.once('data', res => {
     t.true(valid.schemaR(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
-    t.comment('...bc of an invalid mesage schema')
+    t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
@@ -399,11 +388,8 @@ tape('logout - fail', t => {
   })
 })
 
-// ... remaining handlers ...
-
 tape('status - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  const logged_in_users = new Set()
   const active_meta_streams = streamSet()
 
   const forward = createForward(active_meta_streams)
@@ -443,7 +429,6 @@ tape('status - pass', t => {
 
 tape('status - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  const logged_in_users = new Set()
   const active_meta_streams = streamSet()
 
   const forward = createForward(active_meta_streams)
@@ -463,7 +448,7 @@ tape('status - fail pt1', t => {
     meta_stream.once('data', res => {
       t.true(valid.schemaR(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
-      t.comment('...bc the sent metadata did not adhere to the required schema')
+      t.comment('...invalid schema')
       t.equal(res.tx, tx, 'transaction identifiers equal')
     })
 
@@ -476,7 +461,6 @@ tape('status - fail pt1', t => {
 
 tape('status - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  const logged_in_users = new Set()
   const active_meta_streams = streamSet()
 
   const forward = createForward(active_meta_streams)
@@ -507,10 +491,312 @@ tape('status - fail pt2', t => {
   })
 })
 
-// TODO: test failing peer requests!
+tape('call - pass', t => {
+  const active_meta_streams = streamSet()
+
+  const forward = createForward(active_meta_streams)
+  const call = createCall(forward)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const peer_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'call', user: 'chiefbiiko', peer: 'noop', tx }
+
+  peer_stream.whoami = 'noop'
+  active_meta_streams.add(peer_stream)
+
+  var pending = 2
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(res.ok, 'response status ok')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    if (!--pending) t.end()
+  })
+
+  peer_stream.once('data', notif => {
+    t.same(notif, metadata, 'forwarded metadata to peer noop')
+    t.equal(notif.tx, tx, 'transaction identifiers equal')
+    if (!--pending) t.end()
+  })
+
+  call(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
+})
+
+tape('call - fail pt1', t => {
+  const active_meta_streams = streamSet()
+
+  const forward = createForward(active_meta_streams)
+  const call = createCall(forward)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'calling', user: 'chiefbiiko', peer: 'noop', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...invalid schema')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  call(meta_stream, metadata, err => {
+    t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
+    t.end()
+  })
+})
+
+tape('call - fail pt2', t => {
+  const active_meta_streams = streamSet()
+
+  const forward = createForward(active_meta_streams)
+  const call = createCall(forward)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const peer_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'call', user: 'chiefbiiko', peer: 'poop', tx }
+
+  peer_stream.whoami = 'noop'
+  active_meta_streams.add(peer_stream)
+
+  var pending = 2
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc of an inactive/unknown receiver')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  peer_stream.once('data', notif => {
+    t.fail('should be unreachable')
+  })
+
+  call(meta_stream, metadata, err => {
+    t.true(err.message.includes('can\'t forward'))
+    t.end()
+  })
+})
+
+tape('accept - pass', t => {
+  const active_meta_streams = streamSet()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+  const accept = createAccept(meta_server, forward, sendForceCall)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const peer_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'accept', user: 'chiefbiiko', peer: 'noop', tx }
+
+  meta_stream.whoami = 'chiefbiiko'
+  peer_stream.whoami = 'noop'
+  active_meta_streams.add(meta_stream)
+  active_meta_streams.add(peer_stream)
+
+  var pending = 2
+
+  meta_stream.on('data', msg => {
+    switch (msg.type) {
+      case 'force-call':
+        t.true(valid.schemaF(msg), 'valid schema F 4 force-call msg')
+        t.equal(msg.peer, 'noop', 'peer noop')
+        break
+      case 'res':
+        t.true(valid.schemaR(msg), 'response is valid schema R')
+        t.true(msg.ok, 'response status ok')
+        t.equal(msg.tx, tx, 'transaction identifiers equal')
+        if (!--pending) t.end()
+        break
+      default:
+        t.fail('should be unreachable')
+    }
+  })
+
+  peer_stream.on('data', notif => {
+    switch (notif.type) {
+      case 'force-call':
+        t.true(valid.schemaF(notif), 'valid schema F 4 force-call msg')
+        t.equal(notif.peer, 'chiefbiiko', 'peer chiefbiiko')
+        break
+      case 'accept':
+        t.true(valid.schemaC(notif), 'response is valid schema C')
+        t.equal(notif.tx, tx, 'transaction identifiers equal')
+        if (!--pending) t.end()
+        break
+      default:
+        t.fail('should be unreachable')
+    }
+  })
+
+  meta_server.once('pair', (a, b) => {
+    const peers = [ a, b ]
+    t.true(peers.includes('chiefbiiko'), 'one peer')
+    t.true(peers.includes('noop'), 'two peer')
+  })
+
+  accept(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
+})
+
+tape('accept - fail pt1', t => {
+  const active_meta_streams = streamSet()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+  const accept = createAccept(meta_server, forward, sendForceCall)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const peer_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'accepting', user: 'chiefbiiko', peer: 'noop', tx }
+
+  meta_stream.on('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...invalid schema')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  accept(meta_stream, metadata, err => {
+    t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
+    t.end()
+  })
+})
+
+tape('accept - fail pt2', t => {
+  const active_meta_streams = streamSet()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+  const accept = createAccept(meta_server, forward, sendForceCall)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'accept', user: 'chiefbiiko', peer: 'poop', tx }
+
+  meta_stream.whoami = 'chiefbiiko'
+  active_meta_streams.add(meta_stream)
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok')
+    t.comment('...bc of an inactive/unknown receiver')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  accept(meta_stream, metadata, err => {
+    t.true(err.message.includes('can\'t forward'))
+    t.end()
+  })
+})
+
+tape('reject - pass', t => {
+  const active_meta_streams = streamSet()
+
+  const forward = createForward(active_meta_streams)
+  const reject = createReject(forward)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const peer_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'reject', user: 'chiefbiiko', peer: 'noop', tx }
+
+  peer_stream.whoami = 'noop'
+  active_meta_streams.add(peer_stream)
+
+  var pending = 2
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(res.ok, 'response status ok')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+    if (!--pending) t.end()
+  })
+
+  peer_stream.once('data', notif => {
+    t.same(notif, metadata, 'forwarded metadata to peer noop')
+    t.equal(notif.tx, tx, 'transaction identifiers equal')
+    if (!--pending) t.end()
+  })
+
+  reject(meta_stream, metadata, err => {
+    if (err) t.end(err)
+  })
+})
+
+tape('reject - fail pt1', t => {
+  const active_meta_streams = streamSet()
+
+  const forward = createForward(active_meta_streams)
+  const reject = createReject(forward)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'calling', user: 'chiefbiiko', peer: 'noop', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...invalid schema')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  reject(meta_stream, metadata, err => {
+    t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
+    t.end()
+  })
+})
+
+tape('reject - fail pt2', t => {
+  const active_meta_streams = streamSet()
+
+  const forward = createForward(active_meta_streams)
+  const reject = createReject(forward)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const peer_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'call', user: 'chiefbiiko', peer: 'poop', tx }
+
+  peer_stream.whoami = 'noop'
+  active_meta_streams.add(peer_stream)
+
+  var pending = 2
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc of an inactive/unknown receiver')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  peer_stream.once('data', notif => {
+    t.fail('should be unreachable')
+  })
+
+  reject(meta_stream, metadata, err => {
+    t.true(err.message.includes('can\'t forward'))
+    t.end()
+  })
+})
+
 tape('peers - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  const logged_in_users = new Set()
 
   const peers = createPeers(db)
 
@@ -547,6 +833,87 @@ tape('peers - pass', t => {
   })
 })
 
+tape('peers - fail pt1', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const peers = createPeers(db)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'peers', username: 'chiefbiiko', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...invalid schema')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  peers(meta_stream, metadata, err => {
+    t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
+    t.end()
+  })
+})
+
+tape('peers - fail pt2', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const peers = createPeers(db)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+
+  meta_stream.once('data', res => {
+    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc of a db error (notFound)')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  peers(meta_stream, metadata, err => {
+    t.ok(err.notFound, 'db triggered cb err not found')
+    t.end()
+  })
+})
+
+tape('peers - fail pt3', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const peers = createPeers(db)
+
+  const tx = Math.random()
+  const meta_stream = jsonStream(new PassThrough())
+  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+
+  db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'offline' }, err => {
+    if (err) t.end(err)
+    db.put('noop', { peers: [], status: 'online' }, err => {
+      if (err) t.end(err)
+      db.put('og_maco', { peers: [], status: 'busy' }, err => {
+        if (err) t.end(err)
+
+        const expected = [
+          { peer: 'noop', status: 'online' },
+          { peer: 'og', status: 'busy' }
+        ]
+
+        meta_stream.once('data', res => {
+          t.true(valid.schemaR(res), 'response is valid schema R')
+          t.false(res.ok, 'response status not ok...')
+          t.comment('...bc of a db error (notFound)')
+          t.equal(res.tx, tx, 'transaction identifiers equal')
+        })
+
+        peers(meta_stream, metadata, err => {
+          t.ok(err.notFound, 'db triggered cb err not found')
+          t.end()
+        })
+      })
+    })
+  })
+})
+
 /* TODO:
   + write tests for all remaining handlers (./lib/handlers/*)
   + keep test coverage high -> test metadata validation if blocks,
@@ -557,6 +924,5 @@ tape('peers - pass', t => {
   + ...
 
   @Balou: you can start by testing ./lib/handlers::registerUser|addPeers|deletePeers
-    or    implementing ./lib/handlers::logout
   @Biiko: test all remaining handlers
 */
