@@ -29,7 +29,7 @@ const { // TODO: all "pending"
   createReject
 } = require('./lib/handlers.js')
 
-tape('handleMetadata - initial assertions - fail pt1', t => {
+tape('handleMetadata - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
   const logged_in_users = new Set()
@@ -71,7 +71,7 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
   })
 })
 
-tape('handleMetadata - initial assertions - fail pt2', t => {
+tape('handleMetadata - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
   const logged_in_users = new Set()
@@ -115,7 +115,7 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
   })
 })
 
-tape('handleMetadata - initial assertions - fail pt3', t => {
+tape('handleMetadata - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
   const logged_in_users = new Set()
@@ -201,7 +201,7 @@ tape('handleMetadata - switch fallthru', t => {
   })
 })
 
-tape('whoami - pass', t => {
+tape('metaWhoami - pass', t => {
   const active_meta_streams = streamSet()
   const metaWhoami = createMetaWhoami(active_meta_streams)
 
@@ -221,7 +221,7 @@ tape('whoami - pass', t => {
   })
 })
 
-tape('whoami - fail pt1', t => {
+tape('metaWhoami - fail pt1', t => {
   const active_meta_streams = streamSet()
 
   const metaWhoami = createMetaWhoami(active_meta_streams)
@@ -247,7 +247,7 @@ tape('whoami - fail pt1', t => {
   })
 })
 
-tape('whoami - fail pt2', t => {
+tape('metaWhoami - fail pt2', t => {
   const active_meta_streams = streamSet()
 
   const metaWhoami = createMetaWhoami(active_meta_streams)
@@ -795,7 +795,7 @@ tape('reject - fail pt2', t => {
   })
 })
 
-tape('peers - pass', t => {
+tape('getPeers - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
   const getPeers = createGetPeers(db)
@@ -833,7 +833,7 @@ tape('peers - pass', t => {
   })
 })
 
-tape('peers - fail pt1', t => {
+tape('getPeers - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
   const getPeers = createGetPeers(db)
@@ -855,7 +855,7 @@ tape('peers - fail pt1', t => {
   })
 })
 
-tape('peers - fail pt2', t => {
+tape('getPeers - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
   const getPeers = createGetPeers(db)
@@ -877,7 +877,7 @@ tape('peers - fail pt2', t => {
   })
 })
 
-tape('peers - fail pt3', t => {
+tape('getPeers - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
   const getPeers = createGetPeers(db)

@@ -54,11 +54,10 @@ Clientele.prototype.logout = function (cb) {}
 Clientele.prototype.register = function (username, password, peers, cb) {}
 Clientele.prototype.addPeers = function (peers, cb) {}
 Clientele.prototype.deletePeers = function (peers, cb) {}
+Clientele.prototype.getPeers = function (cb) {}
 Clientele.prototype.status = function (status, cb) {}
 Clientele.prototype.call = function (peer, cb) {}
 Clientele.prototype.accept = function (peer, cb) {}
 Clientele.prototype.reject = function (peer, cb) {}
-Clientele.prototype.peers = function (cb) {}
-Clientele.prototype.peersOnline = function (cb) {}
 
 module.exports = Clientele
