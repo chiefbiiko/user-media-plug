@@ -17,19 +17,19 @@ const enc = require('encoding-down')
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
 const {
+  createHandleUpgrade,
+  createHandleMetadata,
   createMetaWhoami,
+  createRegisterUser,
+  createAddPeers,
+  createDeletePeers,
+  createGetPeers,
   createLogin,
   createLogout,
   createStatus,
   createCall,
   createAccept,
-  createReject,
-  createRegisterUser,
-  createAddPeers,
-  createDeletePeers,
-  createPeers,
-  createHandleMetadata,
-  createHandleUpgrade
+  createReject
 } = require('./lib/handlers.js')
 
 const debug = require('debug')('user-media-plug:index')
@@ -54,16 +54,16 @@ const handleError = err => err && debug(`error: ${err.message}`)
 const handleUpgrade = createHandleUpgrade(meta_server, media_server)
 const handleMetadata = createHandleMetadata({
   metaWhoami: createMetaWhoami(active_meta_streams),
-  login: createLogin(db, logged_in_users),
-  logout: createLogout(logged_in_users),
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
   deletePeers: createDeletePeers(db),
+  getPeers: createGetPeers(db),
+  login: createLogin(db, logged_in_users),
+  logout: createLogout(logged_in_users),
   status: createStatus(db, active_meta_streams, forward),
   call: createCall(forward),
   accept: createAccept(meta_server, forward, sendForceCall),
-  reject: createReject(forward),
-  peers: createPeers(db)
+  reject: createReject(forward)
 }, logged_in_users)
 
 meta_server.on('pair', (a, b) => debug('pair:', a, b))

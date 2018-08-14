@@ -15,18 +15,18 @@ const valid = require('./lib/valid.js')
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
 const { // TODO: all "pending"
+  createHandleMetadata,
   createMetaWhoami,
+  createRegisterUser, // pending
+  createAddPeers,     // pending
+  createDeletePeers,  // pending
+  createGetPeers,
   createLogin,
   createLogout,
   createStatus,
   createCall,
   createAccept,
-  createReject,
-  createRegisterUser, // pending
-  createAddPeers, // pending
-  createDeletePeers, // pending
-  createPeers,
-  createHandleMetadata
+  createReject
 } = require('./lib/handlers.js')
 
 tape('handleMetadata - initial assertions - fail pt1', t => {
@@ -42,16 +42,16 @@ tape('handleMetadata - initial assertions - fail pt1', t => {
 
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
+    getPeers: createGetPeers(db),
+    login: createLogin(db, logged_in_users),
+    logout: createLogout(logged_in_users),
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward),
-    peers: createPeers(db)
+    reject: createReject(forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -84,16 +84,16 @@ tape('handleMetadata - initial assertions - fail pt2', t => {
 
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
+    getPeers: createGetPeers(db),
+    login: createLogin(db, logged_in_users),
+    logout: createLogout(logged_in_users),
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward),
-    peers: createPeers(db)
+    reject: createReject(forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -128,16 +128,16 @@ tape('handleMetadata - initial assertions - fail pt3', t => {
 
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
+    getPeers: createGetPeers(db),
+    login: createLogin(db, logged_in_users),
+    logout: createLogout(logged_in_users),
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward),
-    peers: createPeers(db)
+    reject: createReject(forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -172,16 +172,16 @@ tape('handleMetadata - switch fallthru', t => {
 
   const handleMetadata = createHandleMetadata({
     metaWhoami: createMetaWhoami(active_meta_streams),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(db, logged_in_users),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
+    getPeers: createGetPeers(db),
+    login: createLogin(db, logged_in_users),
+    logout: createLogout(logged_in_users),
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward),
-    peers: createPeers(db)
+    reject: createReject(forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -798,7 +798,7 @@ tape('reject - fail pt2', t => {
 tape('peers - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
-  const peers = createPeers(db)
+  const getPeers = createGetPeers(db)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -825,7 +825,7 @@ tape('peers - pass', t => {
           t.end()
         })
 
-        peers(meta_stream, metadata, err => {
+        getPeers(meta_stream, metadata, err => {
           if (err) t.end(err)
         })
       })
@@ -836,7 +836,7 @@ tape('peers - pass', t => {
 tape('peers - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
-  const peers = createPeers(db)
+  const getPeers = createGetPeers(db)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -849,7 +849,7 @@ tape('peers - fail pt1', t => {
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
-  peers(meta_stream, metadata, err => {
+  getPeers(meta_stream, metadata, err => {
     t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
     t.end()
   })
@@ -858,7 +858,7 @@ tape('peers - fail pt1', t => {
 tape('peers - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
-  const peers = createPeers(db)
+  const getPeers = createGetPeers(db)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -871,7 +871,7 @@ tape('peers - fail pt2', t => {
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
-  peers(meta_stream, metadata, err => {
+  getPeers(meta_stream, metadata, err => {
     t.ok(err.notFound, 'db triggered cb err not found')
     t.end()
   })
@@ -880,7 +880,7 @@ tape('peers - fail pt2', t => {
 tape('peers - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 
-  const peers = createPeers(db)
+  const getPeers = createGetPeers(db)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -905,7 +905,7 @@ tape('peers - fail pt3', t => {
           t.equal(res.tx, tx, 'transaction identifiers equal')
         })
 
-        peers(meta_stream, metadata, err => {
+        getPeers(meta_stream, metadata, err => {
           t.ok(err.notFound, 'db triggered cb err not found')
           t.end()
         })
