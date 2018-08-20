@@ -17,6 +17,7 @@ const valid = require('./lib/valid.js')
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
 const { // TODO: all "pending"
+  createHandleUpgrade,
   createHandleMetadata,
   createMetaWhoami,
   createRegisterUser, // pending
@@ -917,15 +918,10 @@ tape('getPeers - fail pt3', t => {
   })
 })
 
-tape.skip('handlePair - pass', t => {
-  t.fail('not implemented'); t.end()
+tape.only('handlePair - pass', t => {
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
   const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const http_server = createServer()
-
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
 
   const handlePair = createHandlePair(media_server)
 
@@ -934,21 +930,15 @@ tape.skip('handlePair - pass', t => {
   const a_info = JSON.stringify({ user: 'chiefbiiko', peer: 'noop' })
   const b_info = JSON.stringify({ user: 'noop', peer: 'chiefbiiko' })
 
+  const http_server = createServer()
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
   handlePair(a, b)
 
   // establish two websocket cons, send media whoami info, and assert x-stream!
-  const a_ws = websocket('ws://localhost:1000/media')
-  const b_ws = websocket('ws://localhost:1000/media')
-
-  a_ws.write(a_info, err => {
-    if (err) t.end(err)
-    a_ws.write('chiefbiiko')
-  })
-
-  b_ws.write(b_info, err => {
-    if (err) t.end(err)
-    b_ws.write('noop')
-  })
+  const a_ws = websocket('ws://localhost:10000/media')
+  const b_ws = websocket('ws://localhost:10000/media')
 
   var pending = 2
 
@@ -966,6 +956,16 @@ tape.skip('handlePair - pass', t => {
       http_server.close()
       t.end()
     }
+  })
+
+  a_ws.write(a_info, err => {
+    if (err) t.end(err)
+    a_ws.write('chiefbiiko', err => err && t.end(err))
+  })
+
+  b_ws.write(b_info, err => {
+    if (err) t.end(err)
+    b_ws.write('noop', err => err && t.end(err))
   })
 })
 

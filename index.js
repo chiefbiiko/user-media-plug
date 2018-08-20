@@ -29,7 +29,8 @@ const {
   createStatus,
   createCall,
   createAccept,
-  createReject
+  createReject,
+  createHandlePair
 } = require('./lib/handlers.js')
 
 const debug = require('debug')('user-media-plug:index')
