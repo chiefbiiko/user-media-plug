@@ -1,8 +1,10 @@
 const tape = require('tape')
 
+const { createServer } = require('http')
 const { PassThrough } = require('stream')
 
-const WebSocketServer = require('websocket-stream').Server
+const websocket = require('websocket-stream')
+const WebSocketServer = websocket.Server
 const streamSet = require('stream-set')
 const jsonStream = require('duplex-json-stream')
 
@@ -26,7 +28,8 @@ const { // TODO: all "pending"
   createStatus,
   createCall,
   createAccept,
-  createReject
+  createReject,
+  createHandlePair // pending
 } = require('./lib/handlers.js')
 
 tape('handleMetadata - fail pt1', t => {
@@ -911,6 +914,58 @@ tape('getPeers - fail pt3', t => {
         })
       })
     })
+  })
+})
+
+tape.skip('handlePair - pass', t => {
+  t.fail('not implemented'); t.end()
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const http_server = createServer()
+
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
+  const handlePair = createHandlePair(media_server)
+
+  const a = 'chiefbiiko'
+  const b = 'noop'
+  const a_info = JSON.stringify({ user: 'chiefbiiko', peer: 'noop' })
+  const b_info = JSON.stringify({ user: 'noop', peer: 'chiefbiiko' })
+
+  handlePair(a, b)
+
+  // establish two websocket cons, send media whoami info, and assert x-stream!
+  const a_ws = websocket('ws://localhost:1000/media')
+  const b_ws = websocket('ws://localhost:1000/media')
+
+  a_ws.write(a_info, err => {
+    if (err) t.end(err)
+    a_ws.write('chiefbiiko')
+  })
+
+  b_ws.write(b_info, err => {
+    if (err) t.end(err)
+    b_ws.write('noop')
+  })
+
+  var pending = 2
+
+  a_ws.on('data', chunk => {
+    t.equal(chunk.toString(), 'noop', 'chiefbiiko got peer data')
+    if (!--pending) {
+      http_server.close()
+      t.end()
+    }
+  })
+
+  b_ws.on('data', chunk => {
+    t.equal(chunk.toString(), 'chiefbiiko', 'noop got peer data')
+    if (!--pending) {
+      http_server.close()
+      t.end()
+    }
   })
 })
 
