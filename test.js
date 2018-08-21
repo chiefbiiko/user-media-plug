@@ -17,7 +17,8 @@ const valid = require('./lib/valid.js')
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
 const { // TODO: all "pending"
-  createHandleUpgrade,
+  createHandleUpgrade, // pending
+  createHandleMetastream, // pending
   createHandleMetadata,
   createMetaWhoami,
   createRegisterUser, // pending

@@ -8,7 +8,6 @@ const { createServer } = require('http')
 
 const WebSocketServer = require('websocket-stream').Server
 const streamSet = require('stream-set')
-const jsonStream = require('duplex-json-stream')
 
 const levelup = require('levelup')
 const memdown = require('memdown')
@@ -18,6 +17,7 @@ const { createForward, createSendForceCall } = require('./lib/notify.js')
 
 const {
   createHandleUpgrade,
+  createHandleMetastream,
   createHandleMetadata,
   createMetaWhoami,
   createRegisterUser,
@@ -53,7 +53,8 @@ const sendForceCall = createSendForceCall(active_meta_streams)
 
 const handleError = err => err && debug(`error: ${err.message}`)
 const handleUpgrade = createHandleUpgrade(meta_server, media_server)
-const handleMetadata = createHandleMetadata({
+const handlePair = createHandlePair(media_server)
+const handleMetastream = createHandleMetastream(createHandleMetadata({
   metaWhoami: createMetaWhoami(active_meta_streams),
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
@@ -65,23 +66,11 @@ const handleMetadata = createHandleMetadata({
   call: createCall(forward),
   accept: createAccept(meta_server, forward, sendForceCall),
   reject: createReject(forward)
-}, logged_in_users)
-
-meta_server.on('pair', (a, b) => debug('pair:', a, b))
-
-meta_server.on('stream', (meta_stream, req) => {
-  debug('::meta_server.on("stream")::')
-  meta_stream = jsonStream(meta_stream)
-  meta_stream.on('data', handleMetadata.bind(null, meta_stream))
-  meta_stream.on('error', handleError)
-})
-
-media_server.on('stream', (stream, req) => {
-  debug('::media_server.on("stream")::')
-  // ...
-})
+}, logged_in_users))
 
 http_server.on('upgrade', handleUpgrade)
+meta_server.on('stream', handleMetastream)
+meta_server.on('pair', handlePair)
 
 http_server.on('error', handleError)
 meta_server.on('error', handleError)
