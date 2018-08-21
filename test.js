@@ -918,48 +918,47 @@ tape('getPeers - fail pt3', t => {
   })
 })
 
-tape.only('handlePair - pass', t => {
+tape('handlePair - pass', t => {
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
   const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const http_server = createServer()
 
   const handlePair = createHandlePair(media_server)
 
   const a = 'chiefbiiko'
   const b = 'noop'
-  const a_info = JSON.stringify({ user: 'chiefbiiko', peer: 'noop' })
-  const b_info = JSON.stringify({ user: 'noop', peer: 'chiefbiiko' })
+  const a_info = JSON.stringify({ user: a, peer: b })
+  const b_info = JSON.stringify({ user: b, peer: a })
 
-  const http_server = createServer()
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
-
-  handlePair(a, b)
-
-  // establish two websocket cons, send media whoami info, and assert x-stream!
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
 
-  a_ws.on('error', err => t.end(err))
-  b_ws.on('error', err => t.end(err))
+  const shutdown = () => {
+    a_ws.destroy()
+    b_ws.destroy()
+    http_server.close(t.end)
+  }
 
   var pending = 2
 
+  a_ws.on('error', t.end)
+  b_ws.on('error', t.end)
+
   a_ws.on('data', chunk => {
     t.equal(chunk.toString(), 'noop', 'chiefbiiko got peer data')
-    if (!--pending) {
-      http_server.close()
-      t.end()
-    }
+    if (!--pending) shutdown()
   })
 
   b_ws.on('data', chunk => {
     t.equal(chunk.toString(), 'chiefbiiko', 'noop got peer data')
-    if (!--pending) {
-      http_server.close()
-      t.end()
-    }
+    if (!--pending) shutdown()
   })
+
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
+  handlePair(a, b)
 
   a_ws.write(a_info, err => {
     if (err) t.end(err)
