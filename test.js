@@ -940,6 +940,9 @@ tape.only('handlePair - pass', t => {
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
 
+  a_ws.on('error', err => t.end(err))
+  b_ws.on('error', err => t.end(err))
+
   var pending = 2
 
   a_ws.on('data', chunk => {
