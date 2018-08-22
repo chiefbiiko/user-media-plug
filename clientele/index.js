@@ -26,22 +26,22 @@ function Clientele (url) {
 
   this._websocket = jsonStream(websocket(url))
   this._websocket.on('error', this.emit.bind(this, 'error'))
-  this._username = ''
+  this._user = ''
 }
 
 inherits(Clientele, EventEmitter)
 
-Clientele.prototype.whoami = function (username, cb) {
-  if (!isTruthyString(username))
-    return cb(new TypeError('username is not a truthy string'))
+Clientele.prototype.whoami = function (user, cb) {
+  if (!isTruthyString(user))
+    return cb(new TypeError('user is not a truthy string'))
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
   var self = this
-  self._username = username
+  self._user = user
   const tx = Math.random()
 
-  self._websocket.write(outbound.whoami(username, tx), err => {
+  self._websocket.write(outbound.whoami(user, tx), err => {
     if (err) return cb(err)
     onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
@@ -49,9 +49,68 @@ Clientele.prototype.whoami = function (username, cb) {
   })
 }
 
-Clientele.prototype.login = function (username, password, cb) {}
-Clientele.prototype.logout = function (cb) {}
-Clientele.prototype.register = function (username, password, peers, cb) {}
+Clientele.prototype.login = function (user, password, cb) {
+  if (!isTruthyString(user))
+    return cb(new TypeError('user is not a truthy string'))
+  if (!isTruthyString(password))
+    return cb(new TypeError('password is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  var self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._websocket.write(outbound.login(user, password, tx), err => {
+    if (err) return cb(err)
+    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+
+Clientele.prototype.logout = function (user, cb) {
+  if (!isTruthyString(user))
+    return cb(new TypeError('user is not a truthy string'))
+  if (!isTruthyString(password))
+    return cb(new TypeError('password is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  var self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._websocket.write(outbound.logout(user, tx), err => {
+    if (err) return cb(err)
+    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+
+Clientele.prototype.register = function (user, password, peers, cb) {
+  if (!isTruthyString(user))
+    return cb(new TypeError('user is not a truthy string'))
+  if (!isTruthyString(password))
+    return cb(new TypeError('password is not a truthy string'))
+  if (!isStringArray(peers))
+    return cb(new TypeError('peers is not a string array'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  var self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._websocket.write(outbound.register(user, password, peers, tx), err => {
+    if (err) return cb(err)
+    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+
 Clientele.prototype.addPeers = function (peers, cb) {}
 Clientele.prototype.deletePeers = function (peers, cb) {}
 Clientele.prototype.getPeers = function (cb) {}
@@ -59,5 +118,7 @@ Clientele.prototype.status = function (status, cb) {}
 Clientele.prototype.call = function (peer, cb) {}
 Clientele.prototype.accept = function (peer, cb) {}
 Clientele.prototype.reject = function (peer, cb) {}
+
+Clientele.prototype.__defineGetter__('user', function () { return this._user })
 
 module.exports = Clientele

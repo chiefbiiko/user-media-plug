@@ -1,8 +1,32 @@
 const outbound = Object.freeze({
-  whoami (username, tx) {
+  whoami (user, tx) {
     return {
-      type: 'whoami',
-      user: username,
+      type: 'WHOAMI',
+      user,
+      tx
+    }
+  },
+  login (user, password, tx) {
+    return {
+      type: 'LOGIN',
+      user,
+      password,
+      tx
+    }
+  },
+  logout (user, tx) {
+    return {
+      type: 'LOGOUT',
+      user,
+      tx
+    }
+  },
+  register (user, password, peers, tx) {
+    return {
+      type: 'REGISTER',
+      user,
+      password,
+      peers,
       tx
     }
   }

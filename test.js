@@ -139,7 +139,7 @@ tape('handleMetadata - fail pt1', t => {
   const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc "whoami" must be the inital msg sent thru a socket')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -183,7 +183,7 @@ tape('handleMetadata - fail pt2', t => {
   meta_stream.whoami = 'noop'
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc meta_stream.whoami !== metadata.user')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -227,7 +227,7 @@ tape('handleMetadata - fail pt3', t => {
   meta_stream.whoami = 'chiefbiiko'
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc metadata.user is not logged in')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -269,7 +269,7 @@ tape('handleMetadata - switch fallthru', t => {
   const metadata = { type: 'unknown', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of an unknown metadata.type')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -287,10 +287,10 @@ tape('metaWhoami - pass', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'whoami', user: 'chiefbiiko', tx }
+  const metadata = { type: 'WHOAMI', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     t.end()
@@ -308,14 +308,14 @@ tape('metaWhoami - fail pt1', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'whoami', user: 'chiefbiiko', tx }
+  const metadata = { type: 'WHOAMI', user: 'chiefbiiko', tx }
 
   const peer_stream = jsonStream(new PassThrough())
   peer_stream.whoami = 'chiefbiiko'
   active_meta_streams.add(peer_stream)
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc the sent whoami identifier (user) already exists')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -337,7 +337,7 @@ tape('metaWhoami - fail pt2', t => {
   const metadata = { type: 'metaWhoami', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -360,10 +360,10 @@ tape('login - pass', t => {
 
     const tx = Math.random()
     const meta_stream = jsonStream(new PassThrough())
-    const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
+    const metadata = { type: 'LOGIN', user: 'chiefbiiko', password: 'abc', tx }
 
     meta_stream.once('data', res => {
-      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.true(res.ok, 'response status ok')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       t.end()
@@ -386,10 +386,10 @@ tape('login - fail pt1', t => {
 
     const tx = Math.random()
     const meta_stream = jsonStream(new PassThrough())
-    const metadata = { type: 'login', user: 'chiefbiiko', password: 'abz', tx }
+    const metadata = { type: 'LOGIN', user: 'chiefbiiko', password: 'abz', tx }
 
     meta_stream.once('data', res => {
-      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
       t.comment('...wrong password')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -410,10 +410,10 @@ tape('login - fail pt2', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { msg: 'login', user: 'chiefbiiko', password: 'abc', tx }
+  const metadata = { msg: 'LOGIN', user: 'chiefbiiko', password: 'abc', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -432,10 +432,10 @@ tape('logout - pass', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'logout', user: 'chiefbiiko', tx }
+  const metadata = { type: 'LOGOUT', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     t.end()
@@ -453,10 +453,10 @@ tape('logout - fail', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'logout', username: 'chiefbiiko', tx }
+  const metadata = { type: 'LOGOUT', username: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -478,7 +478,7 @@ tape('status - pass', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'status', user: 'chiefbiiko', status: 'cool', tx }
+  const metadata = { type: 'STATUS', user: 'chiefbiiko', status: 'cool', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -489,7 +489,7 @@ tape('status - pass', t => {
     var pending = 2
 
     meta_stream.once('data', res => {
-      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.true(res.ok, 'response status ok')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       if (!--pending) t.end()
@@ -517,7 +517,7 @@ tape('status - fail pt1', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'status', user: 'chiefbiiko', status: '', tx }
+  const metadata = { type: 'STATUS', user: 'chiefbiiko', status: '', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -526,7 +526,7 @@ tape('status - fail pt1', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
       t.comment('...invalid schema')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -549,7 +549,7 @@ tape('status - fail pt2', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'status', user: 'biiko', status: 'boss', tx }
+  const metadata = { type: 'STATUS', user: 'biiko', status: 'boss', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -558,7 +558,7 @@ tape('status - fail pt2', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schemaR(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
       t.comment('...bc of a db error (notFound)')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -580,7 +580,7 @@ tape('call - pass', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'call', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = { type: 'CALL', user: 'chiefbiiko', peer: 'noop', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -588,7 +588,7 @@ tape('call - pass', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     if (!--pending) t.end()
@@ -613,10 +613,10 @@ tape('call - fail pt1', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'calling', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = { type: 'CALLING', user: 'chiefbiiko', peer: 'noop', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -637,7 +637,7 @@ tape('call - fail pt2', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'call', user: 'chiefbiiko', peer: 'poop', tx }
+  const metadata = { type: 'CALL', user: 'chiefbiiko', peer: 'poop', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -645,7 +645,7 @@ tape('call - fail pt2', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of an inactive/unknown receiver')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -674,7 +674,7 @@ tape('accept - pass', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'accept', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = { type: 'ACCEPT', user: 'chiefbiiko', peer: 'noop', tx }
 
   meta_stream.whoami = 'chiefbiiko'
   peer_stream.whoami = 'noop'
@@ -685,12 +685,12 @@ tape('accept - pass', t => {
 
   meta_stream.on('data', msg => {
     switch (msg.type) {
-      case 'force-call':
-        t.true(valid.schemaF(msg), 'valid schema F 4 force-call msg')
+      case 'FORCE_CALL':
+        t.true(valid.schema_FORCE_CALL(msg), 'valid schema F 4 force-call msg')
         t.equal(msg.peer, 'noop', 'peer noop')
         break
-      case 'res':
-        t.true(valid.schemaR(msg), 'response is valid schema R')
+      case 'RES':
+        t.true(valid.schema_RESPONSE(msg), 'response is valid schema R')
         t.true(msg.ok, 'response status ok')
         t.equal(msg.tx, tx, 'transaction identifiers equal')
         if (!--pending) t.end()
@@ -702,12 +702,12 @@ tape('accept - pass', t => {
 
   peer_stream.on('data', notif => {
     switch (notif.type) {
-      case 'force-call':
-        t.true(valid.schemaF(notif), 'valid schema F 4 force-call msg')
+      case 'FORCE_CALL':
+        t.true(valid.schema_FORCE_CALL(notif), 'valid schema F 4 force-call msg')
         t.equal(notif.peer, 'chiefbiiko', 'peer chiefbiiko')
         break
-      case 'accept':
-        t.true(valid.schemaC(notif), 'response is valid schema C')
+      case 'ACCEPT':
+        t.true(valid.schema_CALL_ACCEPT_REJECT(notif), 'response is valid schema C')
         t.equal(notif.tx, tx, 'transaction identifiers equal')
         if (!--pending) t.end()
         break
@@ -740,10 +740,10 @@ tape('accept - fail pt1', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'accepting', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = { type: 'ACCEPTING', user: 'chiefbiiko', peer: 'noop', tx }
 
   meta_stream.on('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -767,13 +767,13 @@ tape('accept - fail pt2', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'accept', user: 'chiefbiiko', peer: 'poop', tx }
+  const metadata = { type: 'ACCEPT', user: 'chiefbiiko', peer: 'poop', tx }
 
   meta_stream.whoami = 'chiefbiiko'
   active_meta_streams.add(meta_stream)
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok')
     t.comment('...bc of an inactive/unknown receiver')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -794,7 +794,7 @@ tape('reject - pass', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'reject', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = { type: 'REJECT', user: 'chiefbiiko', peer: 'noop', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -802,7 +802,7 @@ tape('reject - pass', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     if (!--pending) t.end()
@@ -827,10 +827,10 @@ tape('reject - fail pt1', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'calling', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = { type: 'CALLING', user: 'chiefbiiko', peer: 'noop', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -851,7 +851,7 @@ tape('reject - fail pt2', t => {
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'call', user: 'chiefbiiko', peer: 'poop', tx }
+  const metadata = { type: 'CALL', user: 'chiefbiiko', peer: 'poop', tx }
 
   peer_stream.whoami = 'noop'
   active_meta_streams.add(peer_stream)
@@ -859,7 +859,7 @@ tape('reject - fail pt2', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of an inactive/unknown receiver')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -882,7 +882,7 @@ tape('getPeers - pass', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+  const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
 
   db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'offline' }, err => {
     if (err) t.end(err)
@@ -897,7 +897,7 @@ tape('getPeers - pass', t => {
         ]
 
         meta_stream.once('data', res => {
-          t.true(valid.schemaRP(res), 'response is valid schema RP')
+          t.true(valid.schema_RESPONSE_PEERS(res), 'response is valid schema RP')
           t.true(res.ok, 'response status ok')
           t.true(Array.isArray(res.peers), 'peer array')
           t.same(res.peers, expected, 'peer n status')
@@ -920,10 +920,10 @@ tape('getPeers - fail pt1', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'peers', username: 'chiefbiiko', tx }
+  const metadata = { type: 'GET_PEERS', username: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -942,10 +942,10 @@ tape('getPeers - fail pt2', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+  const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schemaR(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of a db error (notFound)')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -964,7 +964,7 @@ tape('getPeers - fail pt3', t => {
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+  const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
 
   db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'offline' }, err => {
     if (err) t.end(err)
@@ -979,7 +979,7 @@ tape('getPeers - fail pt3', t => {
         ]
 
         meta_stream.once('data', res => {
-          t.true(valid.schemaR(res), 'response is valid schema R')
+          t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
           t.false(res.ok, 'response status not ok...')
           t.comment('...bc of a db error (notFound)')
           t.equal(res.tx, tx, 'transaction identifiers equal')

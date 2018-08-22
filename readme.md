@@ -52,7 +52,7 @@ Metadata is exchanged via events/messages. These are plain, flat objects that mu
 **_userA wants to be registered, so userA writes:_**
 
 ``` js
-{ type: 'reg-user', user: 'userA', peers: [], tx: Math.random() }
+{ type: 'register', user: 'userA', peers: [], tx: Math.random() }
 ```
 
 **_userA wants userB..Z be persisted as peers, so userA writes:_**
@@ -100,7 +100,7 @@ Metadata is exchanged via events/messages. These are plain, flat objects that mu
 **_userA wants to get its peers, so userA writes:_**
 
 ``` js
-{ type: 'peers', user: 'userA', tx: Math.random() }
+{ type: 'get-peers', user: 'userA', tx: Math.random() }
 ```
 
 **_userA wants to get its online peers, so userA writes:_**
