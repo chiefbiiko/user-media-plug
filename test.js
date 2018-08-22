@@ -1079,7 +1079,7 @@ tape('handlePair - fail pt1 - invalid schema', t => {
     a_ws.destroy()
     b_ws.destroy()
     http_server.close(t.end)
-  }, 1000)
+  }, 500)
 
   a_ws.write(a_info, err => err && t.end(err))
   b_ws.write(b_info, err => err && t.end(err))
@@ -1117,7 +1117,7 @@ tape('handlePair - fail pt2 - no pair', t => {
     a_ws.destroy()
     b_ws.destroy()
     http_server.close(t.end)
-  }, 1000)
+  }, 500)
 
   a_ws.write(a_info, err => err && t.end(err))
   b_ws.write(b_info, err => err && t.end(err))
