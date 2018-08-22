@@ -17,8 +17,8 @@ const valid = require('./lib/valid.js')
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
 const { // TODO: all "pending"
-  createHandleUpgrade, // pending
-  createHandleMetastream, // pending
+  createHandleUpgrade,
+  createHandleMetastream,
   createHandleMetadata,
   createMetaWhoami,
   createRegisterUser, // pending
@@ -31,8 +31,83 @@ const { // TODO: all "pending"
   createCall,
   createAccept,
   createReject,
-  createHandlePair // pending
+  createHandlePair
 } = require('./lib/handlers.js')
+
+tape('handleUpgrade - pass', t => {
+  const http_server = createServer()
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const handleUpgrade = createHandleUpgrade(meta_server, media_server)
+
+  http_server.on('upgrade', handleUpgrade)
+  http_server.listen(10000, 'localhost')
+
+  const a_ws = websocket('ws://localhost:10000/meta')
+  const b_ws = websocket('ws://localhost:10000/media')
+
+  a_ws.on('error', t.end)
+  b_ws.on('error', t.end)
+
+  setTimeout(() => {
+    t.pass('connections upgraded from http to ws without errors')
+    a_ws.destroy()
+    b_ws.destroy()
+    http_server.close(t.end)
+  }, 250)
+})
+
+tape('handleUpgrade - fail - switch fallthru', t => {
+  const http_server = createServer()
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const handleUpgrade = createHandleUpgrade(meta_server, media_server)
+
+  http_server.on('upgrade', handleUpgrade)
+  http_server.listen(10000, 'localhost')
+
+  const a_ws = websocket('ws://localhost:10000/')
+  const b_ws = websocket('ws://localhost:10000/noop')
+
+  a_ws.on('error', err => t.ok(err, 'got a\'s connection error'))
+  b_ws.on('error', err => t.ok(err, 'got b\'s connection error'))
+
+  setTimeout(() => http_server.close(t.end), 250)
+})
+
+tape('handleMetastream', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
+  const handleMetastream = createHandleMetastream(createHandleMetadata({
+    metaWhoami: createMetaWhoami(active_meta_streams),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    getPeers: createGetPeers(db),
+    login: createLogin(db, logged_in_users),
+    logout: createLogout(logged_in_users),
+    status: createStatus(db, active_meta_streams, forward),
+    call: createCall(forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward)
+  }, logged_in_users))
+
+  handleMetastream(new PassThrough(), null)
+  t.pass('handleMetastream so simple, hardly testable, asserting no errs')
+  t.end()
+})
 
 tape('handleMetadata - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
@@ -970,6 +1045,82 @@ tape('handlePair - pass', t => {
     if (err) t.end(err)
     b_ws.write('noop', err => err && t.end(err))
   })
+})
+
+tape('handlePair - fail pt1 - invalid schema', t => {
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const http_server = createServer()
+
+  const handlePair = createHandlePair(media_server)
+
+  const a = 'chiefbiiko'
+  const b = 'noop'
+  const a_info = JSON.stringify({ username: a, peer: b })
+  const b_info = JSON.stringify({ user: b, peername: a })
+
+  const a_ws = websocket('ws://localhost:10000/media')
+  const b_ws = websocket('ws://localhost:10000/media')
+
+  a_ws.on('error', t.end)
+  b_ws.on('error', t.end)
+
+  a_ws.on('data', chunk => t.fail('should be unreachable'))
+  b_ws.on('data', chunk => t.fail('should be unreachable'))
+
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
+  handlePair(a, b)
+
+  setTimeout(() => {
+    t.pass('did not get any unintended fails so far')
+    a_ws.destroy()
+    b_ws.destroy()
+    http_server.close(t.end)
+  }, 1000)
+
+  a_ws.write(a_info, err => err && t.end(err))
+  b_ws.write(b_info, err => err && t.end(err))
+})
+
+tape('handlePair - fail pt2 - no pair', t => {
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const http_server = createServer()
+
+  const handlePair = createHandlePair(media_server)
+
+  const a = 'chiefbiiko'
+  const b = 'noop'
+  const a_info = JSON.stringify({ user: a, peer: b })
+  const b_info = JSON.stringify({ user: b, peer: a })
+
+  const a_ws = websocket('ws://localhost:10000/media')
+  const b_ws = websocket('ws://localhost:10000/media')
+
+  a_ws.on('error', t.end)
+  b_ws.on('error', t.end)
+
+  a_ws.on('data', chunk => t.fail('should be unreachable'))
+  b_ws.on('data', chunk => t.fail('should be unreachable'))
+
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
+  handlePair(a, 'oj pic')
+
+  setTimeout(() => {
+    t.pass('did not get any unintended fails so far')
+    a_ws.destroy()
+    b_ws.destroy()
+    http_server.close(t.end)
+  }, 1000)
+
+  a_ws.write(a_info, err => err && t.end(err))
+  b_ws.write(b_info, err => err && t.end(err))
 })
 
 /* TODO:
