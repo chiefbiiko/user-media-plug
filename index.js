@@ -13,6 +13,8 @@ const levelup = require('levelup')
 const memdown = require('memdown')
 const enc = require('encoding-down')
 
+const hashtagStreamSet = require('./hashtag-stream-set')
+
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
 const {
@@ -30,7 +32,9 @@ const {
   createCall,
   createAccept,
   createReject,
-  createHandlePair
+  createUnpair,
+  createHandlePair,
+  willDeleteMediaStreams
 } = require('./lib/handlers.js')
 
 const debug = require('debug')('user-media-plug:index')
@@ -40,7 +44,7 @@ const HOST = process.env.HOST || 'localhost'
 
 const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 const active_meta_streams = streamSet()
-const active_media_streams = streamSet()
+const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
 const logged_in_users = new Set()
 
 const http_server = createServer()
@@ -65,7 +69,8 @@ const handleMetastream = createHandleMetastream(createHandleMetadata({
   status: createStatus(db, active_meta_streams, forward),
   call: createCall(forward),
   accept: createAccept(meta_server, forward, sendForceCall),
-  reject: createReject(forward)
+  reject: createReject(forward),
+  unpair: createUnpair(active_media_streams)
 }, logged_in_users))
 
 http_server.on('upgrade', handleUpgrade)

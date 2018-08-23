@@ -7,6 +7,7 @@ const websocket = require('websocket-stream')
 const WebSocketServer = websocket.Server
 const streamSet = require('stream-set')
 const jsonStream = require('duplex-json-stream')
+const hashtagStreamSet = require('./hashtag-stream-set')
 
 const levelup = require('levelup')
 const memdown = require('memdown')
@@ -31,7 +32,9 @@ const { // TODO: all "pending"
   createCall,
   createAccept,
   createReject,
-  createHandlePair
+  createUnpair, // pending
+  createHandlePair,
+  willDeleteMediaStreams // pending
 } = require('./lib/handlers.js')
 
 tape('handleUpgrade - pass', t => {
@@ -82,6 +85,7 @@ tape('handleUpgrade - fail - switch fallthru', t => {
 tape('handleMetastream', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -101,7 +105,8 @@ tape('handleMetastream', t => {
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward)
+    reject: createReject(forward),
+    unpair: createUnpair(active_media_streams)
   }, logged_in_users))
 
   handleMetastream(new PassThrough(), null)
@@ -112,6 +117,7 @@ tape('handleMetastream', t => {
 tape('handleMetadata - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -131,7 +137,8 @@ tape('handleMetadata - fail pt1', t => {
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward)
+    reject: createReject(forward),
+    unpair: createUnpair(active_media_streams)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -154,6 +161,7 @@ tape('handleMetadata - fail pt1', t => {
 tape('handleMetadata - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -173,7 +181,8 @@ tape('handleMetadata - fail pt2', t => {
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward)
+    reject: createReject(forward),
+    unpair: createUnpair(active_media_streams)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -198,6 +207,7 @@ tape('handleMetadata - fail pt2', t => {
 tape('handleMetadata - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -217,7 +227,8 @@ tape('handleMetadata - fail pt3', t => {
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward)
+    reject: createReject(forward),
+    unpair: createUnpair(active_media_streams)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -242,6 +253,7 @@ tape('handleMetadata - fail pt3', t => {
 tape('handleMetadata - switch fallthru', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -261,7 +273,8 @@ tape('handleMetadata - switch fallthru', t => {
     status: createStatus(db, active_meta_streams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward)
+    reject: createReject(forward),
+    unpair: createUnpair(active_media_streams)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -1000,7 +1013,9 @@ tape('handlePair - pass', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const handlePair = createHandlePair(media_server)
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+
+  const handlePair = createHandlePair(media_server, active_media_streams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1053,7 +1068,9 @@ tape('handlePair - fail pt1 - invalid schema', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const handlePair = createHandlePair(media_server)
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+
+  const handlePair = createHandlePair(media_server, active_media_streams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1091,7 +1108,9 @@ tape('handlePair - fail pt2 - no pair', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const handlePair = createHandlePair(media_server)
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+
+  const handlePair = createHandlePair(media_server, active_media_streams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1121,6 +1140,147 @@ tape('handlePair - fail pt2 - no pair', t => {
 
   a_ws.write(a_info, err => err && t.end(err))
   b_ws.write(b_info, err => err && t.end(err))
+})
+
+tape.skip('unpair - pass', t => {
+  // t.plan(15)
+
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const http_server = createServer()
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
+  const handlePair = createHandlePair(media_server, active_media_streams)
+  const handleMetadata = createHandleMetadata({
+    metaWhoami: createMetaWhoami(active_meta_streams),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    getPeers: createGetPeers(db),
+    login: createLogin(db, logged_in_users),
+    logout: createLogout(logged_in_users),
+    status: createStatus(db, active_meta_streams, forward),
+    call: createCall(forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward),
+    unpair: createUnpair(active_media_streams)
+  }, logged_in_users)
+
+  const a = 'chiefbiiko'
+  const b = 'noop'
+  const a_info = JSON.stringify({ user: a, peer: b })
+  const b_info = JSON.stringify({ user: b, peer: a })
+
+  const a_ws = websocket('ws://localhost:10000/media')
+  const b_ws = websocket('ws://localhost:10000/media')
+
+  // const a_mt = websocket('ws://localhost:10000/meta')
+  //
+  // const WHOAMI_MSG = JSON.stringify({
+  //     type: 'WHOAMI',
+  //     user: 'chiefbiiko',
+  //     tx: Math.random()
+  //   })
+  //
+  // a_mt.write(WHOAMI_MSG, err => err && t.end(err))
+
+  const done = () => {
+    // a_ws.destroy()
+    // b_ws.destroy()
+    // http_server.close(t.end)
+    const meta_stream = jsonStream(new PassThrough())
+    const tx = Math.random()
+    const metadata = {
+      type: 'UNPAIR',
+      user: 'chiefbiiko',
+      peer: 'noop',
+      tx
+    }
+    // TODO: call unpair (thru handleMetadata) and assure a_ws and b_ws have muted!!!!!
+
+    meta_stream.once('data', res => {
+      t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+      t.true(res.ok, 'res status ok')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      a_ws.on('data', _ => t.fail('media_stream unstopped'))
+      b_ws.on('data', _ => t.fail('media_stream unstopped'))
+      setTimeout(t.end, 750)
+    })
+
+    handleMetadata(meta_stream, metadata, err => err && t.end(err))
+
+
+    // const tx = Math.random()
+    // a_mt.write(JSON.stringify({ type: 'UNPAIR', user: a, peer: b, tx }),
+    //   err => {
+    //     if (err) t.end(err)
+    //     a_ws.once('data', chunk => {
+    //       const res = JSON.parse(chunk)
+    //       t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+    //       t.true(res.ok, 'res status ok')
+    //       t.equal(res.tx, tx, 'transaction identifiers equal')
+    //       // ... make sure a_ws, b_ws are destroyed and don't emit any more data
+    //       // t.end()
+    //     })
+    //   })
+  }
+
+  var data_pending = 2
+  // var err_pending = 2
+
+  a_ws.on('error', err => {
+    t.ok(err, 'probly got an ECONNRESET err')
+    // if (!--err_pending) t.end()
+  })
+
+  b_ws.on('error', err => {
+    t.ok(err, 'probly got an ECONNRESET err')
+    // if (!--err_pending) t.end()
+  })
+
+  a_ws.once('data', chunk => {
+    t.equal(chunk.toString(), 'noop', 'chiefbiiko got peer data')
+    if (!--data_pending) done()
+  })
+
+  b_ws.once('data', chunk => {
+    t.equal(chunk.toString(), 'chiefbiiko', 'noop got peer data')
+    if (!--data_pending) done()
+  })
+
+  // meta_server.on('stream', handleMetastream)
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
+  handlePair(a, b)
+
+  a_ws.write(a_info, err => {
+    if (err) t.end(err)
+    setInterval(() => a_ws.write('chiefbiiko', err => err && t.end(err)), 250)
+      .unref()
+  })
+
+  b_ws.write(b_info, err => {
+    if (err) t.end(err)
+    setInterval(() => b_ws.write('noop', err => err && t.end(err)), 250)
+      .unref()
+  })
+})
+
+tape('willDeleteMediaStreams', t => {
+  const fading_streams = [ new PassThrough(), new PassThrough() ]
+  willDeleteMediaStreams('#', fading_streams, () => {
+    t.true(fading_streams.every(stream => stream.destroyed), 'streams dead')
+    t.end()
+  })
 })
 
 /* TODO:
