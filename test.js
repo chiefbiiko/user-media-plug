@@ -1142,7 +1142,7 @@ tape('handlePair - fail pt2 - no pair', t => {
   b_ws.write(b_info, err => err && t.end(err))
 })
 
-tape.skip('unpair - pass', t => {
+tape.only('unpair - pass', t => {
   // t.plan(15)
 
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
@@ -1198,7 +1198,18 @@ tape.skip('unpair - pass', t => {
     // http_server.close(t.end)
     const meta_stream = jsonStream(new PassThrough())
     const tx = Math.random()
-    const metadata = {
+    const WHOAMI_MSG = {
+      type: 'WHOAMI',
+      user: 'chiefbiiko',
+      tx: Math.random()
+    }
+    const LOGIN_MSG = {
+      type: 'LOGIN',
+      user: 'chiefbiiko',
+      password: 'abc',
+      tx: Math.random()
+    }
+    const UNPAIR_MSG = {
       type: 'UNPAIR',
       user: 'chiefbiiko',
       peer: 'noop',
@@ -1206,16 +1217,35 @@ tape.skip('unpair - pass', t => {
     }
     // TODO: call unpair (thru handleMetadata) and assure a_ws and b_ws have muted!!!!!
 
-    meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
-      t.true(res.ok, 'res status ok')
-      t.equal(res.tx, tx, 'transaction identifiers equal')
-      a_ws.on('data', _ => t.fail('media_stream unstopped'))
-      b_ws.on('data', _ => t.fail('media_stream unstopped'))
-      setTimeout(t.end, 750)
+    meta_stream.on('data', res => {
+      switch (res.for)  {
+        case 'WHOAMI':
+          t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+          t.true(res.ok, 'res status ok')
+          break
+        case 'LOGIN':
+          t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+          t.true(res.ok, 'res status ok')
+          break
+        case 'UNPAIR':
+          t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+          t.true(res.ok, 'res status ok')
+          t.equal(res.tx, tx, 'transaction identifiers equal')
+          a_ws.on('data', _ => t.fail('media_stream unstopped'))
+          b_ws.on('data', _ => t.fail('media_stream unstopped'))
+          setTimeout(t.end, 750).unref()
+          break
+        default: t.fail('should be unreachable')
+      }
     })
 
-    handleMetadata(meta_stream, metadata, err => err && t.end(err))
+    handleMetadata(meta_stream, WHOAMI_MSG)
+    setTimeout(() => {
+      handleMetadata(meta_stream, LOGIN_MSG)
+      setTimeout(() => {
+        handleMetadata(meta_stream, UNPAIR_MSG)
+      }, 500)
+    }, 500)
 
 
     // const tx = Math.random()
@@ -1233,45 +1263,49 @@ tape.skip('unpair - pass', t => {
     //   })
   }
 
-  var data_pending = 2
-  // var err_pending = 2
-
-  a_ws.on('error', err => {
-    t.ok(err, 'probly got an ECONNRESET err')
-    // if (!--err_pending) t.end()
-  })
-
-  b_ws.on('error', err => {
-    t.ok(err, 'probly got an ECONNRESET err')
-    // if (!--err_pending) t.end()
-  })
-
-  a_ws.once('data', chunk => {
-    t.equal(chunk.toString(), 'noop', 'chiefbiiko got peer data')
-    if (!--data_pending) done()
-  })
-
-  b_ws.once('data', chunk => {
-    t.equal(chunk.toString(), 'chiefbiiko', 'noop got peer data')
-    if (!--data_pending) done()
-  })
-
-  // meta_server.on('stream', handleMetastream)
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
-
-  handlePair(a, b)
-
-  a_ws.write(a_info, err => {
+  db.put('chiefbiiko', { password: 'abc', peers: [], status: 'busy' }, err => {
     if (err) t.end(err)
-    setInterval(() => a_ws.write('chiefbiiko', err => err && t.end(err)), 250)
-      .unref()
-  })
 
-  b_ws.write(b_info, err => {
-    if (err) t.end(err)
-    setInterval(() => b_ws.write('noop', err => err && t.end(err)), 250)
-      .unref()
+    var data_pending = 2
+    // var err_pending = 2
+
+    a_ws.on('error', err => {
+      t.ok(err, 'probly got an ECONNRESET err')
+      // if (!--err_pending) t.end()
+    })
+
+    b_ws.on('error', err => {
+      t.ok(err, 'probly got an ECONNRESET err')
+      // if (!--err_pending) t.end()
+    })
+
+    a_ws.once('data', chunk => {
+      t.equal(chunk.toString(), 'noop', 'chiefbiiko got peer data')
+      if (!--data_pending) done()
+    })
+
+    b_ws.once('data', chunk => {
+      t.equal(chunk.toString(), 'chiefbiiko', 'noop got peer data')
+      if (!--data_pending) done()
+    })
+
+    // meta_server.on('stream', handleMetastream)
+    http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+    http_server.listen(10000, 'localhost')
+
+    handlePair(a, b)
+
+    a_ws.write(a_info, err => {
+      if (err) t.end(err)
+      setInterval(() => a_ws.write('chiefbiiko', err => err && t.end(err)), 250)
+        .unref()
+    })
+
+    b_ws.write(b_info, err => {
+      if (err) t.end(err)
+      setInterval(() => b_ws.write('noop', err => err && t.end(err)), 250)
+        .unref()
+    })
   })
 })
 
