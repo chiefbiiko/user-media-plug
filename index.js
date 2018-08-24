@@ -13,7 +13,7 @@ const levelup = require('levelup')
 const memdown = require('memdown')
 const enc = require('encoding-down')
 
-const hashtagStreamSet = require('./hashtag-stream-set')
+const hashtagStreamSet = require('hashtag-stream-set')
 
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 

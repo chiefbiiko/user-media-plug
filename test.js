@@ -7,7 +7,7 @@ const websocket = require('websocket-stream')
 const WebSocketServer = websocket.Server
 const streamSet = require('stream-set')
 const jsonStream = require('duplex-json-stream')
-const hashtagStreamSet = require('./hashtag-stream-set')
+const hashtagStreamSet = require('hashtag-stream-set')
 
 const levelup = require('levelup')
 const memdown = require('memdown')
