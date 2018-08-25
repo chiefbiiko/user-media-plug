@@ -1,6 +1,11 @@
 /* dev agenda
-  + a metadataserver that emits 'pair' and 'unpair' events
-  + a mediadataserver that dis/connects peers according to the events above
+  + a metadataserver that manages essential metadata exchange and persistence
+      and ultimately emits a 'pair' event, that is delegated to a
+      mediadataserver. unpair metadata messages by clients are handled by the
+      metadataserver solely as its corresponding handler just needs to close
+      over the active_media_streams set which is a HashtagStreamSet whose
+      prototype provides methods for managing "stream groups" through hashtags
+  + a mediadataserver that pairs peers (pipes their websockets)
   + a simple client api
 */
 

@@ -32,9 +32,9 @@ const { // TODO: all "pending"
   createCall,
   createAccept,
   createReject,
-  createUnpair, // pending
+  createUnpair,
   createHandlePair,
-  willDeleteMediaStreams // pending
+  willDeleteMediaStreams
 } = require('./lib/handlers.js')
 
 tape('handleUpgrade - pass', t => {
@@ -1142,8 +1142,11 @@ tape('handlePair - fail pt2 - no pair', t => {
   b_ws.write(b_info, err => err && t.end(err))
 })
 
-tape.only('unpair - pass', t => {
-  // t.plan(15)
+tape('unpair - pass', t => {
+  t.comment('this test case establishes a media con between 2 peers, ' +
+            'with one of them sending an unpair msg after some data has ' +
+            'been exchanged. after an ok response for the unpair msg no more' +
+            'data should become readable on any of the websockets...')
 
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
@@ -1174,6 +1177,9 @@ tape.only('unpair - pass', t => {
     unpair: createUnpair(active_media_streams)
   }, logged_in_users)
 
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
   const a = 'chiefbiiko'
   const b = 'noop'
   const a_info = JSON.stringify({ user: a, peer: b })
@@ -1182,22 +1188,9 @@ tape.only('unpair - pass', t => {
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
 
-  // const a_mt = websocket('ws://localhost:10000/meta')
-  //
-  // const WHOAMI_MSG = JSON.stringify({
-  //     type: 'WHOAMI',
-  //     user: 'chiefbiiko',
-  //     tx: Math.random()
-  //   })
-  //
-  // a_mt.write(WHOAMI_MSG, err => err && t.end(err))
-
   const done = () => {
-    // a_ws.destroy()
-    // b_ws.destroy()
-    // http_server.close(t.end)
     const meta_stream = jsonStream(new PassThrough())
-    const tx = Math.random()
+
     const WHOAMI_MSG = {
       type: 'WHOAMI',
       user: 'chiefbiiko',
@@ -1209,13 +1202,14 @@ tape.only('unpair - pass', t => {
       password: 'abc',
       tx: Math.random()
     }
+
+    const tx = Math.random()
     const UNPAIR_MSG = {
       type: 'UNPAIR',
       user: 'chiefbiiko',
       peer: 'noop',
       tx
     }
-    // TODO: call unpair (thru handleMetadata) and assure a_ws and b_ws have muted!!!!!
 
     meta_stream.on('data', res => {
       switch (res.for)  {
@@ -1233,7 +1227,10 @@ tape.only('unpair - pass', t => {
           t.equal(res.tx, tx, 'transaction identifiers equal')
           a_ws.on('data', _ => t.fail('media_stream unstopped'))
           b_ws.on('data', _ => t.fail('media_stream unstopped'))
-          setTimeout(t.end, 750).unref()
+          setTimeout(() => {
+            http_server.close()
+            t.end()
+          }, 750)
           break
         default: t.fail('should be unreachable')
       }
@@ -1244,74 +1241,57 @@ tape.only('unpair - pass', t => {
       handleMetadata(meta_stream, LOGIN_MSG)
       setTimeout(() => {
         handleMetadata(meta_stream, UNPAIR_MSG)
-      }, 500)
-    }, 500)
-
-
-    // const tx = Math.random()
-    // a_mt.write(JSON.stringify({ type: 'UNPAIR', user: a, peer: b, tx }),
-    //   err => {
-    //     if (err) t.end(err)
-    //     a_ws.once('data', chunk => {
-    //       const res = JSON.parse(chunk)
-    //       t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
-    //       t.true(res.ok, 'res status ok')
-    //       t.equal(res.tx, tx, 'transaction identifiers equal')
-    //       // ... make sure a_ws, b_ws are destroyed and don't emit any more data
-    //       // t.end()
-    //     })
-    //   })
+      }, 250)
+    }, 250)
   }
 
   db.put('chiefbiiko', { password: 'abc', peers: [], status: 'busy' }, err => {
     if (err) t.end(err)
 
-    var data_pending = 2
-    // var err_pending = 2
+    var data_pending = 10
+    var a_interval, b_interval
 
-    a_ws.on('error', err => {
-      t.ok(err, 'probly got an ECONNRESET err')
-      // if (!--err_pending) t.end()
+    a_ws.once('error', err => {
+      clearInterval(a_interval)
+      clearInterval(b_interval)
+      t.equal(err.message, 'write after end', 'write after end err')
+      a_ws.on('error', t.end)
     })
 
-    b_ws.on('error', err => {
-      t.ok(err, 'probly got an ECONNRESET err')
-      // if (!--err_pending) t.end()
+    b_ws.once('error', err => {
+      clearInterval(a_interval)
+      clearInterval(b_interval)
+      t.equal(err.message, 'write after end', 'write after end err')
+      b_ws.on('error', t.end)
     })
 
-    a_ws.once('data', chunk => {
+    a_ws.on('data', chunk => {
       t.equal(chunk.toString(), 'noop', 'chiefbiiko got peer data')
       if (!--data_pending) done()
     })
 
-    b_ws.once('data', chunk => {
+    b_ws.on('data', chunk => {
       t.equal(chunk.toString(), 'chiefbiiko', 'noop got peer data')
       if (!--data_pending) done()
     })
-
-    // meta_server.on('stream', handleMetastream)
-    http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-    http_server.listen(10000, 'localhost')
 
     handlePair(a, b)
 
     a_ws.write(a_info, err => {
       if (err) t.end(err)
-      setInterval(() => a_ws.write('chiefbiiko', err => err && t.end(err)), 250)
-        .unref()
+      a_interval = setInterval(() => a_ws.write('chiefbiiko'), 250).unref()
     })
 
     b_ws.write(b_info, err => {
       if (err) t.end(err)
-      setInterval(() => b_ws.write('noop', err => err && t.end(err)), 250)
-        .unref()
+      b_interval = setInterval(() => b_ws.write('noop'), 250).unref()
     })
   })
 })
 
 tape('willDeleteMediaStreams', t => {
   const fading_streams = [ new PassThrough(), new PassThrough() ]
-  willDeleteMediaStreams('#', fading_streams, () => {
+  willDeleteMediaStreams('#alice-bob', fading_streams, () => {
     t.true(fading_streams.every(stream => stream.destroyed), 'streams dead')
     t.end()
   })
