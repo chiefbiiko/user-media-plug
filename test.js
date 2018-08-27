@@ -1091,10 +1091,13 @@ tape('add peers - pass', t => {
 
         meta_stream.once('data', res => {
           t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
-          t.true(res.ok, 'response status ok')
           t.equal(res.tx, tx, 'transaction identifiers equal')
-          // @Biiko: How to test? Make sure peers have been added to updated user
-          t.end()
+          t.true(res.ok, 'response status ok')
+          db.get(metadata.user, function (err, user) {
+            if (err) t.end(err)
+            t.same(user.peers, metadata.peers, 'peers in db')
+            t.end()
+          })
         })
 
         addPeers(meta_stream, metadata, err => {
@@ -1143,7 +1146,7 @@ tape('delete peers - pass', t => {
   const deletePeers = createDeletePeers(db)
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'DEL_PEERS', user: 'balou', peers: [], tx }
+  const metadata = { type: 'DEL_PEERS', user: 'noop', peers: [], tx }
 
   db.put('balou', { peers: [ 'noop', 'og' ], status: 'online'}, err => {
     if (err) t.end(err)
@@ -1154,10 +1157,13 @@ tape('delete peers - pass', t => {
 
         meta_stream.once('data', res => {
           t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
-          t.true(res.ok, 'response status ok')
           t.equal(res.tx, tx, 'transaction identifiers equal')
-          t.end()
-          // @Biiko: How to test? Make sure peers have been deleted from updated user
+          t.true(res.ok, 'response status ok')
+          db.get(metadata.user, function (err, user) {
+            if (err) t.end(err)
+            t.same(user.peers, metadata.peers, 'empty peer array')
+            t.end()
+          })
         })
 
         deletePeers(meta_stream, metadata, err => {
