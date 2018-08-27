@@ -39,7 +39,7 @@ const {
   createReject,
   createUnpair,
   createHandlePair,
-  willDeleteMediaStreams
+  willDeleteMediastreams
 } = require('./lib/handlers.js')
 
 const debug = require('debug')('user-media-plug:index')
@@ -49,7 +49,7 @@ const HOST = process.env.HOST || 'localhost'
 
 const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 const active_meta_streams = streamSet()
-const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
 const logged_in_users = new Set()
 
 const http_server = createServer()

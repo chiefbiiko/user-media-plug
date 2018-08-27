@@ -34,7 +34,7 @@ const { // TODO: all "pending"
   createReject,
   createUnpair,
   createHandlePair,
-  willDeleteMediaStreams
+  willDeleteMediastreams
 } = require('./lib/handlers.js')
 
 tape('handleUpgrade - pass', t => {
@@ -85,7 +85,7 @@ tape('handleUpgrade - fail - switch fallthru', t => {
 tape('handleMetastream', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -117,7 +117,7 @@ tape('handleMetastream', t => {
 tape('handleMetadata - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -161,7 +161,7 @@ tape('handleMetadata - fail pt1', t => {
 tape('handleMetadata - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -207,7 +207,7 @@ tape('handleMetadata - fail pt2', t => {
 tape('handleMetadata - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -253,7 +253,7 @@ tape('handleMetadata - fail pt3', t => {
 tape('handleMetadata - switch fallthru', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -1013,7 +1013,7 @@ tape('handlePair - pass', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
 
   const handlePair = createHandlePair(media_server, active_media_streams)
 
@@ -1068,7 +1068,7 @@ tape('handlePair - fail pt1 - invalid schema', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
 
   const handlePair = createHandlePair(media_server, active_media_streams)
 
@@ -1108,7 +1108,7 @@ tape('handlePair - fail pt2 - no pair', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
 
   const handlePair = createHandlePair(media_server, active_media_streams)
 
@@ -1150,7 +1150,7 @@ tape('unpair - pass', t => {
 
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_meta_streams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediaStreams)
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -1289,9 +1289,9 @@ tape('unpair - pass', t => {
   })
 })
 
-tape('willDeleteMediaStreams', t => {
+tape('willDeleteMediastreams', t => {
   const fading_streams = [ new PassThrough(), new PassThrough() ]
-  willDeleteMediaStreams('#alice-bob', fading_streams, () => {
+  willDeleteMediastreams('#alice-bob', fading_streams, () => {
     t.true(fading_streams.every(stream => stream.destroyed), 'streams dead')
     t.end()
   })
