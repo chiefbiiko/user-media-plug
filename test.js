@@ -21,7 +21,7 @@ const { // TODO: all "pending"
   createHandleUpgrade,
   createHandleMetastream,
   createHandleMetadata,
-  createMetaWhoami,
+  createWhoami,
   createRegisterUser, // pending
   createAddPeers,     // pending
   createDeletePeers,  // pending
@@ -95,7 +95,7 @@ tape('handleMetastream', t => {
   const sendForceCall = createSendForceCall(active_meta_streams)
 
   const handleMetastream = createHandleMetastream(createHandleMetadata({
-    metaWhoami: createMetaWhoami(active_meta_streams),
+    whoami: createWhoami(active_meta_streams),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -127,7 +127,7 @@ tape('handleMetadata - fail pt1', t => {
   const sendForceCall = createSendForceCall(active_meta_streams)
 
   const handleMetadata = createHandleMetadata({
-    metaWhoami: createMetaWhoami(active_meta_streams),
+    whoami: createWhoami(active_meta_streams),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -171,7 +171,7 @@ tape('handleMetadata - fail pt2', t => {
   const sendForceCall = createSendForceCall(active_meta_streams)
 
   const handleMetadata = createHandleMetadata({
-    metaWhoami: createMetaWhoami(active_meta_streams),
+    whoami: createWhoami(active_meta_streams),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -217,7 +217,7 @@ tape('handleMetadata - fail pt3', t => {
   const sendForceCall = createSendForceCall(active_meta_streams)
 
   const handleMetadata = createHandleMetadata({
-    metaWhoami: createMetaWhoami(active_meta_streams),
+    whoami: createWhoami(active_meta_streams),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -263,7 +263,7 @@ tape('handleMetadata - switch fallthru', t => {
   const sendForceCall = createSendForceCall(active_meta_streams)
 
   const handleMetadata = createHandleMetadata({
-    metaWhoami: createMetaWhoami(active_meta_streams),
+    whoami: createWhoami(active_meta_streams),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -294,9 +294,9 @@ tape('handleMetadata - switch fallthru', t => {
   })
 })
 
-tape('metaWhoami - pass', t => {
+tape('whoami - pass', t => {
   const active_meta_streams = streamSet()
-  const metaWhoami = createMetaWhoami(active_meta_streams)
+  const whoami = createWhoami(active_meta_streams)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -309,15 +309,15 @@ tape('metaWhoami - pass', t => {
     t.end()
   })
 
-  metaWhoami(meta_stream, metadata, err => {
+  whoami(meta_stream, metadata, err => {
     if (err) t.end(err)
   })
 })
 
-tape('metaWhoami - fail pt1', t => {
+tape('whoami - fail pt1', t => {
   const active_meta_streams = streamSet()
 
-  const metaWhoami = createMetaWhoami(active_meta_streams)
+  const whoami = createWhoami(active_meta_streams)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
@@ -334,20 +334,20 @@ tape('metaWhoami - fail pt1', t => {
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
-  metaWhoami(meta_stream, metadata, err => {
+  whoami(meta_stream, metadata, err => {
     t.true(err.message.includes('excess'), 'excess whoami')
     t.end()
   })
 })
 
-tape('metaWhoami - fail pt2', t => {
+tape('whoami - fail pt2', t => {
   const active_meta_streams = streamSet()
 
-  const metaWhoami = createMetaWhoami(active_meta_streams)
+  const whoami = createWhoami(active_meta_streams)
 
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'metaWhoami', user: 'chiefbiiko', tx }
+  const metadata = { type: 'whoami', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
@@ -356,7 +356,7 @@ tape('metaWhoami - fail pt2', t => {
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
-  metaWhoami(meta_stream, metadata, err => {
+  whoami(meta_stream, metadata, err => {
     t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
     t.end()
   })
@@ -1364,7 +1364,7 @@ tape('unpair - pass', t => {
 
   const handlePair = createHandlePair(media_server, active_media_streams)
   const handleMetadata = createHandleMetadata({
-    metaWhoami: createMetaWhoami(active_meta_streams),
+    whoami: createWhoami(active_meta_streams),
     registerUser: createRegisterUser(db),
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
@@ -1397,6 +1397,7 @@ tape('unpair - pass', t => {
       user: 'chiefbiiko',
       tx: Math.random()
     }
+
     const LOGIN_MSG = {
       type: 'LOGIN',
       user: 'chiefbiiko',
@@ -1429,6 +1430,151 @@ tape('unpair - pass', t => {
           a_ws.on('data', _ => t.fail('media_stream unstopped'))
           b_ws.on('data', _ => t.fail('media_stream unstopped'))
           setTimeout(() => {
+            http_server.close()
+            t.end()
+          }, 750)
+          break
+        default: t.fail('should be unreachable')
+      }
+    })
+
+    handleMetadata(meta_stream, WHOAMI_MSG)
+    setTimeout(() => {
+      handleMetadata(meta_stream, LOGIN_MSG)
+      setTimeout(() => {
+        handleMetadata(meta_stream, UNPAIR_MSG)
+      }, 250)
+    }, 250)
+  }
+
+  db.put('chiefbiiko', { password: 'abc', peers: [], status: 'busy' }, err => {
+    if (err) t.end(err)
+
+    var data_pending = 10
+    var a_interval, b_interval
+
+    a_ws.once('error', err => {
+      clearInterval(a_interval)
+      clearInterval(b_interval)
+      t.equal(err.message, 'write after end', 'write after end err')
+      a_ws.on('error', t.end)
+    })
+
+    b_ws.once('error', err => {
+      clearInterval(a_interval)
+      clearInterval(b_interval)
+      t.equal(err.message, 'write after end', 'write after end err')
+      b_ws.on('error', t.end)
+    })
+
+    a_ws.on('data', chunk => {
+      t.equal(chunk.toString(), 'noop', 'chiefbiiko got peer data')
+      if (!--data_pending) done()
+    })
+
+    b_ws.on('data', chunk => {
+      t.equal(chunk.toString(), 'chiefbiiko', 'noop got peer data')
+      if (!--data_pending) done()
+    })
+
+    handlePair(a, b)
+
+    a_ws.write(a_info, err => {
+      if (err) t.end(err)
+      a_interval = setInterval(() => a_ws.write('chiefbiiko'), 250).unref()
+    })
+
+    b_ws.write(b_info, err => {
+      if (err) t.end(err)
+      b_interval = setInterval(() => b_ws.write('noop'), 250).unref()
+    })
+  })
+})
+
+tape('unpair - fail - invalid metadata', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_meta_streams = streamSet()
+  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const logged_in_users = new Set()
+
+  const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
+  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const http_server = createServer()
+
+  const forward = createForward(active_meta_streams)
+  const sendForceCall = createSendForceCall(active_meta_streams)
+
+  const handlePair = createHandlePair(media_server, active_media_streams)
+  const handleMetadata = createHandleMetadata({
+    whoami: createWhoami(active_meta_streams),
+    registerUser: createRegisterUser(db),
+    addPeers: createAddPeers(db),
+    deletePeers: createDeletePeers(db),
+    getPeers: createGetPeers(db),
+    login: createLogin(db, logged_in_users),
+    logout: createLogout(logged_in_users),
+    status: createStatus(db, active_meta_streams, forward),
+    call: createCall(forward),
+    accept: createAccept(meta_server, forward, sendForceCall),
+    reject: createReject(forward),
+    unpair: createUnpair(active_media_streams)
+  }, logged_in_users)
+
+  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
+  http_server.listen(10000, 'localhost')
+
+  const a = 'chiefbiiko'
+  const b = 'noop'
+  const a_info = JSON.stringify({ user: a, peer: b })
+  const b_info = JSON.stringify({ user: b, peer: a })
+
+  const a_ws = websocket('ws://localhost:10000/media')
+  const b_ws = websocket('ws://localhost:10000/media')
+
+  const done = () => {
+    const meta_stream = jsonStream(new PassThrough())
+
+    const WHOAMI_MSG = {
+      type: 'WHOAMI',
+      user: 'chiefbiiko',
+      tx: Math.random()
+    }
+
+    const LOGIN_MSG = {
+      type: 'LOGIN',
+      user: 'chiefbiiko',
+      password: 'abc',
+      tx: Math.random()
+    }
+
+    const tx = Math.random()
+    const UNPAIR_MSG = { // missing prop "peer"
+      type: 'UNPAIR',
+      user: 'chiefbiiko',
+      tx
+    }
+
+    meta_stream.on('data', res => {
+      switch (res.for)  {
+        case 'WHOAMI':
+          t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+          t.true(res.ok, 'res status ok')
+          break
+        case 'LOGIN':
+          t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+          t.true(res.ok, 'res status ok')
+          break
+        case 'UNPAIR':
+          t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
+          t.false(res.ok, 'res status not ok...')
+          t.comment('...invalid metadata')
+          t.equal(res.tx, tx, 'transaction identifiers equal')
+          a_ws.on('data', _ => t.pass('chiefbiiko\'s media_stream unstopped'))
+          b_ws.on('data', _ => t.pass('noop\'s media_stream unstopped'))
+          setTimeout(() => {
+            a_ws.destroy()
+            b_ws.destroy()
             http_server.close()
             t.end()
           }, 750)
