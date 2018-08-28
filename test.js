@@ -1094,7 +1094,7 @@ tape('add peers - pass', t => {
           t.equal(res.tx, tx, 'transaction identifiers equal')
           t.true(res.ok, 'response status ok')
           db.get(metadata.user, function (err, user) {
-            if (err) t.end(err)
+            if(err) t.end(err)
             t.same(user.peers, metadata.peers, 'peers in db')
             t.end()
           })
@@ -1160,7 +1160,7 @@ tape('delete peers - pass', t => {
           t.equal(res.tx, tx, 'transaction identifiers equal')
           t.true(res.ok, 'response status ok')
           db.get(metadata.user, function (err, user) {
-            if (err) t.end(err)
+            if(err) t.end(err)
             t.same(user.peers, metadata.peers, 'empty peer array')
             t.end()
           })
