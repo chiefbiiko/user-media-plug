@@ -26,7 +26,7 @@ const {
   createHandleUpgrade,
   createHandleMetastream,
   createHandleMetadata,
-  createMetaWhoami,
+  createWhoami,
   createRegisterUser,
   createAddPeers,
   createDeletePeers,
@@ -64,7 +64,7 @@ const handleError = err => err && debug(`error: ${err.message}`)
 const handleUpgrade = createHandleUpgrade(meta_server, media_server)
 const handlePair = createHandlePair(media_server)
 const handleMetastream = createHandleMetastream(createHandleMetadata({
-  metaWhoami: createMetaWhoami(active_meta_streams),
+  whoami: createWhoami(active_meta_streams),
   registerUser: createRegisterUser(db),
   addPeers: createAddPeers(db),
   deletePeers: createDeletePeers(db),
