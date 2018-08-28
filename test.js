@@ -1015,8 +1015,8 @@ tape('registerUser - pass', t => {
   const metadata = {
                      type: 'REGISTER',
                      user: 'balou',
-                     peers: [],
                      password: 'kd',
+                     peers: [],
                      status: 'noop',
                      tx
                    }
@@ -1069,11 +1069,11 @@ tape('registerUser - fail part 2 - user already exists', t => {
   const metadata = {
                      type: 'REGISTER',
                      user: 'balou',
-                     peers: [],
                      password: 'kd',
+                     peers: [],
                      status: 'noop',
                      tx }
-  db.put('balou', { peers: [], status: 'busy' }, err => {
+  db.put('balou', { password: 'kd', peers: [], status: 'busy' }, err => {
     if (err) t.end(err)
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
@@ -1096,14 +1096,14 @@ tape('addPeers - pass', t => {
   const metadata = {
                      type: 'ADD_PEERS',
                      user: 'balou',
-                     peers: [ 'mikey', 'kingsley' ],
                      password: 'kd',
+                     peers: [ 'mikey', 'kingsley' ],
                      status: 'noop',
                      tx
                    }
   const expected = [ 'og', 'mikey', 'kingsley' ]
 
-  db.put('balou', { peers: [ 'og' ], status: 'noop', password: 'kd' }, err => {
+  db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'noop' }, err => {
     if (err) t.end(err)
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
@@ -1135,7 +1135,7 @@ tape('addPeers - fail pt 1 - invalid metadata', t => {
                      status: 'noop',
                      tx
                    }
-  db.put('balou', { peers: [ 'og' ], status: 'offline' }, err => {
+  db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'noop' }, err => {
     if (err) t.end(err)
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
@@ -1158,12 +1158,12 @@ tape('deletePeers - pass', t => {
   const metadata = {
                     type: 'DEL_PEERS',
                     user: 'balou',
-                    peers: [ 'og' ],
                     password: 'kd',
+                    peers: [ 'og' ],
                     status: 'busy',
                     tx
                   }
-  db.put('balou', { peers: [ 'og' ], status: 'busy', password: 'kd' }, err => {
+  db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'busy' }, err => {
     if (err) t.end(err)
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
@@ -1195,7 +1195,7 @@ tape('deletePeers - fail pt 1 - invalid metadata', t => {
                      status: 'busy',
                      tx
                    }
-   db.put('balou', { peers: [ 'og' ], status: 'busy', password: 'kd' }, err => {
+   db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'busy' }, err => {
      if (err) t.end(err)
      meta_stream.once('data', res => {
        t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
