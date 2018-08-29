@@ -146,7 +146,7 @@ tape('handleMetadata - fail pt1', t => {
   const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc "whoami" must be the inital msg sent thru a socket')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -192,7 +192,7 @@ tape('handleMetadata - fail pt2', t => {
   meta_stream.whoami = 'noop'
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc meta_stream.whoami !== metadata.user')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -238,7 +238,7 @@ tape('handleMetadata - fail pt3', t => {
   meta_stream.whoami = 'chiefbiiko'
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc metadata.user is not logged in')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -282,7 +282,7 @@ tape('handleMetadata - switch fallthru', t => {
   const metadata = { type: 'unknown', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of an unknown metadata.type')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -303,7 +303,7 @@ tape('whoami - pass', t => {
   const metadata = { type: 'WHOAMI', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     t.end()
@@ -328,7 +328,7 @@ tape('whoami - fail pt1', t => {
   active_meta_streams.add(peer_stream)
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc the sent whoami identifier (user) already exists')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -350,7 +350,7 @@ tape('whoami - fail pt2', t => {
   const metadata = { type: 'whoami', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -376,7 +376,7 @@ tape('login - pass', t => {
     const metadata = { type: 'LOGIN', user: 'chiefbiiko', password: 'abc', tx }
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.true(res.ok, 'response status ok')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       t.end()
@@ -402,7 +402,7 @@ tape('login - fail pt1', t => {
     const metadata = { type: 'LOGIN', user: 'chiefbiiko', password: 'abz', tx }
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.false(res.ok, 'response status not ok...')
       t.comment('...wrong password')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -426,7 +426,7 @@ tape('login - fail pt2', t => {
   const metadata = { msg: 'LOGIN', user: 'chiefbiiko', password: 'abc', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -448,7 +448,7 @@ tape('logout - pass', t => {
   const metadata = { type: 'LOGOUT', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     t.end()
@@ -469,7 +469,7 @@ tape('logout - fail', t => {
   const metadata = { type: 'LOGOUT', username: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -502,7 +502,7 @@ tape('status - pass', t => {
     var pending = 2
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.true(res.ok, 'response status ok')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       if (!--pending) t.end()
@@ -539,7 +539,7 @@ tape('status - fail pt1', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.false(res.ok, 'response status not ok...')
       t.comment('...invalid schema')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -571,7 +571,7 @@ tape('status - fail pt2', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.false(res.ok, 'response status not ok...')
       t.comment('...bc of a db error (notFound)')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -601,7 +601,7 @@ tape('call - pass', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     if (!--pending) t.end()
@@ -629,7 +629,7 @@ tape('call - fail pt1', t => {
   const metadata = { type: 'CALLING', user: 'chiefbiiko', peer: 'noop', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -658,7 +658,7 @@ tape('call - fail pt2', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of an inactive/unknown receiver')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -703,7 +703,7 @@ tape('accept - pass', t => {
         t.equal(msg.peer, 'noop', 'peer noop')
         break
       case 'RES':
-        t.true(valid.schema_RESPONSE(msg), 'response is valid schema R')
+        t.true(valid.schema_RESPONSE(msg), 'valid response schema')
         t.true(msg.ok, 'response status ok')
         t.equal(msg.tx, tx, 'transaction identifiers equal')
         if (!--pending) t.end()
@@ -716,11 +716,11 @@ tape('accept - pass', t => {
   peer_stream.on('data', notif => {
     switch (notif.type) {
       case 'FORCE_CALL':
-        t.true(valid.schema_FORCE_CALL(notif), 'valid schema F 4 force-call msg')
+        t.true(valid.schema_FORCE_CALL(notif), 'valid schema 4 force-call msg')
         t.equal(notif.peer, 'chiefbiiko', 'peer chiefbiiko')
         break
       case 'ACCEPT':
-        t.true(valid.schema_CALL_ACCEPT_REJECT(notif), 'response is valid schema C')
+        t.true(valid.schema_CALL_ACCEPT_REJECT(notif), 'valid response schema')
         t.equal(notif.tx, tx, 'transaction identifiers equal')
         if (!--pending) t.end()
         break
@@ -756,7 +756,7 @@ tape('accept - fail pt1', t => {
   const metadata = { type: 'ACCEPTING', user: 'chiefbiiko', peer: 'noop', tx }
 
   meta_stream.on('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -786,7 +786,7 @@ tape('accept - fail pt2', t => {
   active_meta_streams.add(meta_stream)
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok')
     t.comment('...bc of an inactive/unknown receiver')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -815,7 +815,7 @@ tape('reject - pass', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     if (!--pending) t.end()
@@ -843,7 +843,7 @@ tape('reject - fail pt1', t => {
   const metadata = { type: 'CALLING', user: 'chiefbiiko', peer: 'noop', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -872,7 +872,7 @@ tape('reject - fail pt2', t => {
   var pending = 2
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of an inactive/unknown receiver')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -910,7 +910,7 @@ tape('getPeers - pass', t => {
         ]
 
         meta_stream.once('data', res => {
-          t.true(valid.schema_RESPONSE_PEERS(res), 'response is valid schema RP')
+          t.true(valid.schema_RESPONSE_PEERS(res), 'valid response schema')
           t.true(res.ok, 'response status ok')
           t.true(Array.isArray(res.peers), 'peer array')
           t.same(res.peers, expected, 'peer n status')
@@ -936,7 +936,7 @@ tape('getPeers - fail pt1', t => {
   const metadata = { type: 'GET_PEERS', username: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...invalid schema')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -958,7 +958,7 @@ tape('getPeers - fail pt2', t => {
   const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc of a db error (notFound)')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -992,7 +992,7 @@ tape('getPeers - fail pt3', t => {
         ]
 
         meta_stream.once('data', res => {
-          t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+          t.true(valid.schema_RESPONSE(res), 'valid response schema')
           t.false(res.ok, 'response status not ok...')
           t.comment('...bc of a db error (notFound)')
           t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -1022,7 +1022,7 @@ tape('registerUser - pass', t => {
   }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.true(res.ok, 'response status ok')
     t.equal(res.tx, tx, 'transaction identifiers equal')
     db.get(metadata.user, (err, user) => {
@@ -1051,7 +1051,7 @@ tape('registerUser - fail pt1 - invalid metadata', t => {
   }
 
   meta_stream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc request metadata was lacking prop "password"')
     t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -1081,7 +1081,7 @@ tape('registerUser - fail pt2 - user already exists', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.false(res.ok, 'response status not ok...')
       t.comment('...user already exists')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -1114,7 +1114,7 @@ tape('addPeers - pass', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       t.true(res.ok, 'response status ok')
       db.get(metadata.user, function (err, user) {
@@ -1147,7 +1147,7 @@ tape('addPeers - fail pt1 - invalid metadata', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.false(res.ok, 'response status not ok')
       t.comment('... metadata is missing prop peers')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -1178,7 +1178,7 @@ tape('deletePeers - pass', t => {
     if (err) t.end(err)
 
     meta_stream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       t.true(res.ok, 'response status ok')
       db.get(metadata.user, function (err, user) {
@@ -1211,7 +1211,7 @@ tape('deletePeers - fail pt1 - invalid metadata', t => {
      if (err) t.end(err)
 
      meta_stream.once('data', res => {
-       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
+       t.true(valid.schema_RESPONSE(res), 'valid response schema')
        t.false(res.ok, 'response status not ok...')
        t.comment('...bc metadata is missing prop peers')
        t.equal(res.tx, tx, 'transaction identifiers equal')
