@@ -1018,8 +1018,6 @@ tape('registerUser - pass', t => {
     type: 'REGISTER',
     user: 'balou',
     password: 'kd',
-    peers: [],
-    status: 'noop',
     tx
   }
 
@@ -1030,8 +1028,6 @@ tape('registerUser - pass', t => {
     db.get(metadata.user, (err, user) => {
       if (err) t.end(err)
       t.equal(user.password, metadata.password, 'password')
-      t.equal(user.status, metadata.status, 'status')
-      t.same(user.peers, metadata.peers, 'peers')
       t.end()
     })
   })
@@ -1051,8 +1047,6 @@ tape('registerUser - fail pt1 - invalid metadata', t => {
   const metadata = {
     type: 'REGISTER',
     user: 'balou',
-    peers: [],
-    status: 'noop',
     tx
   }
 
@@ -1080,8 +1074,6 @@ tape('registerUser - fail pt2 - user already exists', t => {
     type: 'REGISTER',
     user: 'balou',
     password: 'kd',
-    peers: [],
-    status: 'noop',
     tx
   }
 
