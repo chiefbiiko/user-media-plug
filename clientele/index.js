@@ -22,6 +22,7 @@ const onceTransactionResponse = require('./lib/onceTransactionResponse.js')
 
 const debug = require('debug')('clientele')
 
+// TODO: register handler for force-call server msg and estSablish media con
 function Clientele (url) {
   if (!(this instanceof Clientele)) return new Clientele(url)
   EventEmitter.call(this)
@@ -118,6 +119,7 @@ Clientele.prototype.status = function (status, cb) {}
 Clientele.prototype.call = function (peer, cb) {}
 Clientele.prototype.accept = function (peer, cb) {}
 Clientele.prototype.reject = function (peer, cb) {}
+Clientele.prototype.unpair = function (peer, cb) {}
 
 Clientele.prototype.__defineGetter__('user', function () { return this._user })
 

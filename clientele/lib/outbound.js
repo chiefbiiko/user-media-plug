@@ -6,6 +6,14 @@ const outbound = Object.freeze({
       tx
     }
   },
+  register (user, password, tx) {
+    return {
+      type: 'REGISTER',
+      user,
+      password,
+      tx
+    }
+  },
   login (user, password, tx) {
     return {
       type: 'LOGIN',
@@ -21,13 +29,29 @@ const outbound = Object.freeze({
       tx
     }
   },
-  register (user, password, tx) {
-    return {
-      type: 'REGISTER',
-      user,
-      password,
-      tx
-    }
+  addPeers (user, peers, tx) {
+
+  },
+  deletePeers (user, peers, tx) {
+
+  },
+  getPeers (user, tx) {
+
+  },
+  status (user, status, tx) {
+
+  },
+  call (user, peer, tx) {
+
+  },
+  accept (user, peer, tx) {
+
+  },
+  reject (user, peer, tx) {
+
+  },
+  unpair (user, peer, tx) {
+
   }
 })
 
