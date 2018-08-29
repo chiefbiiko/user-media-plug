@@ -1009,9 +1009,9 @@ tape('getPeers - fail pt3', t => {
 
 tape('registerUser - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  
+
   const registerUser = createRegisterUser(db)
-  
+
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const metadata = {
@@ -1022,7 +1022,7 @@ tape('registerUser - pass', t => {
     status: 'noop',
     tx
   }
-  
+
   meta_stream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.true(res.ok, 'response status ok')
@@ -1035,7 +1035,7 @@ tape('registerUser - pass', t => {
       t.end()
     })
   })
-  
+
   registerUser(meta_stream, metadata, err => {
     if (err) t.end(err)
   })
@@ -1043,9 +1043,9 @@ tape('registerUser - pass', t => {
 
 tape('registerUser - fail pt1 - invalid metadata', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  
+
   const registerUser = createRegisterUser(db)
-  
+
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const metadata = {
@@ -1055,14 +1055,14 @@ tape('registerUser - fail pt1 - invalid metadata', t => {
     status: 'noop',
     tx
   }
-  
+
   meta_stream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
     t.false(res.ok, 'response status not ok...')
     t.comment('...bc request metadata was lacking prop "password"')
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
-  
+
   registerUser(meta_stream, metadata, err => {
     t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
     t.end()
@@ -1071,9 +1071,9 @@ tape('registerUser - fail pt1 - invalid metadata', t => {
 
 tape('registerUser - fail pt2 - user already exists', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  
+
   const registerUser = createRegisterUser(db)
-  
+
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const metadata = {
@@ -1084,17 +1084,17 @@ tape('registerUser - fail pt2 - user already exists', t => {
     status: 'noop',
     tx
   }
-  
+
   db.put('balou', { password: 'kd', peers: [], status: 'busy' }, err => {
     if (err) t.end(err)
-    
+
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok...')
       t.comment('...user already exists')
       t.equal(res.tx, tx, 'transaction identifiers equal')
     })
-    
+
     registerUser(meta_stream, metadata, err => {
       t.true(err.message.startsWith('cannot register'), 'registration error')
       t.end()
@@ -1104,36 +1104,34 @@ tape('registerUser - fail pt2 - user already exists', t => {
 
 tape('addPeers - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  
+
   const addPeers = createAddPeers(db)
-  
+
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const metadata = {
     type: 'ADD_PEERS',
     user: 'balou',
-    peers: [ 'mikey', 'kingsley' ]
+    peers: [ 'mikey', 'kingsley' ],
     tx
   }
-  
+
   const expected = [ 'og', 'mikey', 'kingsley' ]
 
   db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'noop' }, err => {
     if (err) t.end(err)
-    
+
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.equal(res.tx, tx, 'transaction identifiers equal')
       t.true(res.ok, 'response status ok')
       db.get(metadata.user, function (err, user) {
         if (err) t.end(err)
-        t.equal(user.password, metadata.password, 'password')
-        t.equal(user.status, metadata.status, 'status')
         t.same(user.peers, expected, 'peers in db')
         t.end()
       })
     })
-    
+
     addPeers(meta_stream, metadata, err => {
       if (err) t.end(err)
     })
@@ -1142,9 +1140,9 @@ tape('addPeers - pass', t => {
 
 tape('addPeers - fail pt1 - invalid metadata', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  
+
   const addPeers = createAddPeers(db)
-  
+
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const metadata = {
@@ -1152,17 +1150,17 @@ tape('addPeers - fail pt1 - invalid metadata', t => {
     user: 'balou',
     tx
   }
-  
+
   db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'noop' }, err => {
     if (err) t.end(err)
-    
+
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.false(res.ok, 'response status not ok')
       t.comment('... metadata is missing prop peers')
       t.equal(res.tx, tx, 'transaction identifiers equal')
     })
-    
+
     addPeers(meta_stream, metadata, err => {
       t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
       t.end()
@@ -1172,9 +1170,9 @@ tape('addPeers - fail pt1 - invalid metadata', t => {
 
 tape('deletePeers - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-  
+
   const deletePeers = createDeletePeers(db)
-  
+
   const tx = Math.random()
   const meta_stream = jsonStream(new PassThrough())
   const metadata = {
@@ -1183,10 +1181,10 @@ tape('deletePeers - pass', t => {
     peers: [ 'og' ],
     tx
   }
-  
+
   db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'busy' }, err => {
     if (err) t.end(err)
-    
+
     meta_stream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
       t.equal(res.tx, tx, 'transaction identifiers equal')
@@ -1194,12 +1192,10 @@ tape('deletePeers - pass', t => {
       db.get(metadata.user, function (err, user) {
         if (err) t.end(err)
         t.same(user.peers, [], 'peers deleted')
-        t.same(user.status, metadata.status, 'status')
-        t.equal(user.password, metadata.password, 'password')
         t.end()
       })
     })
-    
+
     deletePeers(meta_stream, metadata, err => {
       if (err) t.end(err)
     })
@@ -1208,9 +1204,9 @@ tape('deletePeers - pass', t => {
 
 tape('deletePeers - fail pt1 - invalid metadata', t => {
    const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-   
+
    const deletePeers = createDeletePeers(db)
-   
+
    const tx = Math.random()
    const meta_stream = jsonStream(new PassThrough())
    const metadata = {
@@ -1218,17 +1214,17 @@ tape('deletePeers - fail pt1 - invalid metadata', t => {
      user: 'balou',
      tx
    }
-   
+
    db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'busy' }, err => {
      if (err) t.end(err)
-     
+
      meta_stream.once('data', res => {
        t.true(valid.schema_RESPONSE(res), 'response is valid schema R')
        t.false(res.ok, 'response status not ok...')
        t.comment('...bc metadata is missing prop peers')
        t.equal(res.tx, tx, 'transaction identifiers equal')
      })
-     
+
      deletePeers(meta_stream, metadata, err => {
        t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
        t.end()
