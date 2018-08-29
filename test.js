@@ -17,14 +17,14 @@ const valid = require('./lib/valid.js')
 
 const { createForward, createSendForceCall } = require('./lib/notify.js')
 
-const { // TODO: all "pending"
+const {
   createHandleUpgrade,
   createHandleMetastream,
   createHandleMetadata,
   createWhoami,
-  createRegisterUser, // pending
-  createAddPeers,     // pending
-  createDeletePeers,  // pending
+  createRegisterUser,
+  createAddPeers,
+  createDeletePeers,
   createGetPeers,
   createLogin,
   createLogout,
@@ -1652,16 +1652,3 @@ tape('willDeleteMediastreams', t => {
     t.end()
   })
 })
-
-/* TODO:
-  + write tests for all remaining handlers (./lib/handlers/*)
-  + keep test coverage high -> test metadata validation if blocks,
-    run into db errors where possible; fx: trigger a notFound err
-  + do not share instances across test cases; see above
-  + add comments to responses that are not ok
-  + remove unused variables if you find some
-  + ...
-
-  @Balou: you can start by testing ./lib/handlers::registerUser|addPeers|deletePeers
-  @Biiko: test all remaining handlers
-*/

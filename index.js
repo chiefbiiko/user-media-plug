@@ -1,7 +1,7 @@
 /* dev agenda
   + a metadataserver that manages essential metadata exchange and persistence
       and ultimately emits a 'pair' event, that is delegated to a
-      mediadataserver. unpair metadata messages by clients are handled by the
+      mediadataserver. 'unpair' metadata messages by clients are handled by the
       metadataserver solely as its corresponding handler just needs to close
       over the active_media_streams set which is a HashtagStreamSet whose
       prototype provides methods for managing "stream groups" through hashtags
