@@ -21,12 +21,11 @@ const outbound = Object.freeze({
       tx
     }
   },
-  register (user, password, peers, tx) {
+  register (user, password, tx) {
     return {
       type: 'REGISTER',
       user,
       password,
-      peers,
       tx
     }
   }

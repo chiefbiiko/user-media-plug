@@ -5,20 +5,22 @@ const jsonStream = require('duplex-json-stream')
 
 const outbound = require('./lib/outbound.js')
 
+// const isTruthyString = x => x && typeof x === 'string'
+// const isStringArray = x => Array.isArray(x) && x.every(isTruthyString)
+const { isTruthyString, isStringArray } = require('./lib/is.js')
+
+// const onceStreamPayloadPasses = (readable, pred) => {
+//   return new Promise((resolve, reject) => {
+//     readable.on('data', function proxy (metadata) {
+//       if (!pred(metadata)) return
+//       readable.removeListener('data', proxy)
+//       resolve(metadata)
+//     })
+//   })
+// }
+const onceTransactionResponse = require('./lib/onceTransactionResponse.js')
+
 const debug = require('debug')('clientele')
-
-const isTruthyString = x => x && typeof x === 'string'
-const isStringArray = x => Array.isArray(x) && x.every(isTruthyString)
-
-const onceStreamPayloadPasses = (readable, pred) => {
-  return new Promise((resolve, reject) => {
-    readable.on('data', function proxy (metadata) {
-      if (!pred(metadata)) return
-      readable.removeListener('data', proxy)
-      resolve(metadata)
-    })
-  })
-}
 
 function Clientele (url) {
   if (!(this instanceof Clientele)) return new Clientele(url)
@@ -43,7 +45,27 @@ Clientele.prototype.whoami = function (user, cb) {
 
   self._websocket.write(outbound.whoami(user, tx), err => {
     if (err) return cb(err)
-    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
+    onceTransactionResponse(self._websocket, tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+
+Clientele.prototype.register = function (user, password, cb) {
+  if (!isTruthyString(user))
+    return cb(new TypeError('user is not a truthy string'))
+  if (!isTruthyString(password))
+    return cb(new TypeError('password is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  var self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._websocket.write(outbound.register(user, password, peers, tx), err => {
+    if (err) return cb(err)
+    onceTransactionResponse(self._websocket, tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })
@@ -63,7 +85,7 @@ Clientele.prototype.login = function (user, password, cb) {
 
   self._websocket.write(outbound.login(user, password, tx), err => {
     if (err) return cb(err)
-    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
+    onceTransactionResponse(self._websocket, tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })
@@ -83,29 +105,7 @@ Clientele.prototype.logout = function (user, cb) {
 
   self._websocket.write(outbound.logout(user, tx), err => {
     if (err) return cb(err)
-    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
-      .then(res => cb(res.ok ? null : new Error('response status not ok')))
-      .catch(cb)
-  })
-}
-
-Clientele.prototype.register = function (user, password, peers, cb) {
-  if (!isTruthyString(user))
-    return cb(new TypeError('user is not a truthy string'))
-  if (!isTruthyString(password))
-    return cb(new TypeError('password is not a truthy string'))
-  if (!isStringArray(peers))
-    return cb(new TypeError('peers is not a string array'))
-  if (typeof cb !== 'function')
-    return cb(new TypeError('cb is not a function'))
-
-  var self = this
-  self._user = user
-  const tx = Math.random()
-
-  self._websocket.write(outbound.register(user, password, peers, tx), err => {
-    if (err) return cb(err)
-    onceStreamPayloadPasses(self._websocket, res => res.tx === tx)
+    onceTransactionResponse(self._websocket, tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })
