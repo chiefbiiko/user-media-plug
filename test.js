@@ -94,20 +94,13 @@ tape('handleMetastream', t => {
   const forward = createForward(active_meta_streams)
   const sendForceCall = createSendForceCall(active_meta_streams)
 
-  const handleMetastream = createHandleMetastream(createHandleMetadata({
-    whoami: createWhoami(active_meta_streams),
-    registerUser: createRegisterUser(db),
-    addPeers: createAddPeers(db),
-    deletePeers: createDeletePeers(db),
-    getPeers: createGetPeers(db),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(logged_in_users),
-    status: createStatus(db, active_meta_streams, forward),
-    call: createCall(forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
-    reject: createReject(forward),
-    unpair: createUnpair(active_media_streams)
-  }, logged_in_users))
+  const handleMetastream = createHandleMetastream({
+    db,
+    meta_server,
+    active_meta_streams,
+    active_media_streams,
+    logged_in_users
+  })
 
   handleMetastream(new PassThrough(), null)
   t.pass('handleMetastream so simple, hardly testable, asserting no errs')
