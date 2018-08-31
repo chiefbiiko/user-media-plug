@@ -4,6 +4,7 @@
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
+    "start": "node ./index.js",
     "test": "tape ./test.js"
   },
   "repository": {

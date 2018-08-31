@@ -3,21 +3,8 @@ const { inherits } = require('util')
 const websocket = require('websocket-stream')
 const jsonStream = require('duplex-json-stream')
 
-const outbound = require('./lib/outbound.js')
-
-// const isTruthyString = x => x && typeof x === 'string'
-// const isStringArray = x => Array.isArray(x) && x.every(isTruthyString)
 const { isTruthyString, isStringArray } = require('./lib/is.js')
-
-// const onceStreamPayloadPasses = (readable, pred) => {
-//   return new Promise((resolve, reject) => {
-//     readable.on('data', function proxy (metadata) {
-//       if (!pred(metadata)) return
-//       readable.removeListener('data', proxy)
-//       resolve(metadata)
-//     })
-//   })
-// }
+const outbound = require('./lib/outbound.js')
 const onceTransactionResponse = require('./lib/onceTransactionResponse.js')
 
 const debug = require('debug')('clientele')
