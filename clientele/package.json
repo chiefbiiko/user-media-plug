@@ -9,6 +9,6 @@
   "devDependencies": {
     "browserify": "^16.2.2",
     "tape": "^4.9.1",
-    "tape-puppet": "0.0.5"
+    "tape-puppet": "0.0.6"
   }
 }

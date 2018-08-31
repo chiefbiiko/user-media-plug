@@ -1,4 +1,4 @@
-const predThen = (stream, pred, once) => {
+const predThen = (stream, pred) => {
   return new Promise((resolve, reject) => {
     stream.on('error', reject)
     stream.on('data', function proxy (...args) {
