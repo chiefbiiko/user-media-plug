@@ -67,7 +67,7 @@ Clientele.prototype.register = function (user, password, cb) {
   self._user = user
   const tx = Math.random()
 
-  self._meta_ws.write(outbound.register(user, password, peers, tx), err => {
+  self._meta_ws.write(outbound.register(user, password, tx), err => {
     if (err) return cb(err)
     predThen(self._meta_ws, res => res.tx === tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
@@ -98,8 +98,6 @@ Clientele.prototype.login = function (user, password, cb) {
 Clientele.prototype.logout = function (user, cb) {
   if (!isTruthyString(user))
     return cb(new TypeError('user is not a truthy string'))
-  if (!isTruthyString(password))
-    return cb(new TypeError('password is not a truthy string'))
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
@@ -115,14 +113,128 @@ Clientele.prototype.logout = function (user, cb) {
   })
 }
 
-Clientele.prototype.addPeers = function (peers, cb) {}
-Clientele.prototype.deletePeers = function (peers, cb) {}
-Clientele.prototype.getPeers = function (cb) {}
-Clientele.prototype.status = function (status, cb) {}
-Clientele.prototype.call = function (peer, cb) {}
-Clientele.prototype.accept = function (peer, cb) {}
-Clientele.prototype.reject = function (peer, cb) {}
-Clientele.prototype.unpair = function (peer, cb) {}
+Clientele.prototype.addPeers = function (peers, cb) {
+  if (!isTruthyString(peers))
+    return cb(new TypeError('peers is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.addPeers(peers, tx), err => {
+    if (err) return cb(err)
+    predThen(self._meta_ws, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+Clientele.prototype.deletePeers = function (peers, cb) {
+  if (!isTruthyString(peers))
+    return cb(new TypeError('peers is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.deletePeers(peers, tx), err => {
+    if (err) return cb(err)
+    predThen(self._meta_ws, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+Clientele.prototype.getPeers = function (user, cb) {
+  if (!isTruthyString(user))
+    return cb(new TypeError('user is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.getPeers(user, tx), err => {
+    if (err) return cb(err)
+    predThen(self._meta_ws, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+Clientele.prototype.status = function (status, cb) {
+  if (!isTruthyString(status))
+    return cb(new TypeError('status is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.status(status, tx), err => {
+    if (err) return cb(err)
+    predThen(self._meta_ws, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+Clientele.prototype.call = function (peer, cb) {
+
+}
+Clientele.prototype.accept = function (peer, cb) {
+  if (!isTruthyString(peer))
+    return cb(new TypeError('user is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.accept(peer, tx), err => {
+    if (err) return cb(err)
+    predThen(self._meta_ws, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+Clientele.prototype.reject = function (peer, cb) {
+  if (!isTruthyString(peer))
+    return cb(new TypeError('peer is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.reject(peers, tx), err => {
+    if (err) return cb(err)
+    predThen(self._meta_ws, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
+Clientele.prototype.unpair = function (peer, cb) {
+  if (!isTruthyString(peer))
+    return cb(new TypeError('peer is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const self = this
+  self._user = user
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.reject(peers, tx), err => {
+    if (err) return cb(err)
+    predThen(self._meta_ws, res => res.tx === tx)
+      .then(res => cb(res.ok ? null : new Error('response status not ok')))
+      .catch(cb)
+  })
+}
 
 Clientele.prototype.__defineGetter__('user', function () { return this._user })
 
