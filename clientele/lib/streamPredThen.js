@@ -1,4 +1,4 @@
-const predThen = (stream, pred) => {
+const streamPredThen = (stream, pred) => {
   return new Promise((resolve, reject) => {
     stream.on('error', reject)
     stream.on('data', function proxy (...args) {
@@ -10,4 +10,4 @@ const predThen = (stream, pred) => {
   })
 }
 
-module.exports = predThen
+module.exports = streamPredThen

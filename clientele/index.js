@@ -5,8 +5,8 @@ const jsonStream = require('duplex-json-stream')
 
 const { isTruthyString, isStringArray } = require('./lib/is.js')
 const outbound = require('./lib/outbound.js')
-const predOn = require('./lib/predOn.js')
-const predThen = require('./lib/predThen.js')
+const streamPredSubscribe = require('./lib/streamPredSubscribe.js')
+const streamPredThen = require('./lib/streamPredThen.js')
 
 const debug = require('debug')('clientele')
 
@@ -22,8 +22,8 @@ function Clientele (url) {
   this._meta_ws = jsonStream(websocket(url))
   this._meta_ws.on('error', this.emit.bind(this, 'error'))
 
-  predOn(this._meta_ws, msg => msg.type === 'FORCE_CALL')
-    .on('data', this._makeMediastream.bind(this))
+  streamPredSubscribe(this._meta_ws, msg => msg.type === 'FORCE_CALL')
+    .subscribe(this._makeMediastream.bind(this))
 }
 
 inherits(Clientele, EventEmitter)
@@ -34,6 +34,7 @@ Clientele.prototype._makeMediastream = function makeMediastream (msg) {
   media_ws.write(JSON.stringify({ user: this._user, peer: msg.peer }), err => {
     if (err) return self.emit('error', err)
     self.emit('mediastream', media_ws) // inbound duplex t.b.c...
+    // TODO: just emit a playing video element
   })
 }
 
@@ -49,7 +50,7 @@ Clientele.prototype.whoami = function (user, cb) {
 
   self._meta_ws.write(outbound.whoami(user, tx), err => {
     if (err) return cb(err)
-    predThen(self._meta_ws, res => res.tx === tx)
+    streamPredThen(self._meta_ws, res => res.tx === tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })
@@ -69,7 +70,7 @@ Clientele.prototype.register = function (user, password, cb) {
 
   self._meta_ws.write(outbound.register(user, password, peers, tx), err => {
     if (err) return cb(err)
-    predThen(self._meta_ws, res => res.tx === tx)
+    streamPredThen(self._meta_ws, res => res.tx === tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })
@@ -89,7 +90,7 @@ Clientele.prototype.login = function (user, password, cb) {
 
   self._meta_ws.write(outbound.login(user, password, tx), err => {
     if (err) return cb(err)
-    predThen(self._meta_ws, res => res.tx === tx)
+    streamPredThen(self._meta_ws, res => res.tx === tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })
@@ -109,7 +110,7 @@ Clientele.prototype.logout = function (user, cb) {
 
   self._meta_ws.write(outbound.logout(user, tx), err => {
     if (err) return cb(err)
-    predThen(self._meta_ws, res => res.tx === tx)
+    streamPredThen(self._meta_ws, res => res.tx === tx)
       .then(res => cb(res.ok ? null : new Error('response status not ok')))
       .catch(cb)
   })
