@@ -2,19 +2,21 @@ const { EventEmitter } = require('events')
 const { inherits } = require('util')
 const websocket = require('websocket-stream')
 const jsonStream = require('duplex-json-stream')
+const createReadableValve = require('readable-valve')
 
 const { isTruthyString, isStringArray } = require('./lib/is.js')
 const outbound = require('./lib/outbound.js')
-const streamPredSubscribe = require('./lib/streamPredSubscribe.js')
-const streamPredThen = require('./lib/streamPredThen.js')
 
 const debug = require('debug')('clientele')
 
-function Clientele (url) {
-  if (!(this instanceof Clientele)) return new Clientele(url)
+function Clientele (url, user) {
+  if (!(this instanceof Clientele)) return new Clientele(url, user)
   EventEmitter.call(this)
 
-  this._user = ''
+  if (!isTruthyString(url)) throw TypeError('url is not a truthy string')
+  if (!isTruthyString(user)) throw TypeError('user is not a truthy string')
+
+  this._user = user
 
   this._meta_url = url.replace('media', 'meta')
   this._media_url = url.replace('meta', 'media')
@@ -22,8 +24,23 @@ function Clientele (url) {
   this._meta_ws = jsonStream(websocket(url))
   this._meta_ws.on('error', this.emit.bind(this, 'error'))
 
-  streamPredSubscribe(this._meta_ws, msg => msg.type === 'FORCE_CALL')
-    .subscribe(this._makeMediastream.bind(this))
+  this._meta_ws_valve = createReadableValve(this._meta_ws)
+    .subscribe(
+      this._makeMediastream.bind(this),
+      msg => msg.type === 'FORCE_CALL'
+    )
+    .subscribe(
+      this.emit.bind(this, 'status'),
+      msg => msg.type === 'STATUS'
+    )
+    .subscribe(
+      this.emit.bind(this, 'accept'),
+      msg => msg.type === 'ACCEPT'
+    )
+    .subscribe(
+      this.emit.bind(this, 'reject'),
+      msg => msg.type === 'REJECT'
+    )
 }
 
 inherits(Clientele, EventEmitter)
@@ -35,84 +52,83 @@ Clientele.prototype._makeMediastream = function makeMediastream (msg) {
     if (err) return self.emit('error', err)
     self.emit('mediastream', media_ws) // inbound duplex t.b.c...
     // TODO: just emit a playing video element
+    // have it destroy itself as much as possible! once the readable closes
   })
 }
 
-Clientele.prototype.whoami = function (user, cb) {
-  if (!isTruthyString(user))
-    return cb(new TypeError('user is not a truthy string'))
+Clientele.prototype.whoami = function (cb) {
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
   const self = this
-  self._user = user
   const tx = Math.random()
 
-  self._meta_ws.write(outbound.whoami(user, tx), err => {
+  self._meta_ws.write(outbound.whoami(self._user, tx), err => {
     if (err) return cb(err)
-    streamPredThen(self._meta_ws, res => res.tx === tx)
-      .then(res => cb(res.ok ? null : new Error('response status not ok')))
-      .catch(cb)
+    self._meta_ws_valve
+      .subscribe(
+        res => cb(res.ok ? null : Error('response status not ok')),
+        res => res.tx === tx,
+        1
+      )
   })
 }
 
-Clientele.prototype.register = function (user, password, cb) {
-  if (!isTruthyString(user))
-    return cb(new TypeError('user is not a truthy string'))
+Clientele.prototype.register = function (password, cb) {
   if (!isTruthyString(password))
     return cb(new TypeError('password is not a truthy string'))
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
   const self = this
-  self._user = user
   const tx = Math.random()
 
-  self._meta_ws.write(outbound.register(user, password, peers, tx), err => {
+  self._meta_ws.write(outbound.register(self._user, password, tx), err => {
     if (err) return cb(err)
-    streamPredThen(self._meta_ws, res => res.tx === tx)
-      .then(res => cb(res.ok ? null : new Error('response status not ok')))
-      .catch(cb)
+    self._meta_ws_valve
+      .subscribe(
+        res => cb(res.ok ? null : Error('response status not ok')),
+        res => res.tx === tx,
+        1
+      )
   })
 }
 
-Clientele.prototype.login = function (user, password, cb) {
-  if (!isTruthyString(user))
-    return cb(new TypeError('user is not a truthy string'))
+Clientele.prototype.login = function (password, cb) {
   if (!isTruthyString(password))
     return cb(new TypeError('password is not a truthy string'))
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
   const self = this
-  self._user = user
   const tx = Math.random()
 
-  self._meta_ws.write(outbound.login(user, password, tx), err => {
+  self._meta_ws.write(outbound.login(self._user, password, tx), err => {
     if (err) return cb(err)
-    streamPredThen(self._meta_ws, res => res.tx === tx)
-      .then(res => cb(res.ok ? null : new Error('response status not ok')))
-      .catch(cb)
+    self._meta_ws_valve
+      .subscribe(
+        res => cb(res.ok ? null : Error('response status not ok')),
+        res => res.tx === tx,
+        1
+      )
   })
 }
 
-Clientele.prototype.logout = function (user, cb) {
-  if (!isTruthyString(user))
-    return cb(new TypeError('user is not a truthy string'))
-  if (!isTruthyString(password))
-    return cb(new TypeError('password is not a truthy string'))
+Clientele.prototype.logout = function (cb) {
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
   const self = this
-  self._user = user
   const tx = Math.random()
 
-  self._meta_ws.write(outbound.logout(user, tx), err => {
+  self._meta_ws.write(outbound.logout(self._user, tx), err => {
     if (err) return cb(err)
-    streamPredThen(self._meta_ws, res => res.tx === tx)
-      .then(res => cb(res.ok ? null : new Error('response status not ok')))
-      .catch(cb)
+    self._meta_ws_valve
+      .subscribe(
+        res => cb(res.ok ? null : Error('response status not ok')),
+        res => res.tx === tx,
+        1
+      )
   })
 }
 
