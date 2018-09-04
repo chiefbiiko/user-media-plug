@@ -53,7 +53,7 @@ Clientele.prototype._makeMediastream = function makeMediastream (msg) {
 
 Clientele.prototype.whoami = function whoami (cb) {
   if (typeof cb !== 'function')
-    return cb(new TypeError('cb is not a function'))
+    return cb(TypeError('cb is not a function'))
 
   const self = this
   const tx = Math.random()
@@ -71,9 +71,9 @@ Clientele.prototype.whoami = function whoami (cb) {
 
 Clientele.prototype.register = function register (password, cb) {
   if (!isTruthyString(password))
-    return cb(new TypeError('password is not a truthy string'))
+    return cb(TypeError('password is not a truthy string'))
   if (typeof cb !== 'function')
-    return cb(new TypeError('cb is not a function'))
+    return cb(TypeError('cb is not a function'))
 
   const self = this
   const tx = Math.random()
@@ -91,9 +91,9 @@ Clientele.prototype.register = function register (password, cb) {
 
 Clientele.prototype.login = function login (password, cb) {
   if (!isTruthyString(password))
-    return cb(new TypeError('password is not a truthy string'))
+    return cb(TypeError('password is not a truthy string'))
   if (typeof cb !== 'function')
-    return cb(new TypeError('cb is not a function'))
+    return cb(TypeError('cb is not a function'))
 
   const self = this
   const tx = Math.random()
@@ -111,7 +111,7 @@ Clientele.prototype.login = function login (password, cb) {
 
 Clientele.prototype.logout = function logout (cb) {
   if (typeof cb !== 'function')
-    return cb(new TypeError('cb is not a function'))
+    return cb(TypeError('cb is not a function'))
 
   const self = this
   const tx = Math.random()
@@ -134,9 +134,9 @@ Clientele.prototype.status = function status (status, cb) {}
 
 Clientele.prototype.call = function call (peer, cb) {
   if (!isTruthyString(peer))
-    return cb(new TypeError('peer is not a truthy string'))
+    return cb(TypeError('peer is not a truthy string'))
   if (typeof cb !== 'function')
-    return cb(new TypeError('cb is not a function'))
+    return cb(TypeError('cb is not a function'))
 
   const tx = Math.random()
 
