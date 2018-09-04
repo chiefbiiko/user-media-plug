@@ -3,7 +3,7 @@
       and ultimately emits a 'pair' event, that is delegated to a
       mediadataserver. 'unpair' metadata messages by clients are handled by the
       metadataserver solely as its corresponding handler just needs to close
-      over the active_media_streams set which is a HashtagStreamSet whose
+      over the active_mediastreams set which is a HashtagStreamSet whose
       prototype provides methods for managing "stream groups" through hashtags
   + a mediadataserver that pairs peers (pipes their websockets)
   + a simple client api
@@ -30,8 +30,8 @@ const PORT = Number(process.env.PORT) || 10000
 const HOST = process.env.HOST || 'localhost'
 
 const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
-const active_meta_streams = streamSet()
-const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+const active_metastreams = streamSet()
+const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 const logged_in_users = new Set()
 
 const http_server = createServer()
@@ -45,8 +45,8 @@ const handlePair = createHandlePair(media_server)
 const handleMetastream = createHandleMetastream({
   db,
   meta_server,
-  active_meta_streams,
-  active_media_streams,
+  active_metastreams,
+  active_mediastreams,
   logged_in_users
 })
 
