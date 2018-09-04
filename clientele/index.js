@@ -9,7 +9,7 @@ const outbound = require('./lib/outbound.js')
 
 const debug = require('debug')('clientele')
 
-function Clientele (url, user) {
+function Clientele (url, user) { // url can just be 'ws://localhost:10000'
   if (!(this instanceof Clientele)) return new Clientele(url, user)
   EventEmitter.call(this)
 
@@ -17,6 +17,9 @@ function Clientele (url, user) {
   if (!isTruthyString(user)) throw TypeError('user is not a truthy string')
 
   this._user = user
+
+  if (!/(?:\/meta|media)$/.test(url))
+    url = `${url.replace(/^(.+:\d+).*$/, '$1')}/meta`
 
   this._meta_url = url.replace('media', 'meta')
   this._media_url = url.replace('meta', 'media')
@@ -33,14 +36,6 @@ function Clientele (url, user) {
       this.emit.bind(this, 'status'),
       msg => msg.type === 'STATUS'
     )
-    .subscribe(
-      this.emit.bind(this, 'accept'),
-      msg => msg.type === 'ACCEPT'
-    )
-    .subscribe(
-      this.emit.bind(this, 'reject'),
-      msg => msg.type === 'REJECT'
-    )
 }
 
 inherits(Clientele, EventEmitter)
@@ -56,7 +51,7 @@ Clientele.prototype._makeMediastream = function makeMediastream (msg) {
   })
 }
 
-Clientele.prototype.whoami = function (cb) {
+Clientele.prototype.whoami = function whoami (cb) {
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
@@ -74,7 +69,7 @@ Clientele.prototype.whoami = function (cb) {
   })
 }
 
-Clientele.prototype.register = function (password, cb) {
+Clientele.prototype.register = function register (password, cb) {
   if (!isTruthyString(password))
     return cb(new TypeError('password is not a truthy string'))
   if (typeof cb !== 'function')
@@ -94,7 +89,7 @@ Clientele.prototype.register = function (password, cb) {
   })
 }
 
-Clientele.prototype.login = function (password, cb) {
+Clientele.prototype.login = function login (password, cb) {
   if (!isTruthyString(password))
     return cb(new TypeError('password is not a truthy string'))
   if (typeof cb !== 'function')
@@ -114,7 +109,7 @@ Clientele.prototype.login = function (password, cb) {
   })
 }
 
-Clientele.prototype.logout = function (cb) {
+Clientele.prototype.logout = function logout (cb) {
   if (typeof cb !== 'function')
     return cb(new TypeError('cb is not a function'))
 
@@ -132,14 +127,37 @@ Clientele.prototype.logout = function (cb) {
   })
 }
 
-Clientele.prototype.addPeers = function (peers, cb) {}
-Clientele.prototype.deletePeers = function (peers, cb) {}
-Clientele.prototype.getPeers = function (cb) {}
-Clientele.prototype.status = function (status, cb) {}
-Clientele.prototype.call = function (peer, cb) {}
-Clientele.prototype.accept = function (peer, cb) {}
-Clientele.prototype.reject = function (peer, cb) {}
-Clientele.prototype.unpair = function (peer, cb) {}
+Clientele.prototype.addPeers = function addPeers (peers, cb) {}
+Clientele.prototype.deletePeers = function deletePeers (peers, cb) {}
+Clientele.prototype.getPeers = function getPeers (cb) {}
+Clientele.prototype.status = function status (status, cb) {}
+
+Clientele.prototype.call = function call (peer, cb) {
+  if (!isTruthyString(peer))
+    return cb(new TypeError('peer is not a truthy string'))
+  if (typeof cb !== 'function')
+    return cb(new TypeError('cb is not a function'))
+
+  const tx = Math.random()
+
+  self._meta_ws.write(outbound.call(self._user, peer, tx), err => {
+    if (err) return cb(err)
+    self._meta_ws_valve
+      .subscribe(
+        res => {
+          if (!res.ok) cb(Error('response status not ok'), false)
+          else if (res.type === 'REJECT') cb(null, false)
+          else if (res.type === 'ACCEPT') cb(null, true)
+        },
+        res => res.tx === tx,
+        1
+      )
+  })
+}
+
+Clientele.prototype.accept = function accept (peer, cb) {}
+Clientele.prototype.reject = function reject (peer, cb) {}
+Clientele.prototype.unpair = function unpair (peer, cb) {}
 
 Clientele.prototype.__defineGetter__('user', function () { return this._user })
 
