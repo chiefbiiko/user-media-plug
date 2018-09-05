@@ -3,6 +3,9 @@ const { inherits } = require('util')
 const websocket = require('websocket-stream')
 const jsonStream = require('duplex-json-stream')
 const createReadableValve = require('readable-valve')
+const getMedia = require('getusermedia')
+const createRecorder = require('media-recorder-stream')
+const pump = require('pump')
 
 const { isTruthyString, isStringArray } = require('./lib/is.js')
 const outbound = require('./lib/outbound.js')
@@ -12,6 +15,12 @@ const debug = require('debug')('clientele')
 function Clientele (url, user) { // url can just be 'ws://localhost:10000'
   if (!(this instanceof Clientele)) return new Clientele(url, user)
   EventEmitter.call(this)
+
+  if (!/firefox/i.test(navigator.userAgent))
+    console.error(`clientele probly won't work on ${navigator.userAgent}`)
+  else if (!MediaSource.isTypeSupported(Clientele.MIME_CODEC) ||
+           !MediaRecorder.isTypeSupported(Clientele.MIME))
+    throw Error(`unsupported MIME type or codec: ${Clientele.MIME_CODEC}`)
 
   if (!isTruthyString(url)) throw TypeError('url is not a truthy string')
   if (!isTruthyString(user)) throw TypeError('user is not a truthy string')
@@ -29,8 +38,12 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
 
   this._metastream_valve = createReadableValve(this._metastream)
     .subscribe(
-      this._makeMediastream.bind(this),
+      this._makeVideoStream.bind(this),
       msg => msg.type === 'FORCE_CALL'
+    )
+    .subscribe(
+      this.emit.bind(this, 'call'),
+      msg => msg.type === 'CALL'
     )
     .subscribe(
       this.emit.bind(this, 'status'),
@@ -40,14 +53,36 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
 
 inherits(Clientele, EventEmitter)
 
-Clientele.prototype._makeMediastream = function makeMediastream (msg) {
+Clientele.MIME = 'video/webm'
+Clientele.MIME_CODEC = `${Clientele.MIME};codecs=vorbis,vp8`
+
+Clientele.prototype._makeVideoStream = function makeVideoStream (msg) {
   const self = this
   const mediastream = websocket(self._media_url)
-  mediastream.write(JSON.stringify({ user: self._user, peer: msg.peer }), err => {
+  const init_info = JSON.stringify({ user: self._user, peer: msg.peer })
+  mediastream.on('error', self.emit.bind(self, 'error'))
+  mediastream.write(init_info, err => {
     if (err) return self.emit('error', err)
-    self.emit('mediastream', mediastream) // inbound duplex t.b.c...
-    // TODO: just emit a playing video element
-    // have it destroy itself as much as possible! once the readable closes
+    // i
+    var video = document.createElement('video')
+    const mediasource = new MediaSource()
+    video.src = URL.createObjectURL(mediasource)
+    mediasource.onsourceopen = () => {
+      const mediasource_buf = mediasource.addSourceBuffer(Clientele.MIME_CODEC)
+      mediastream.on('data', chunk => mediasource_buf.appendBuffer(chunk))
+      mediastream.once('readable', () => video.play())
+      mediastream.once('error', () => video = null)
+      self.emit('videostream', video)
+    }
+    // o
+    getMedia({ audio: true, video: true }, (err, media) => {
+      if (err) return self.emit('error', err)
+      pump(
+        createRecorder(media, { interval: 1000, mimeType: Clientele.MIME }),
+        mediastream,
+        err => err && self.emit('error', err)
+      )
+    })
   })
 }
 
