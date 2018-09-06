@@ -52,6 +52,12 @@ const outbound = Object.freeze({
   },
   unpair (user, peer, tx) {
 
+  },
+  info (user, peer) {
+    return JSON.stringify({
+      user,
+      peer
+    })
   }
 })
 

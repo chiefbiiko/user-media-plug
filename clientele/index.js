@@ -59,19 +59,16 @@ Clientele.MIME_CODEC = `${Clientele.MIME};codecs=vorbis,vp8`
 Clientele.prototype._makeVideoStream = function makeVideoStream (msg) {
   const self = this
   const mediastream = websocket(self._media_url)
-  const init_info = JSON.stringify({ user: self._user, peer: msg.peer })
-  mediastream.on('error', self.emit.bind(self, 'error'))
-  mediastream.write(init_info, err => {
+  mediastream.write(outbound.info(self._user, msg.peer), err => {
     if (err) return self.emit('error', err)
     // i
     var video = document.createElement('video')
-    const mediasource = new MediaSource()
+    var mediasource = new MediaSource()
     video.src = URL.createObjectURL(mediasource)
     mediasource.onsourceopen = () => {
-      const mediasource_buf = mediasource.addSourceBuffer(Clientele.MIME_CODEC)
+      var mediasource_buf = mediasource.addSourceBuffer(Clientele.MIME_CODEC)
       mediastream.on('data', chunk => mediasource_buf.appendBuffer(chunk))
       mediastream.once('readable', () => video.play())
-      mediastream.once('error', () => video = null)
       self.emit('videostream', video)
     }
     // o
@@ -80,7 +77,10 @@ Clientele.prototype._makeVideoStream = function makeVideoStream (msg) {
       pump(
         createRecorder(media, { interval: 1000, mimeType: Clientele.MIME }),
         mediastream,
-        err => err && self.emit('error', err)
+        err => {
+          video = mediasource = mediasource_buf = null
+          if (err) self.emit('error', err)
+        }
       )
     })
   })
