@@ -883,30 +883,33 @@ tape('reject - fail pt2', t => {
 
 tape('getPeers - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
 
-  const getPeers = createGetPeers(db)
+  const getPeers = createGetPeers(db, logged_in_users)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
 
+  logged_in_users.add('noop')
+
   db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'offline' }, err => {
     if (err) t.end(err)
-    db.put('noop', { peers: [], status: 'online' }, err => {
+    db.put('noop', { peers: [], status: 'noop' }, err => {
       if (err) t.end(err)
       db.put('og', { peers: [], status: 'busy' }, err => {
         if (err) t.end(err)
 
         const expected = [
-          { peer: 'noop', status: 'online' },
-          { peer: 'og', status: 'busy' }
+          { peer: 'noop', status: 'noop', online: true },
+          { peer: 'og', status: 'busy', online: false }
         ]
 
         metastream.once('data', res => {
           t.true(valid.schema_RESPONSE_PEERS(res), 'valid response schema')
           t.true(res.ok, 'response status ok')
           t.true(Array.isArray(res.peers), 'peer array')
-          t.same(res.peers, expected, 'peer n status')
+          t.same(res.peers, expected, 'peer n status n online')
           t.equal(res.tx, tx, 'transaction identifiers equal')
           t.end()
         })
@@ -921,8 +924,9 @@ tape('getPeers - pass', t => {
 
 tape('getPeers - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
 
-  const getPeers = createGetPeers(db)
+  const getPeers = createGetPeers(db, logged_in_users)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -943,8 +947,9 @@ tape('getPeers - fail pt1', t => {
 
 tape('getPeers - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
 
-  const getPeers = createGetPeers(db)
+  const getPeers = createGetPeers(db, logged_in_users)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -965,24 +970,20 @@ tape('getPeers - fail pt2', t => {
 
 tape('getPeers - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
 
-  const getPeers = createGetPeers(db)
+  const getPeers = createGetPeers(db, logged_in_users)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
 
-  db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'offline' }, err => {
+  db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'out' }, err => {
     if (err) t.end(err)
-    db.put('noop', { peers: [], status: 'online' }, err => {
+    db.put('noop', { peers: [], status: 'home' }, err => {
       if (err) t.end(err)
       db.put('og_maco', { peers: [], status: 'busy' }, err => {
         if (err) t.end(err)
-
-        const expected = [
-          { peer: 'noop', status: 'online' },
-          { peer: 'og', status: 'busy' }
-        ]
 
         metastream.once('data', res => {
           t.true(valid.schema_RESPONSE(res), 'valid response schema')
