@@ -125,8 +125,8 @@ tape('handleMetadata - fail pt1', t => {
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(logged_in_users),
+    login: createLogin(db, logged_in_users, forward),
+    logout: createLogout(logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -169,8 +169,8 @@ tape('handleMetadata - fail pt2', t => {
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(logged_in_users),
+    login: createLogin(db, logged_in_users, forward),
+    logout: createLogout(logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -215,8 +215,8 @@ tape('handleMetadata - fail pt3', t => {
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(logged_in_users),
+    login: createLogin(db, logged_in_users, forward),
+    logout: createLogout(logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -261,8 +261,8 @@ tape('handleMetadata - switch fallthru', t => {
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(logged_in_users),
+    login: createLogin(db, logged_in_users, forward),
+    logout: createLogout(logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -358,8 +358,10 @@ tape('whoami - fail pt2', t => {
 tape('login - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
+  const active_metastreams = streamSet()
+  const forward = createForward(active_metastreams)
 
-  const login = createLogin(db, logged_in_users)
+  const login = createLogin(db, logged_in_users, forward)
 
   db.put('chiefbiiko', { password: 'abc', peers: [] }, err => {
     if (err) t.end(err)
@@ -384,8 +386,10 @@ tape('login - pass', t => {
 tape('login - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
+  const active_metastreams = streamSet()
+  const forward = createForward(active_metastreams)
 
-  const login = createLogin(db, logged_in_users)
+  const login = createLogin(db, logged_in_users, forward)
 
   db.put('chiefbiiko', { password: 'abc', peers: [] }, err => {
     if (err) t.end(err)
@@ -411,8 +415,10 @@ tape('login - fail pt1', t => {
 tape('login - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
+  const active_metastreams = streamSet()
+  const forward = createForward(active_metastreams)
 
-  const login = createLogin(db, logged_in_users)
+  const login = createLogin(db, logged_in_users, forward)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -433,8 +439,10 @@ tape('login - fail pt2', t => {
 
 tape('logout - pass', t => {
   const logged_in_users = new Set()
+  const active_metastreams = streamSet()
+  const forward = createForward(active_metastreams)
 
-  const logout = createLogout(logged_in_users)
+  const logout = createLogout(logged_in_users, forward)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -454,8 +462,10 @@ tape('logout - pass', t => {
 
 tape('logout - fail', t => {
   const logged_in_users = new Set()
+  const active_metastreams = streamSet()
+  const forward = createForward(active_metastreams)
 
-  const logout = createLogout(logged_in_users)
+  const logout = createLogout(logged_in_users, forward)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -1379,8 +1389,8 @@ tape('unpair - pass', t => {
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(logged_in_users),
+    login: createLogin(db, logged_in_users, forward),
+    logout: createLogout(logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -1522,8 +1532,8 @@ tape('unpair - fail - invalid metadata', t => {
     addPeers: createAddPeers(db),
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
-    login: createLogin(db, logged_in_users),
-    logout: createLogout(logged_in_users),
+    login: createLogin(db, logged_in_users, forward),
+    logout: createLogout(logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
