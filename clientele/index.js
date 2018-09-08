@@ -56,6 +56,14 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
       this.emit.bind(this, 'status'),
       msg => msg.type === 'STATUS'
     )
+    .subscribe(
+      this.emit.bind(this, 'online'),
+      msg => msg.type === 'ONLINE'
+    )
+    .subscribe(
+      this.emit.bind(this, 'offline'),
+      msg => msg.type === 'OFFLINE'
+    )
 }
 
 inherits(Clientele, EventEmitter)

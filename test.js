@@ -126,7 +126,7 @@ tape('handleMetadata - fail pt1', t => {
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
     login: createLogin(db, logged_in_users, forward),
-    logout: createLogout(logged_in_users, forward),
+    logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -170,7 +170,7 @@ tape('handleMetadata - fail pt2', t => {
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
     login: createLogin(db, logged_in_users, forward),
-    logout: createLogout(logged_in_users, forward),
+    logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -216,7 +216,7 @@ tape('handleMetadata - fail pt3', t => {
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
     login: createLogin(db, logged_in_users, forward),
-    logout: createLogout(logged_in_users, forward),
+    logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -262,7 +262,7 @@ tape('handleMetadata - switch fallthru', t => {
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
     login: createLogin(db, logged_in_users, forward),
-    logout: createLogout(logged_in_users, forward),
+    logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -438,34 +438,40 @@ tape('login - fail pt2', t => {
 })
 
 tape('logout - pass', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
   const active_metastreams = streamSet()
   const forward = createForward(active_metastreams)
 
-  const logout = createLogout(logged_in_users, forward)
+  const logout = createLogout(db, logged_in_users, forward)
 
-  const tx = Math.random()
-  const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'LOGOUT', user: 'chiefbiiko', tx }
-
-  metastream.once('data', res => {
-    t.true(valid.schema_RESPONSE(res), 'valid response schema')
-    t.true(res.ok, 'response status ok')
-    t.equal(res.tx, tx, 'transaction identifiers equal')
-    t.end()
-  })
-
-  logout(metastream, metadata, err => {
+  db.put('chiefbiiko', { status: 'sth', password: 'sth', peers: [] }, err => {
     if (err) t.end(err)
+
+    const tx = Math.random()
+    const metastream = jsonStream(new PassThrough())
+    const metadata = { type: 'LOGOUT', user: 'chiefbiiko', tx }
+
+    metastream.once('data', res => {
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
+      t.true(res.ok, 'response status ok')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      t.end()
+    })
+
+    logout(metastream, metadata, err => {
+      if (err) t.end(err)
+    })
   })
 })
 
-tape('logout - fail', t => {
+tape('logout - fail pt1', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const logged_in_users = new Set()
   const active_metastreams = streamSet()
   const forward = createForward(active_metastreams)
 
-  const logout = createLogout(logged_in_users, forward)
+  const logout = createLogout(db, logged_in_users, forward)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -480,6 +486,31 @@ tape('logout - fail', t => {
 
   logout(metastream, metadata, err => {
     t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
+    t.end()
+  })
+})
+
+tape('logout - fail pt2', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const logged_in_users = new Set()
+  const active_metastreams = streamSet()
+  const forward = createForward(active_metastreams)
+
+  const logout = createLogout(db, logged_in_users, forward)
+
+  const tx = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const metadata = { type: 'LOGOUT', user: 'chiefbiiko', tx }
+
+  metastream.once('data', res => {
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc of a db err (key not found)')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  logout(metastream, metadata, err => {
+    t.true(err.message.includes('not found'), 'not found err')
     t.end()
   })
 })
@@ -1390,7 +1421,7 @@ tape('unpair - pass', t => {
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
     login: createLogin(db, logged_in_users, forward),
-    logout: createLogout(logged_in_users, forward),
+    logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
@@ -1533,7 +1564,7 @@ tape('unpair - fail - invalid metadata', t => {
     deletePeers: createDeletePeers(db),
     getPeers: createGetPeers(db),
     login: createLogin(db, logged_in_users, forward),
-    logout: createLogout(logged_in_users, forward),
+    logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
