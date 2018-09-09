@@ -57,6 +57,7 @@ meta_server.on('pair', handlePair)
 http_server.on('error', handleError)
 meta_server.on('error', handleError)
 media_server.on('error', handleError)
+db.on('error', handleError)
 
 http_server.on('listening', () => debug(`http_server live @ ${HOST}:${PORT}`))
 http_server.listen(PORT, HOST)
