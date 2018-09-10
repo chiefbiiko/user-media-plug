@@ -1,14 +1,3 @@
-/* dev agenda
-  + a metadataserver that manages essential metadata exchange and persistence
-      and ultimately emits a 'pair' event, that is delegated to a
-      mediadataserver. 'unpair' metadata messages by clients are handled by the
-      metadataserver solely as its corresponding handler just needs to close
-      over the active_mediastreams set which is a HashtagStreamSet whose
-      prototype provides methods for managing "stream groups" through hashtags
-  + a mediadataserver that pairs peers (pipes their websockets)
-  + a simple client api
-*/
-
 const { createServer } = require('http')
 const WebSocketServer = require('websocket-stream').Server
 const streamSet = require('stream-set')
@@ -17,6 +6,8 @@ const memdown = require('memdown')
 const enc = require('encoding-down')
 const hashtagStreamSet = require('hashtag-stream-set')
 
+const debug = require('debug')('user-media-plug:index')
+
 const {
   createHandleUpgrade,
   createHandleMetastream,
@@ -24,8 +15,6 @@ const {
   createHandleUnpair,
   willDeleteMediastreams
 } = require('./lib/handlers.js')
-
-const debug = require('debug')('user-media-plug:index')
 
 const PORT = Number(process.env.PORT) || 10000
 const HOST = process.env.HOST || 'localhost'
@@ -48,7 +37,6 @@ const handleMetastream = createHandleMetastream({
   db,
   meta_server,
   active_metastreams,
-  // active_mediastreams,
   logged_in_users
 })
 

@@ -99,7 +99,6 @@ tape('handleMetastream', t => {
     db,
     meta_server,
     active_metastreams,
-    active_mediastreams,
     logged_in_users
   })
 
@@ -132,7 +131,6 @@ tape('handleMetadata - fail pt1', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    // unpair: createUnpair(active_mediastreams)
     unpair: createUnpair(meta_server)
   }, logged_in_users)
 
@@ -177,7 +175,6 @@ tape('handleMetadata - fail pt2', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    // unpair: createUnpair(active_mediastreams)
     unpair: createUnpair(meta_server)
   }, logged_in_users)
 
@@ -224,7 +221,6 @@ tape('handleMetadata - fail pt3', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    // unpair: createUnpair(active_mediastreams)
     unpair: createUnpair(meta_server)
   }, logged_in_users)
 
@@ -271,7 +267,6 @@ tape('handleMetadata - switch fallthru', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    // unpair: createUnpair(active_mediastreams)
     unpair: createUnpair(meta_server)
   }, logged_in_users)
 
@@ -1431,7 +1426,6 @@ tape('unpair - pass', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    // unpair: createUnpair(active_mediastreams)
     unpair: createUnpair(meta_server)
   }, logged_in_users)
 
@@ -1577,7 +1571,6 @@ tape('unpair - fail - invalid metadata', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    // unpair: createUnpair(active_mediastreams)
     unpair: createUnpair(meta_server)
   }, logged_in_users)
 
