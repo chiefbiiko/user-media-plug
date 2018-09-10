@@ -21,6 +21,7 @@ const {
   createHandleUpgrade,
   createHandleMetastream,
   createHandlePair,
+  createHandleUnpair,
   willDeleteMediastreams
 } = require('./lib/handlers.js')
 
@@ -42,17 +43,19 @@ const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 const handleError = err => err && debug(`error: ${err.message}`)
 const handleUpgrade = createHandleUpgrade(meta_server, media_server)
 const handlePair = createHandlePair(media_server)
+const handleUnpair = createHandleUnpair(active_mediastreams)
 const handleMetastream = createHandleMetastream({
   db,
   meta_server,
   active_metastreams,
-  active_mediastreams,
+  // active_mediastreams,
   logged_in_users
 })
 
 http_server.on('upgrade', handleUpgrade)
 meta_server.on('stream', handleMetastream)
 meta_server.on('pair', handlePair)
+meta_server.on('unpair', handleUnpair)
 
 http_server.on('error', handleError)
 meta_server.on('error', handleError)

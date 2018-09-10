@@ -34,6 +34,7 @@ const {
   createReject,
   createUnpair,
   createHandlePair,
+  createHandleUnpair,
   willDeleteMediastreams
 } = require('./lib/handlers.js')
 
@@ -85,7 +86,7 @@ tape('handleUpgrade - fail - switch fallthru', t => {
 tape('handleMetastream', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -98,7 +99,7 @@ tape('handleMetastream', t => {
     db,
     meta_server,
     active_metastreams,
-    active_media_streams,
+    active_mediastreams,
     logged_in_users
   })
 
@@ -110,7 +111,7 @@ tape('handleMetastream', t => {
 tape('handleMetadata - fail pt1', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -131,7 +132,8 @@ tape('handleMetadata - fail pt1', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(active_media_streams)
+    // unpair: createUnpair(active_mediastreams)
+    unpair: createUnpair(meta_server)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -154,7 +156,7 @@ tape('handleMetadata - fail pt1', t => {
 tape('handleMetadata - fail pt2', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -175,7 +177,8 @@ tape('handleMetadata - fail pt2', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(active_media_streams)
+    // unpair: createUnpair(active_mediastreams)
+    unpair: createUnpair(meta_server)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -200,7 +203,7 @@ tape('handleMetadata - fail pt2', t => {
 tape('handleMetadata - fail pt3', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -221,7 +224,8 @@ tape('handleMetadata - fail pt3', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(active_media_streams)
+    // unpair: createUnpair(active_mediastreams)
+    unpair: createUnpair(meta_server)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -246,7 +250,7 @@ tape('handleMetadata - fail pt3', t => {
 tape('handleMetadata - switch fallthru', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -267,7 +271,8 @@ tape('handleMetadata - switch fallthru', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(active_media_streams)
+    // unpair: createUnpair(active_mediastreams)
+    unpair: createUnpair(meta_server)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -1265,9 +1270,9 @@ tape('handlePair - pass', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 
-  const handlePair = createHandlePair(media_server, active_media_streams)
+  const handlePair = createHandlePair(media_server, active_mediastreams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1320,9 +1325,9 @@ tape('handlePair - fail pt1 - invalid schema', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 
-  const handlePair = createHandlePair(media_server, active_media_streams)
+  const handlePair = createHandlePair(media_server, active_mediastreams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1360,9 +1365,9 @@ tape('handlePair - fail pt2 - no pair', t => {
   const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
   const http_server = createServer()
 
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 
-  const handlePair = createHandlePair(media_server, active_media_streams)
+  const handlePair = createHandlePair(media_server, active_mediastreams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1402,7 +1407,7 @@ tape('unpair - pass', t => {
 
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -1413,7 +1418,7 @@ tape('unpair - pass', t => {
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
 
-  const handlePair = createHandlePair(media_server, active_media_streams)
+  const handlePair = createHandlePair(media_server, active_mediastreams)
   const handleMetadata = createHandleMetadata({
     whoami: createWhoami(active_metastreams),
     registerUser: createRegisterUser(db),
@@ -1426,11 +1431,14 @@ tape('unpair - pass', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(active_media_streams)
+    // unpair: createUnpair(active_mediastreams)
+    unpair: createUnpair(meta_server)
   }, logged_in_users)
 
   http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
   http_server.listen(10000, 'localhost')
+
+  meta_server.on('unpair', createHandleUnpair(active_mediastreams))
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1545,7 +1553,7 @@ tape('unpair - pass', t => {
 tape('unpair - fail - invalid metadata', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
-  const active_media_streams = hashtagStreamSet(willDeleteMediastreams)
+  const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
@@ -1556,7 +1564,7 @@ tape('unpair - fail - invalid metadata', t => {
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
 
-  const handlePair = createHandlePair(media_server, active_media_streams)
+  const handlePair = createHandlePair(media_server, active_mediastreams)
   const handleMetadata = createHandleMetadata({
     whoami: createWhoami(active_metastreams),
     registerUser: createRegisterUser(db),
@@ -1569,7 +1577,8 @@ tape('unpair - fail - invalid metadata', t => {
     call: createCall(forward),
     accept: createAccept(meta_server, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(active_media_streams)
+    // unpair: createUnpair(active_mediastreams)
+    unpair: createUnpair(meta_server)
   }, logged_in_users)
 
   http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
