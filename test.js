@@ -39,15 +39,15 @@ const {
 } = require('./lib/handlers.js')
 
 tape('handleUpgrade - pass', t => {
-  const http_server = createServer()
+  const httpserver = createServer()
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
-  const handleUpgrade = createHandleUpgrade(meta_server, media_server)
+  const handleUpgrade = createHandleUpgrade(metaserver, mediaserver)
 
-  http_server.on('upgrade', handleUpgrade)
-  http_server.listen(10000, 'localhost')
+  httpserver.on('upgrade', handleUpgrade)
+  httpserver.listen(10000, 'localhost')
 
   const a_ws = websocket('ws://localhost:10000/meta')
   const b_ws = websocket('ws://localhost:10000/media')
@@ -59,20 +59,20 @@ tape('handleUpgrade - pass', t => {
     t.pass('connections upgraded from http to ws without errors')
     a_ws.destroy()
     b_ws.destroy()
-    http_server.close(t.end)
+    httpserver.close(t.end)
   }, 250)
 })
 
 tape('handleUpgrade - fail - switch fallthru', t => {
-  const http_server = createServer()
+  const httpserver = createServer()
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
-  const handleUpgrade = createHandleUpgrade(meta_server, media_server)
+  const handleUpgrade = createHandleUpgrade(metaserver, mediaserver)
 
-  http_server.on('upgrade', handleUpgrade)
-  http_server.listen(10000, 'localhost')
+  httpserver.on('upgrade', handleUpgrade)
+  httpserver.listen(10000, 'localhost')
 
   const a_ws = websocket('ws://localhost:10000/')
   const b_ws = websocket('ws://localhost:10000/noop')
@@ -80,7 +80,7 @@ tape('handleUpgrade - fail - switch fallthru', t => {
   a_ws.on('error', err => t.ok(err, 'got a\'s connection error'))
   b_ws.on('error', err => t.ok(err, 'got b\'s connection error'))
 
-  setTimeout(() => http_server.close(t.end), 250)
+  setTimeout(() => httpserver.close(t.end), 250)
 })
 
 tape('handleMetastream', t => {
@@ -90,14 +90,14 @@ tape('handleMetastream', t => {
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
 
   const handleMetastream = createHandleMetastream({
     db,
-    meta_server,
+    metaserver,
     active_metastreams,
     logged_in_users
   })
@@ -114,7 +114,7 @@ tape('handleMetadata - fail pt1', t => {
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
@@ -129,9 +129,9 @@ tape('handleMetadata - fail pt1', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
+    accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(meta_server)
+    unpair: createUnpair(metaserver)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -158,7 +158,7 @@ tape('handleMetadata - fail pt2', t => {
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
@@ -173,9 +173,9 @@ tape('handleMetadata - fail pt2', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
+    accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(meta_server)
+    unpair: createUnpair(metaserver)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -204,7 +204,7 @@ tape('handleMetadata - fail pt3', t => {
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
@@ -219,9 +219,9 @@ tape('handleMetadata - fail pt3', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
+    accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(meta_server)
+    unpair: createUnpair(metaserver)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -250,7 +250,7 @@ tape('handleMetadata - switch fallthru', t => {
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
@@ -265,9 +265,9 @@ tape('handleMetadata - switch fallthru', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
+    accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(meta_server)
+    unpair: createUnpair(metaserver)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -712,11 +712,11 @@ tape('accept - pass', t => {
   const active_metastreams = streamSet()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
-  const accept = createAccept(meta_server, forward, sendForceCall)
+  const accept = createAccept(metaserver, forward, sendForceCall)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -763,7 +763,7 @@ tape('accept - pass', t => {
     }
   })
 
-  meta_server.once('pair', (a, b) => {
+  metaserver.once('pair', (a, b) => {
     const peers = [ a, b ]
     t.true(peers.includes('chiefbiiko'), 'one peer')
     t.true(peers.includes('noop'), 'two peer')
@@ -778,11 +778,11 @@ tape('accept - fail pt1', t => {
   const active_metastreams = streamSet()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
-  const accept = createAccept(meta_server, forward, sendForceCall)
+  const accept = createAccept(metaserver, forward, sendForceCall)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -806,11 +806,11 @@ tape('accept - fail pt2', t => {
   const active_metastreams = streamSet()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
-  const accept = createAccept(meta_server, forward, sendForceCall)
+  const accept = createAccept(metaserver, forward, sendForceCall)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
@@ -1261,13 +1261,13 @@ tape('deletePeers - fail pt1 - invalid metadata', t => {
 
 tape('handlePair - pass', t => {
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const http_server = createServer()
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const httpserver = createServer()
 
   const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 
-  const handlePair = createHandlePair(media_server, active_mediastreams)
+  const handlePair = createHandlePair(mediaserver, active_mediastreams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1280,7 +1280,7 @@ tape('handlePair - pass', t => {
   const shutdown = () => {
     a_ws.destroy()
     b_ws.destroy()
-    http_server.close(t.end)
+    httpserver.close(t.end)
   }
 
   var pending = 2
@@ -1298,8 +1298,8 @@ tape('handlePair - pass', t => {
     if (!--pending) shutdown()
   })
 
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
+  httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
+  httpserver.listen(10000, 'localhost')
 
   handlePair(a, b)
 
@@ -1316,13 +1316,13 @@ tape('handlePair - pass', t => {
 
 tape('handlePair - fail pt1 - invalid schema', t => {
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const http_server = createServer()
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const httpserver = createServer()
 
   const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 
-  const handlePair = createHandlePair(media_server, active_mediastreams)
+  const handlePair = createHandlePair(mediaserver, active_mediastreams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1338,8 +1338,8 @@ tape('handlePair - fail pt1 - invalid schema', t => {
   a_ws.on('data', chunk => t.fail('should be unreachable'))
   b_ws.on('data', chunk => t.fail('should be unreachable'))
 
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
+  httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
+  httpserver.listen(10000, 'localhost')
 
   handlePair(a, b)
 
@@ -1347,7 +1347,7 @@ tape('handlePair - fail pt1 - invalid schema', t => {
     t.pass('did not get any unintended fails so far')
     a_ws.destroy()
     b_ws.destroy()
-    http_server.close(t.end)
+    httpserver.close(t.end)
   }, 500)
 
   a_ws.write(a_info, err => err && t.end(err))
@@ -1356,13 +1356,13 @@ tape('handlePair - fail pt1 - invalid schema', t => {
 
 tape('handlePair - fail pt2 - no pair', t => {
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const http_server = createServer()
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const httpserver = createServer()
 
   const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 
-  const handlePair = createHandlePair(media_server, active_mediastreams)
+  const handlePair = createHandlePair(mediaserver, active_mediastreams)
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1378,8 +1378,8 @@ tape('handlePair - fail pt2 - no pair', t => {
   a_ws.on('data', chunk => t.fail('should be unreachable'))
   b_ws.on('data', chunk => t.fail('should be unreachable'))
 
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
+  httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
+  httpserver.listen(10000, 'localhost')
 
   handlePair(a, 'oj pic')
 
@@ -1387,7 +1387,7 @@ tape('handlePair - fail pt2 - no pair', t => {
     t.pass('did not get any unintended fails so far')
     a_ws.destroy()
     b_ws.destroy()
-    http_server.close(t.end)
+    httpserver.close(t.end)
   }, 500)
 
   a_ws.write(a_info, err => err && t.end(err))
@@ -1406,14 +1406,14 @@ tape('unpair - pass', t => {
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const http_server = createServer()
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const httpserver = createServer()
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
 
-  const handlePair = createHandlePair(media_server, active_mediastreams)
+  const handlePair = createHandlePair(mediaserver, active_mediastreams)
   const handleMetadata = createHandleMetadata({
     whoami: createWhoami(active_metastreams),
     registerUser: createRegisterUser(db),
@@ -1424,15 +1424,15 @@ tape('unpair - pass', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
+    accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(meta_server)
+    unpair: createUnpair(metaserver)
   }, logged_in_users)
 
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
+  httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
+  httpserver.listen(10000, 'localhost')
 
-  meta_server.on('unpair', createHandleUnpair(active_mediastreams))
+  metaserver.on('unpair', createHandleUnpair(active_mediastreams))
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1483,7 +1483,7 @@ tape('unpair - pass', t => {
           a_ws.on('data', _ => t.fail('media_stream unstopped'))
           b_ws.on('data', _ => t.fail('media_stream unstopped'))
           setTimeout(() => {
-            http_server.close()
+            httpserver.close()
             t.end()
           }, 750)
           break
@@ -1551,14 +1551,14 @@ tape('unpair - fail - invalid metadata', t => {
   const logged_in_users = new Set()
 
   const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-  const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-  const http_server = createServer()
+  const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+  const httpserver = createServer()
 
   const forward = createForward(active_metastreams)
   const sendForceCall = createSendForceCall(active_metastreams)
 
-  const handlePair = createHandlePair(media_server, active_mediastreams)
+  const handlePair = createHandlePair(mediaserver, active_mediastreams)
   const handleMetadata = createHandleMetadata({
     whoami: createWhoami(active_metastreams),
     registerUser: createRegisterUser(db),
@@ -1569,13 +1569,13 @@ tape('unpair - fail - invalid metadata', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
-    accept: createAccept(meta_server, forward, sendForceCall),
+    accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(meta_server)
+    unpair: createUnpair(metaserver)
   }, logged_in_users)
 
-  http_server.on('upgrade', createHandleUpgrade(meta_server, media_server))
-  http_server.listen(10000, 'localhost')
+  httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
+  httpserver.listen(10000, 'localhost')
 
   const a = 'chiefbiiko'
   const b = 'noop'
@@ -1628,7 +1628,7 @@ tape('unpair - fail - invalid metadata', t => {
           setTimeout(() => {
             a_ws.destroy()
             b_ws.destroy()
-            http_server.close()
+            httpserver.close()
             t.end()
           }, 750)
           break

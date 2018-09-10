@@ -16,39 +16,36 @@ const {
   willDeleteMediastreams
 } = require('./lib/handlers.js')
 
-const PORT = Number(process.env.PORT) || 10000
+const PORT = parseInt(process.env.PORT) || 10000
 const HOST = process.env.HOST || 'localhost'
+const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
 
 const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
 const active_metastreams = streamSet()
 const active_mediastreams = hashtagStreamSet(willDeleteMediastreams)
 const logged_in_users = new Set()
 
-const http_server = createServer()
-const WEBSOCKET_SERVER_OPTS = { perMessageDeflate: false, noServer: true }
-const meta_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
-const media_server = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+const httpserver = createServer()
+const metaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
+const mediaserver = new WebSocketServer(WEBSOCKET_SERVER_OPTS)
 
 const handleError = err => err && debug(`error: ${err.message}`)
-const handleUpgrade = createHandleUpgrade(meta_server, media_server)
-const handlePair = createHandlePair(media_server)
-const handleUnpair = createHandleUnpair(active_mediastreams)
-const handleMetastream = createHandleMetastream({
+
+db.on('error', handleError)
+httpserver.on('error', handleError)
+metaserver.on('error', handleError)
+mediaserver.on('error', handleError)
+
+httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
+metaserver.on('stream', createHandleMetastream({
   db,
-  meta_server,
+  metaserver,
   active_metastreams,
   logged_in_users
-})
+}))
 
-http_server.on('upgrade', handleUpgrade)
-meta_server.on('stream', handleMetastream)
-meta_server.on('pair', handlePair)
-meta_server.on('unpair', handleUnpair)
+metaserver.on('pair', createHandlePair(mediaserver, active_mediastreams))
+metaserver.on('unpair', createHandleUnpair(active_mediastreams))
 
-http_server.on('error', handleError)
-meta_server.on('error', handleError)
-media_server.on('error', handleError)
-db.on('error', handleError)
-
-http_server.on('listening', () => debug(`http_server live @ ${HOST}:${PORT}`))
-http_server.listen(PORT, HOST)
+httpserver.on('listening', () => debug(`httpserver live @ ${HOST}:${PORT}`))
+httpserver.listen(PORT, HOST)
