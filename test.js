@@ -516,6 +516,69 @@ tape('logout - fail pt2', t => {
   })
 })
 
+tape('avatar - pass', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const avatar = createAvatar(db)
+
+  const tx = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const metadata = {
+    type: 'AVATAR',
+    user: 'chiefbiiko',
+    avatar: 'data:image/*;base64,...',
+    tx
+  }
+
+  const chiefbiiko = { status: 'og', password: 'abc', peers: [], avatar: '' }
+
+  db.put('chiefbiiko', chiefbiiko , err => {
+    if (err) t.end(err)
+
+    metastream.once('data', res => {
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
+      t.true(res.ok, 'response status ok')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      db.get(metadata.user, (err, user) => {
+        if (err) t.end(err)
+        t.equal(user.avatar, metadata.avatar, 'same avatar')
+        t.end()
+      })
+    })
+
+    avatar(metastream, metadata, err => {
+      if (err) t.end(err)
+    })
+  })
+})
+
+tape('avatar - fail pt1', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const avatar = createAvatar(db)
+
+  const tx = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const metadata = {
+    type: 'PICTURE',
+    user: 'chiefbiiko',
+    avatar: 'data:image/*;base64,...',
+    tx
+  }
+
+  metastream.once('data', res => {
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...invalid schema')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  avatar(metastream, metadata, err => {
+    t.true(err.message.includes('invalid schema'), 'invalid schema err')
+    t.end()
+  })
+})
+
 tape('status - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
   const active_metastreams = streamSet()
