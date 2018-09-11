@@ -42,6 +42,7 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
 
   this._metastream = jsonStream(websocket(this._meta_url))
   this._metastream.on('error', this.emit.bind(this, 'error'))
+  this._metastream.on('data', this.emit.bind(this, 'io'))
 
   this._metastream_valve = createReadableValve(this._metastream)
     .subscribe(
@@ -106,9 +107,11 @@ Clientele.prototype.whoami = function whoami (cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.whoami(self._user, tx)
 
-  self._metastream.write(outbound.whoami(self._user, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -124,9 +127,11 @@ Clientele.prototype.register = function register (password, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.register(self._user, password, tx)
 
-  self._metastream.write(outbound.register(self._user, password, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -142,9 +147,11 @@ Clientele.prototype.login = function login (password, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.login(self._user, password, tx)
 
-  self._metastream.write(outbound.login(self._user, password, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -159,9 +166,11 @@ Clientele.prototype.logout = function logout (cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.logout(self._user, tx)
 
-  self._metastream.write(outbound.logout(self._user, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -177,9 +186,11 @@ Clientele.prototype.addPeers = function addPeers (peers, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.addPeers(self._user, peers, tx)
 
-  self._metastream.write(outbound.addPeers(self._user, peers, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -195,9 +206,11 @@ Clientele.prototype.deletePeers = function deletePeers (peers, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.deletePeers(self._user, peers, tx)
 
-  self._metastream.write(outbound.deletePeers(self._user, peers, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -212,9 +225,11 @@ Clientele.prototype.getPeers = function getPeers (cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.getPeers(self._user, tx)
 
-  self._metastream.write(outbound.getPeers(self._user, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => res.ok ? cb(null, res.peers) : cb(ERR.RES_NOT_OK),
@@ -229,9 +244,11 @@ Clientele.prototype.status = function status (status, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.status(self._user, status, tx)
 
-  self._metastream.write(outbound.status(self._user, status, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -247,9 +264,11 @@ Clientele.prototype.call = function call (peer, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.call(self._user, peer, tx)
 
-  self._metastream.write(outbound.call(self._user, peer, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         function listener (res) {
@@ -272,9 +291,11 @@ Clientele.prototype.accept = function accept (peer, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.accept(self._user, peer, tx)
 
-  self._metastream.write(outbound.accept(self._user, peer, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -290,9 +311,11 @@ Clientele.prototype.reject = function reject (peer, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.reject(self._user, peer, tx)
 
-  self._metastream.write(outbound.reject(self._user, peer, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
@@ -308,9 +331,11 @@ Clientele.prototype.unpair = function unpair (peer, cb) {
 
   const self = this
   const tx = Math.random()
+  const msg = outbound.accept(self._user, peer, tx)
 
-  self._metastream.write(outbound.accept(self._user, peer, tx), err => {
+  self._metastream.write(msg, err => {
     if (err) return cb(err)
+    self.emit('io', msg)
     self._metastream_valve
       .subscribe(
         res => cb(res.ok ? null : ERR.RES_NOT_OK),
