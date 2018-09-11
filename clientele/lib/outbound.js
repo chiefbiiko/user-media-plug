@@ -97,6 +97,14 @@ const outbound = Object.freeze({
       user,
       peer
     })
+  },
+  avatar (user, avatar, tx) {
+    return JSON.stringify({
+      type: 'AVATAR',
+      user,
+      avatar,
+      tx
+    })
   }
 })
 
