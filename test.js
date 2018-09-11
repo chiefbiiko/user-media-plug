@@ -911,7 +911,7 @@ tape('accept - pass', t => {
   metastream.on('data', msg => {
     switch (msg.type) {
       case 'FORCE_CALL':
-        t.true(valid.schema_FORCE_CALL(msg), 'valid schema F 4 force-call msg')
+        t.true(valid.schema_FORCE_CALL(msg), 'valid schema 4 force-call msg')
         t.equal(msg.peer, 'noop', 'peer noop')
         break
       case 'RESPONSE':
