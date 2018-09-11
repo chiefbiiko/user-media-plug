@@ -1,9 +1,10 @@
-const outbound = Object.freeze({
+const outbound = {
   whoami (user, tx) {
     return {
       type: 'WHOAMI',
       user,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   register (user, password, tx) {
@@ -11,7 +12,8 @@ const outbound = Object.freeze({
       type: 'REGISTER',
       user,
       password,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   login (user, password, tx) {
@@ -19,14 +21,16 @@ const outbound = Object.freeze({
       type: 'LOGIN',
       user,
       password,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   logout (user, tx) {
     return {
       type: 'LOGOUT',
       user,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   addPeers (user, peers, tx) {
@@ -34,7 +38,8 @@ const outbound = Object.freeze({
       type: 'ADD_PEERS',
       user,
       peers,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   deletePeers (user, peers, tx) {
@@ -42,14 +47,16 @@ const outbound = Object.freeze({
       type: 'DEL_PEERS',
       user,
       peers,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   getPeers (user, tx) {
     return {
       type: 'GET_PEERS',
       user,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   status (user, status, tx) {
@@ -57,7 +64,8 @@ const outbound = Object.freeze({
       type: 'STATUS',
       user,
       status,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   call (user, peer, tx) {
@@ -65,7 +73,8 @@ const outbound = Object.freeze({
       type: 'CALL',
       user,
       peer,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   accept (user, peer, tx) {
@@ -73,7 +82,8 @@ const outbound = Object.freeze({
       type: 'ACCEPT',
       user,
       peer,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   reject (user, peer, tx) {
@@ -81,7 +91,8 @@ const outbound = Object.freeze({
       type: 'REJECT',
       user,
       peer,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   unpair (user, peer, tx) {
@@ -89,13 +100,15 @@ const outbound = Object.freeze({
       type: 'UNPAIR',
       user,
       peer,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
   },
   info (user, peer) {
     return JSON.stringify({
       user,
-      peer
+      peer,
+      unix_ts_ms: Date.now()
     })
   },
   avatar (user, avatar, tx) {
@@ -103,9 +116,10 @@ const outbound = Object.freeze({
       type: 'AVATAR',
       user,
       avatar,
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     })
   }
-})
+}
 
 module.exports = outbound

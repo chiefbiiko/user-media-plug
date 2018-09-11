@@ -137,7 +137,13 @@ tape('handleMetadata - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
+  const metadata = {
+    type: 'login',
+    user: 'chiefbiiko',
+    password: 'abc',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -181,7 +187,13 @@ tape('handleMetadata - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'login', user: 'chiefbiiko', password: 'abc', tx }
+  const metadata = {
+    type: 'login',
+    user: 'chiefbiiko',
+    password: 'abc',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.whoami = 'noop'
 
@@ -227,7 +239,12 @@ tape('handleMetadata - fail pt3', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'peers', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'peers',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.whoami = 'chiefbiiko'
 
@@ -273,7 +290,12 @@ tape('handleMetadata - switch fallthru', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'unknown', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'unknown',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -294,7 +316,12 @@ tape('whoami - pass', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'WHOAMI', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'WHOAMI',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -315,7 +342,12 @@ tape('whoami - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'WHOAMI', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'WHOAMI',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   const peer_stream = jsonStream(new PassThrough())
   peer_stream.whoami = 'chiefbiiko'
@@ -341,7 +373,12 @@ tape('whoami - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'whoami', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'whoami',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -369,7 +406,13 @@ tape('login - pass', t => {
 
     const tx = Math.random()
     const metastream = jsonStream(new PassThrough())
-    const metadata = { type: 'LOGIN', user: 'chiefbiiko', password: 'abc', tx }
+    const metadata = {
+      type: 'LOGIN',
+      user: 'chiefbiiko',
+      password: 'abc',
+      tx,
+      unix_ts_ms: Date.now()
+    }
 
     metastream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -397,7 +440,13 @@ tape('login - fail pt1', t => {
 
     const tx = Math.random()
     const metastream = jsonStream(new PassThrough())
-    const metadata = { type: 'LOGIN', user: 'chiefbiiko', password: 'abz', tx }
+    const metadata = {
+      type: 'LOGIN',
+      user: 'chiefbiiko',
+      password: 'abz',
+      tx,
+      unix_ts_ms: Date.now()
+    }
 
     metastream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -423,7 +472,13 @@ tape('login - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { msg: 'LOGIN', user: 'chiefbiiko', password: 'abc', tx }
+  const metadata = {
+    msg: 'LOGIN',
+    user: 'chiefbiiko',
+    password: 'abc',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -451,7 +506,12 @@ tape('logout - pass', t => {
 
     const tx = Math.random()
     const metastream = jsonStream(new PassThrough())
-    const metadata = { type: 'LOGOUT', user: 'chiefbiiko', tx }
+    const metadata = {
+      type: 'LOGOUT',
+      user: 'chiefbiiko',
+      tx,
+      unix_ts_ms: Date.now()
+    }
 
     metastream.once('data', res => {
       t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -476,7 +536,12 @@ tape('logout - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'LOGOUT', username: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'LOGOUT',
+    username: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -501,7 +566,12 @@ tape('logout - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'LOGOUT', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'LOGOUT',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -527,7 +597,8 @@ tape('avatar - pass', t => {
     type: 'AVATAR',
     user: 'chiefbiiko',
     avatar: 'data:image/*;base64,...',
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   const chiefbiiko = { status: 'og', password: 'abc', peers: [], avatar: '' }
@@ -563,7 +634,8 @@ tape('avatar - fail pt1', t => {
     type: 'PICTURE',
     user: 'chiefbiiko',
     avatar: 'data:image/*;base64,...',
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   metastream.once('data', res => {
@@ -589,7 +661,13 @@ tape('status - pass', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'STATUS', user: 'chiefbiiko', status: 'cool', tx }
+  const metadata = {
+    type: 'STATUS',
+    user: 'chiefbiiko',
+    status: 'cool',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   peer_stream.whoami = 'noop'
   active_metastreams.add(peer_stream)
@@ -628,7 +706,13 @@ tape('status - fail pt1', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'STATUS', user: 'chiefbiiko', status: '', tx }
+  const metadata = {
+    type: 'STATUS',
+    user: 'chiefbiiko',
+    status: '',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   peer_stream.whoami = 'noop'
   active_metastreams.add(peer_stream)
@@ -660,7 +744,13 @@ tape('status - fail pt2', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'STATUS', user: 'biiko', status: 'boss', tx }
+  const metadata = {
+    type: 'STATUS',
+    user: 'biiko',
+    status: 'boss',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   peer_stream.whoami = 'noop'
   active_metastreams.add(peer_stream)
@@ -691,7 +781,13 @@ tape('call - pass', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'CALL', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = {
+    type: 'CALL',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   peer_stream.whoami = 'noop'
   active_metastreams.add(peer_stream)
@@ -724,7 +820,13 @@ tape('call - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'CALLING', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = {
+    type: 'CALLING',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -748,7 +850,13 @@ tape('call - fail pt2', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'CALL', user: 'chiefbiiko', peer: 'poop', tx }
+  const metadata = {
+    type: 'CALL',
+    user: 'chiefbiiko',
+    peer: 'poop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   peer_stream.whoami = 'noop'
   active_metastreams.add(peer_stream)
@@ -785,7 +893,13 @@ tape('accept - pass', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'ACCEPT', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = {
+    type: 'ACCEPT',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.whoami = 'chiefbiiko'
   peer_stream.whoami = 'noop'
@@ -851,7 +965,13 @@ tape('accept - fail pt1', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'ACCEPTING', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = {
+    type: 'ACCEPTING',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.on('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -878,7 +998,13 @@ tape('accept - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'ACCEPT', user: 'chiefbiiko', peer: 'poop', tx }
+  const metadata = {
+    type: 'ACCEPT',
+    user: 'chiefbiiko',
+    peer: 'poop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.whoami = 'chiefbiiko'
   active_metastreams.add(metastream)
@@ -905,7 +1031,13 @@ tape('reject - pass', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'REJECT', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = {
+    type: 'REJECT',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   peer_stream.whoami = 'noop'
   active_metastreams.add(peer_stream)
@@ -938,7 +1070,13 @@ tape('reject - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'CALLING', user: 'chiefbiiko', peer: 'noop', tx }
+  const metadata = {
+    type: 'CALLING',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -962,7 +1100,13 @@ tape('reject - fail pt2', t => {
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
   const peer_stream = jsonStream(new PassThrough())
-  const metadata = { type: 'CALL', user: 'chiefbiiko', peer: 'poop', tx }
+  const metadata = {
+    type: 'CALL',
+    user: 'chiefbiiko',
+    peer: 'poop',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   peer_stream.whoami = 'noop'
   active_metastreams.add(peer_stream)
@@ -994,7 +1138,12 @@ tape('getPeers - pass', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'GET_PEERS',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   logged_in_users.add('noop')
 
@@ -1035,7 +1184,12 @@ tape('getPeers - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'GET_PEERS', username: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'GET_PEERS',
+    username: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -1058,7 +1212,12 @@ tape('getPeers - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'GET_PEERS',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -1081,7 +1240,12 @@ tape('getPeers - fail pt3', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const metadata = { type: 'GET_PEERS', user: 'chiefbiiko', tx }
+  const metadata = {
+    type: 'GET_PEERS',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
 
   db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'out' }, err => {
     if (err) t.end(err)
@@ -1117,7 +1281,8 @@ tape('registerUser - pass', t => {
     type: 'REGISTER',
     user: 'balou',
     password: 'kd',
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   metastream.once('data', res => {
@@ -1146,7 +1311,8 @@ tape('registerUser - fail pt1 - invalid metadata', t => {
   const metadata = {
     type: 'REGISTER',
     user: 'balou',
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   metastream.once('data', res => {
@@ -1173,7 +1339,8 @@ tape('registerUser - fail pt2 - user already exists', t => {
     type: 'REGISTER',
     user: 'balou',
     password: 'kd',
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   db.put('balou', { password: 'kd', peers: [], status: 'busy' }, err => {
@@ -1204,7 +1371,8 @@ tape('addPeers - pass', t => {
     type: 'ADD_PEERS',
     user: 'balou',
     peers: [ 'mikey', 'kingsley' ],
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   const expected = [ 'og', 'mikey', 'kingsley' ]
@@ -1239,7 +1407,8 @@ tape('addPeers - fail pt1 - invalid metadata', t => {
   const metadata = {
     type: 'ADD_PEERS',
     user: 'balou',
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'noop' }, err => {
@@ -1270,7 +1439,8 @@ tape('deletePeers - pass', t => {
     type: 'DEL_PEERS',
     user: 'balou',
     peers: [ 'og' ],
-    tx
+    tx,
+    unix_ts_ms: Date.now()
   }
 
   db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'busy' }, err => {
@@ -1303,7 +1473,8 @@ tape('deletePeers - fail pt1 - invalid metadata', t => {
    const metadata = {
      type: 'DEL_PEERS',
      user: 'balou',
-     tx
+     tx,
+     unix_ts_ms: Date.now()
    }
 
    db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'busy' }, err => {
@@ -1335,8 +1506,8 @@ tape('handlePair - pass', t => {
 
   const a = 'chiefbiiko'
   const b = 'noop'
-  const a_info = JSON.stringify({ user: a, peer: b })
-  const b_info = JSON.stringify({ user: b, peer: a })
+  const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
+  const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
@@ -1390,8 +1561,8 @@ tape('handlePair - fail pt1 - invalid schema', t => {
 
   const a = 'chiefbiiko'
   const b = 'noop'
-  const a_info = JSON.stringify({ username: a, peer: b })
-  const b_info = JSON.stringify({ user: b, peername: a })
+  const a_info = JSON.stringify({ uname: a, peer: b, unix_ts_ms: Date.now() })
+  const b_info = JSON.stringify({ user: b, pname: a, unix_ts_ms: Date.now() })
 
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
@@ -1430,8 +1601,8 @@ tape('handlePair - fail pt2 - no pair', t => {
 
   const a = 'chiefbiiko'
   const b = 'noop'
-  const a_info = JSON.stringify({ user: a, peer: b })
-  const b_info = JSON.stringify({ user: b, peer: a })
+  const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
+  const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
@@ -1500,8 +1671,8 @@ tape('unpair - pass', t => {
 
   const a = 'chiefbiiko'
   const b = 'noop'
-  const a_info = JSON.stringify({ user: a, peer: b })
-  const b_info = JSON.stringify({ user: b, peer: a })
+  const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
+  const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
@@ -1512,14 +1683,16 @@ tape('unpair - pass', t => {
     const WHOAMI_MSG = {
       type: 'WHOAMI',
       user: 'chiefbiiko',
-      tx: Math.random()
+      tx: Math.random(),
+      unix_ts_ms: Date.now()
     }
 
     const LOGIN_MSG = {
       type: 'LOGIN',
       user: 'chiefbiiko',
       password: 'abc',
-      tx: Math.random()
+      tx: Math.random(),
+      unix_ts_ms: Date.now()
     }
 
     const tx = Math.random()
@@ -1527,7 +1700,8 @@ tape('unpair - pass', t => {
       type: 'UNPAIR',
       user: 'chiefbiiko',
       peer: 'noop',
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
 
     metastream.on('data', res => {
@@ -1643,8 +1817,8 @@ tape('unpair - fail - invalid metadata', t => {
 
   const a = 'chiefbiiko'
   const b = 'noop'
-  const a_info = JSON.stringify({ user: a, peer: b })
-  const b_info = JSON.stringify({ user: b, peer: a })
+  const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
+  const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
   const a_ws = websocket('ws://localhost:10000/media')
   const b_ws = websocket('ws://localhost:10000/media')
@@ -1655,21 +1829,24 @@ tape('unpair - fail - invalid metadata', t => {
     const WHOAMI_MSG = {
       type: 'WHOAMI',
       user: 'chiefbiiko',
-      tx: Math.random()
+      tx: Math.random(),
+      unix_ts_ms: Date.now()
     }
 
     const LOGIN_MSG = {
       type: 'LOGIN',
       user: 'chiefbiiko',
       password: 'abc',
-      tx: Math.random()
+      tx: Math.random(),
+      unix_ts_ms: Date.now()
     }
 
     const tx = Math.random()
     const UNPAIR_MSG = { // missing prop "peer"
       type: 'UNPAIR',
       user: 'chiefbiiko',
-      tx
+      tx,
+      unix_ts_ms: Date.now()
     }
 
     metastream.on('data', res => {
