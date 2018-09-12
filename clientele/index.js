@@ -30,9 +30,9 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
     throw Error(`unsupported MIME type or codec: ${Clientele.MIME_CODEC}`)
 
   if (!isTruthyString(url)) throw ERR.NOT_TRUTHY_STRING('url')
-  if (!isTruthyString(user)) throw ERR.NOT_TRUTHY_STRING('user')
+  // if (!isTruthyString(user)) throw ERR.NOT_TRUTHY_STRING('user')
 
-  this._user = user
+  if (isTruthyString(user)) this._user = user
 
   if (!/(?:\/meta|\/media)$/.test(url))
     url = `${url.replace(/^(.+:\d+).*$/, '$1')}/meta`
@@ -71,6 +71,11 @@ inherits(Clientele, EventEmitter)
 
 Clientele.MIME = 'video/webm'
 Clientele.MIME_CODEC = `${Clientele.MIME};codecs=vorbis,vp8`
+
+Clientele.prototype.setUser = function setUser (user) {
+  if (!isTruthyString(user)) throw ERR.NOT_TRUTHY_STRING('user')
+  this._user = user
+}
 
 Clientele.prototype._makeVideoStream = function makeVideoStream (msg) {
   const self = this
