@@ -1,29 +1,27 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+
+import { createCrashAction } from './actions/index.js'
 
 import './App.css'
 
 class App extends Component {
-
-  // componentDidMount () {
-  //   setTimeout(() => {
-  //     this.props.crashApp(Error('fatal error'))
-  //   }, 3000)
-  // }
-
+  componentDidCatch (err) {
+    this.props.crashApp(err)
+  }
   render () {
-    if (this.props.crashed) return <div>Damn, app crashed...</div>
     return (
-      <div className="App">Cool app stuff</div>
+      <div className="App">
+        { this.props.crashed ? 'Damn, app crashed' : this.props.children }
+      </div>
     )
   }
-
 }
 
 const mapStateToProps = state => ({ crashed: state.crashed })
+const mapDispatchToProps = dispatch => ({
+  crashApp: bindActionCreators(createCrashAction, dispatch)
+})
 
-// const mapDispatchToProps = dispatch => ({
-//   crashApp: bindActionCreators(createCrashAction, dispatch)
-// })
-
-export default connect(mapStateToProps)(App)
+export default connect(mapStateToProps, mapDispatchToProps)(App)

@@ -1,6 +1,4 @@
-// TODO: swap all alerts with some other display stuff
-
-import { bindActionCreators } from 'redux'
+// TODO: swap all alerts with react-toastify or similar
 
 const TRY_AWAIT = async (promise, caught) => {
   var rtn
@@ -44,7 +42,7 @@ const craftLoginAction = () => ({
   unix_ts_ms: Date.now()
 })
 
-const craftLoginAction = () => ({
+const craftLogoutAction = () => ({
   type: 'LOGOUT',
   unix_ts_ms: Date.now()
 })
@@ -60,7 +58,7 @@ export function createCrashAction (err) {
 
 export function createRegisterAction (user, password) {
   return async (dispatch, getState, { client }) => {
-    dipatch(craftUserAction(user))
+    dispatch(craftUserAction(user))
     client.setUser(user)
     TRY_AWAIT(client.whoami(), err => alert('identification failed'))
     dispatch(craftWhoamiAction())
@@ -74,7 +72,7 @@ export function createRegisterAction (user, password) {
 export function createLoginAction (user, password, skip_identification) {
   return async (dispatch, getState, { client }) => {
     if (!skip_identification) {
-      dipatch(craftUserAction(user))
+      dispatch(craftUserAction(user))
       client.setUser(user)
       TRY_AWAIT(client.whoami(), err => alert('identification failed'))
       dispatch(craftWhoamiAction())
