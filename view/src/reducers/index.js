@@ -1,13 +1,34 @@
 import { combineReducers } from 'redux'
 
-function io (state = [], action) {
+const ioReducer = (state = [], action) => {
   switch (action.type) {
     case 'IO': return [ ...state, action.msg ]
     default: return state
   }
 }
 
-function logio (state = false, action) {
+const crashReducer = (state = false, action) => {
+  switch (action.type) {
+    case 'CRASH': return true
+    default: return state
+  }
+}
+
+const userReducer = (state = '', action) => {
+  switch (action.type) {
+    case 'USER': return action.user
+    default: return state
+  }
+}
+
+const whoamiReducer = (state = false, action) => {
+  switch (action.type) {
+    case 'WHOAMI': return true
+    default: return state
+  }
+}
+
+const loginLogoutReducer = (state = false, action) => {
   switch (action.type) {
     case 'LOGIN': return true
     case 'LOGOUT': return false
@@ -16,6 +37,9 @@ function logio (state = false, action) {
 }
 
 export default combineReducers({
-  io_log: io,
-  logged_in: logio
+  io_log: ioReducer,
+  crashed: crashReducer,
+  user: userReducer,
+  whoami: whoamiReducer,
+  logged_in: loginLogoutReducer
 })

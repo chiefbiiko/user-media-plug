@@ -1,4 +1,6 @@
 {
+  "name": "clientele",
+  "version": "0.1.0",
   "scripts": {
     "test": "browserify ./test.js | tape-puppet"
   },
