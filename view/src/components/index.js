@@ -1,7 +1,7 @@
-import Page from './Page.js'
+import SinglePage from './SinglePage.js'
 import Gate from './Gate.js'
 
 export {
-  Page,
+  SinglePage,
   Gate
 }
