@@ -1,27 +1,8 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
+import React from 'react'
+import { Provider } from 'react-redux'
+import store from './store.js'
+import Page from './components/Page'
 
-import { createCrashAction } from './actions/index.js'
+const App = <Provider store={ store }><Page/></Provider>
 
-import './App.css'
-
-class App extends Component {
-  componentDidCatch (err) {
-    this.props.crashApp(err)
-  }
-  render () {
-    return (
-      <div className="App">
-        { this.props.crashed ? 'Damn, app crashed' : this.props.children }
-      </div>
-    )
-  }
-}
-
-const mapStateToProps = state => ({ crashed: state.crashed })
-const mapDispatchToProps = dispatch => ({
-  crashApp: bindActionCreators(createCrashAction, dispatch)
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default App
