@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { createCrashAction } from './../actions'
+import Gate from './Gate.js'
 
 const page_style = { textAlign: 'center' }
 
@@ -14,7 +15,11 @@ class SinglePage extends Component {
   render () {
     return (
       <div style={ page_style }>
-        { this.props.crashed ? 'Damn, app crashed' : 'single page' }
+        {
+          this.props.crashed
+            ? 'Damn, app crashed'
+            : <Gate />
+        }
         <ToastContainer autoClose={ 2000 } />
       </div>
     )
@@ -22,6 +27,7 @@ class SinglePage extends Component {
 }
 
 const mapStateToProps = state => ({ crashed: state.crashed })
+
 const mapDispatchToProps = dispatch =>
   ({ crashApp: bindActionCreators(createCrashAction, dispatch) })
 

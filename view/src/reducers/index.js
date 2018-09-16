@@ -9,12 +9,12 @@ const ioReducer = (state = [], action) => {
 
 const crashReducer = (state = false, action) => {
   switch (action.type) {
-    case 'CRASH': return true
+    case 'FRONTEND_CRASH': return true
     default: return state
   }
 }
 
-const userReducer = (state = '', action) => {
+const userReducer = (state = ' ', action) => {
   switch (action.type) {
     case 'USER': return action.user
     default: return state

@@ -1,15 +1,5 @@
 // TODO: swap all alerts with react-toastify or similar
 
-const TRY_AWAIT = async (promise, caught) => {
-  var rtn
-  try {
-    rtn = await promise
-  } catch (err) {
-    caught(err)
-  }
-  return rtn
-}
-
 export function craftIOAction (msg) {
   return {
     type: 'IO',
@@ -19,10 +9,14 @@ export function craftIOAction (msg) {
 }
 
 const craftCrashAction = (err, state) => ({
-  type: 'CRASH',
+  type: 'FRONTEND_CRASH',
   unix_ts_ms: Date.now(),
-  err_msg: err.message,
+  err_name: err.name,
+  err_message: err.message,
   err_stack: err.stack,
+  err_fileName: err.fileName,
+  err_lineNumber: err.lineNumber,
+  err_columnNumber: err.columnNumber,
   state
 })
 
@@ -52,7 +46,7 @@ export function createCrashAction (err) {
     const crash_action = craftCrashAction(err, getState())
     dispatch(crash_action)
     const conf = { method: 'post', body: JSON.stringify(crash_action) }
-    TRY_AWAIT(fetch('http://localhost:10000/crash', conf), () => {}) // muted
+    try { await fetch('http://localhost:10000/crash', conf) } catch (_) {}
   }
 }
 
@@ -60,26 +54,39 @@ export function createRegisterAction (user, password) {
   return async (dispatch, getState, { client }) => {
     dispatch(craftUserAction(user))
     client.setUser(user)
-    TRY_AWAIT(client.whoami(), err => alert('identification failed'))
+    try { await client.whoami() }
+    catch (_) { return alert('identification failed') }
     dispatch(craftWhoamiAction())
 
-    TRY_AWAIT(client.register(password), err => alert('registration failed'))
+    try { await client.register(password) }
+    catch (_) { return alert('registration failed') }
 
     dispatch(createLoginAction(user, password, true))
   }
 }
 
-export function createLoginAction (user, password, skip_identification) {
+export function createLoginAction (user, password, skip_ident) {
   return async (dispatch, getState, { client }) => {
-    if (!skip_identification) {
+    if (!skip_ident) {
       dispatch(craftUserAction(user))
       client.setUser(user)
-      TRY_AWAIT(client.whoami(), err => alert('identification failed'))
+      try { await client.whoami() }
+      catch (_) { return alert('identification failed') }
       dispatch(craftWhoamiAction())
     }
 
-    TRY_AWAIT(client.login(password), err => alert('login failed'))
+    try { await client.login(password) }
+    catch (_) { return alert('login failed') }
 
     dispatch(craftLoginAction())
+  }
+}
+
+export function createLogoutAction () {
+  return async (dispatch, getState, { client }) => {
+    try { await client.logout() }
+    catch (_) { return alert('logout failed') }
+
+    dispatch(craftLogoutAction())
   }
 }

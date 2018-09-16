@@ -1,4 +1,4 @@
-import { createStore, applyMiddleware, bindActionCreators } from 'redux'
+import { createStore, applyMiddleware/*, bindActionCreators*/ } from 'redux'
 import thunk from 'redux-thunk'
 import clientele from 'clientele/promised'
 import rootReducer from './../reducers'
