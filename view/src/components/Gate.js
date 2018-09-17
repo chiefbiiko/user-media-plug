@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { toast } from 'react-toastify'
-import { areTruthyStrings } from './../utils'
+import { areTruthyStrings, blur } from './../utils'
 import {
   craftTogglePasswordVisibilityAction,
   createRegisterAction,
@@ -21,7 +21,7 @@ class Gate extends Component {
     this.login = this.generic.bind(this, 'login')
     this.logout = this.generic.bind(this, 'logout')
   }
-  componentDidMount () { // find a sibling that focuses on each display
+  componentDidMount () {
     this.name.current.focus()
   }
   generic (method, e) {
@@ -29,8 +29,7 @@ class Gate extends Component {
     if (method === 'logout') return this.props[method]()
     if (!areTruthyStrings(this.name.current.value, this.pass.current.value))
       return toast.error('invalid name or password')
-    // TODO: choose some cheap hash function and apply it rite here!
-    this.props[method](this.name.current.value, this.pass.current.value)
+    this.props[method](this.name.current.value, blur(this.pass.current.value))
   }
   render () {
     return (
