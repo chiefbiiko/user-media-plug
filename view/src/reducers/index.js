@@ -21,13 +21,6 @@ const userReducer = (state = ' ', action) => {
   }
 }
 
-const whoamiReducer = (state = false, action) => {
-  switch (action.type) {
-    case 'WHOAMI': return true
-    default: return state
-  }
-}
-
 const loginLogoutReducer = (state = false, action) => {
   switch (action.type) {
     case 'LOGIN': return true
@@ -40,6 +33,5 @@ export default combineReducers({
   io_log: ioReducer,
   crashed: crashReducer,
   user: userReducer,
-  whoami: whoamiReducer,
   logged_in: loginLogoutReducer
 })

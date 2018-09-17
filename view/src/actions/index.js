@@ -26,11 +26,6 @@ const craftUserAction = user => ({
   user
 })
 
-const craftWhoamiAction = () => ({
-  type: 'WHOAMI',
-  unix_ts_ms: Date.now()
-})
-
 const craftLoginAction = () => ({
   type: 'LOGIN',
   unix_ts_ms: Date.now()
@@ -56,24 +51,23 @@ export function createRegisterAction (user, password) {
     client.setUser(user)
     try { await client.whoami() }
     catch (_) { return alert('identification failed') }
-    dispatch(craftWhoamiAction())
 
     try { await client.register(password) }
     catch (_) { return alert('registration failed') }
 
-    dispatch(createLoginAction(user, password, true))
+    dispatch(createLoginAction(user, password))
   }
 }
 
-export function createLoginAction (user, password, skip_ident) {
+export function createLoginAction (user, password) {
   return async (dispatch, getState, { client }) => {
-    if (!skip_ident) {
+    if (user !== getState().user) {
       dispatch(craftUserAction(user))
       client.setUser(user)
-      try { await client.whoami() }
-      catch (_) { return alert('identification failed') }
-      dispatch(craftWhoamiAction())
     }
+
+    try { await client.whoami() }
+    catch (_) { return alert('identification failed') }
 
     try { await client.login(password) }
     catch (_) { return alert('login failed') }
