@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux'
 import { toast } from 'react-toastify'
 import { areTruthyStrings } from './../utils'
 import {
+  craftTogglePasswordVisibilityAction,
   createRegisterAction,
   createLoginAction,
   createLogoutAction
@@ -16,22 +17,12 @@ class Gate extends Component {
     super(props)
     this.name = React.createRef()
     this.pass = React.createRef()
-    this.togglePassword = this.togglePassword.bind(this)
     this.register = this.generic.bind(this, 'register')
     this.login = this.generic.bind(this, 'login')
     this.logout = this.generic.bind(this, 'logout')
   }
-  componentDidMount () {
+  componentDidMount () { // find a sibling that focuses on each display
     this.name.current.focus()
-  }
-  togglePassword (e) {
-    if (this.pass.current.type !== 'password') {
-      this.pass.current.type = 'password'
-      e.target.innerText = 'Show password'
-    } else {
-      this.pass.current.type = 'text'
-      e.target.innerText = 'Hide password'
-    }
   }
   generic (method, e) {
     e.preventDefault()
@@ -49,10 +40,13 @@ class Gate extends Component {
            ? <button onClick={ this.logout }>Logout</button>
            : <div>
                <input placeholder='name' ref={ this.name }/>
-               <input type='password' placeholder='password' ref={ this.pass }/>
+               <input type={ this.props.password_visible ? 'text' : 'password' }
+                 placeholder='password' ref={ this.pass }/>
                <button onClick={ this.register }>Register</button>
                <button onClick={ this.login }>Login</button>
-               <button onClick={ this.togglePassword }>Show password</button>
+               <button onClick={ this.props.togglePasswordVisibility }>
+                 { this.props.password_visible ? 'Hide' : 'Show' } password
+               </button>
              </div>
        }
      </div>
@@ -60,12 +54,17 @@ class Gate extends Component {
   }
 }
 
-const mapStateToProps = state => ({ logged_in: state.logged_in })
+const mapStateToProps = state => ({
+  logged_in: state.logged_in,
+  password_visible: state.password_visible
+})
 
 const mapDispatchToProps = dispatch => ({
   register: bindActionCreators(createRegisterAction, dispatch),
   login: bindActionCreators(createLoginAction, dispatch),
-  logout: bindActionCreators(createLogoutAction, dispatch)
+  logout: bindActionCreators(createLogoutAction, dispatch),
+  togglePasswordVisibility:
+    bindActionCreators(craftTogglePasswordVisibilityAction, dispatch)
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Gate)

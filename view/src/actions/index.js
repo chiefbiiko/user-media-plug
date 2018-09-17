@@ -36,6 +36,13 @@ const craftLogoutAction = () => ({
   unix_ts_ms: Date.now()
 })
 
+export function craftTogglePasswordVisibilityAction () {
+  return {
+    type: 'TOGGLE_PASSWORD_VISIBILITY',
+    unix_ts_ms: Date.now()
+  }
+}
+
 export function createCrashAction (err) {
   return async (dispatch, getState) => {
     const crash_action = craftCrashAction(err, getState())

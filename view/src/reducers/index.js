@@ -14,7 +14,7 @@ const crashReducer = (state = false, action) => {
   }
 }
 
-const userReducer = (state = ' ', action) => {
+const userReducer = (state = '', action) => {
   switch (action.type) {
     case 'USER': return action.user
     default: return state
@@ -29,9 +29,17 @@ const loginLogoutReducer = (state = false, action) => {
   }
 }
 
+const passwordVisibilityReducer = (state = false, action) => {
+  switch (action.type) {
+    case 'TOGGLE_PASSWORD_VISIBILITY': return !state
+    default: return state
+  }
+}
+
 export default combineReducers({
   io_log: ioReducer,
   crashed: crashReducer,
   user: userReducer,
-  logged_in: loginLogoutReducer
+  logged_in: loginLogoutReducer,
+  password_visible: passwordVisibilityReducer
 })
