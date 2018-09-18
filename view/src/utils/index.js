@@ -3,7 +3,8 @@ export function areTruthyStrings (...xyz) {
 }
 
 export function blur (s) {
-  return s.split('')
-    .map(c => c.charCodeAt(0))
-    .reduce((acc, cur) => `${acc}${String.fromCharCode(cur ^ 19)}`, '')
+  return s
+    .split('')
+    .map(c => String.fromCharCode(c.charCodeAt(0) ^ 19))
+    .join('')
 }
