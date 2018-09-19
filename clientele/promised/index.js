@@ -107,6 +107,16 @@ PromisedClientele.prototype.call = function call (peer) {
   })
 }
 
+PromisedClientele.prototype.stopRinging = function stopRinging (peer) {
+  return new Promise((resolve, reject) => {
+    Clientele.prototype.stopRinging.call(
+      this,
+      peer,
+      err => err ? reject(err) : resolve()
+    )
+  })
+}
+
 PromisedClientele.prototype.accept = function accept (peer) {
   return new Promise((resolve, reject) => {
     Clientele.prototype.accept.call(

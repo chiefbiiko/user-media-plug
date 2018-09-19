@@ -119,6 +119,15 @@ const outbound = {
       tx,
       unix_ts_ms: Date.now()
     }
+  },
+  stopRinging (user, peer, tx) {
+    return {
+      type: 'STOP_RINGING',
+      user,
+      peer,
+      tx,
+      unix_ts_ms: Date.now()
+    }
   }
 }
 

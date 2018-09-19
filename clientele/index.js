@@ -327,6 +327,26 @@ Clientele.prototype.call = function call (peer, cb) {
   })
 }
 
+Clientele.prototype.stopRinging = function stopRinging (peer, cb) {
+  if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
+  if (!isTruthyString(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
+
+  const self = this
+  const tx = Math.random()
+  const msg = outbound.stopRinging(self._user, peer, tx)
+
+  self._metastream.write(msg, err => {
+    if (err) return cb(err)
+    self.emit('io', msg)
+    self._metastream_valve
+      .subscribe(
+        res => cb(res.ok ? null : ERR.RES_NOT_OK),
+        res => res.tx === tx,
+        1
+      )
+  })
+}
+
 Clientele.prototype.accept = function accept (peer, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
   if (!isTruthyString(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))

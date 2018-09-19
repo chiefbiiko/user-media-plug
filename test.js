@@ -31,6 +31,7 @@ const {
   createGetPeers,
   createStatus,
   createCall,
+  createStopRinging,
   createAccept,
   createReject,
   createUnpair,
@@ -130,6 +131,7 @@ tape('handleMetadata - fail pt1', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
+    stopRinging: createStopRinging(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
     unpair: createUnpair(metaserver, forward)
@@ -180,6 +182,7 @@ tape('handleMetadata - fail pt2', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
+    stopRinging: createStopRinging(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
     unpair: createUnpair(metaserver, forward)
@@ -232,6 +235,7 @@ tape('handleMetadata - fail pt3', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
+    stopRinging: createStopRinging(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
     unpair: createUnpair(metaserver, forward)
@@ -283,6 +287,7 @@ tape('handleMetadata - switch fallthru', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
+    stopRinging: createStopRinging(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
     unpair: createUnpair(metaserver, forward)
@@ -349,9 +354,9 @@ tape('whoami - fail pt1', t => {
     unix_ts_ms: Date.now()
   }
 
-  const peer_stream = jsonStream(new PassThrough())
-  peer_stream.whoami = 'chiefbiiko'
-  active_metastreams.add(peer_stream)
+  const peerstream = jsonStream(new PassThrough())
+  peerstream.whoami = 'chiefbiiko'
+  active_metastreams.add(peerstream)
 
   metastream.once('data', res => {
     t.true(valid.schema_RESPONSE(res), 'valid response schema')
@@ -662,7 +667,7 @@ tape('status - pass', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'STATUS',
     user: 'chiefbiiko',
@@ -671,8 +676,8 @@ tape('status - pass', t => {
     unix_ts_ms: Date.now()
   }
 
-  peer_stream.whoami = 'noop'
-  active_metastreams.add(peer_stream)
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
 
   db.put('chiefbiiko', { peers: [ 'noop' ], status: 'none' }, err => {
     if (err) t.end(err)
@@ -686,7 +691,7 @@ tape('status - pass', t => {
       if (!--pending) t.end()
     })
 
-    peer_stream.once('data', notif => {
+    peerstream.once('data', notif => {
       t.same(notif, metadata, 'forwarded metadata to peer noop')
       t.equal(notif.status, 'cool', 'got the status update in a notification')
       if (!--pending) t.end()
@@ -707,7 +712,7 @@ tape('status - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'STATUS',
     user: 'chiefbiiko',
@@ -716,8 +721,8 @@ tape('status - fail pt1', t => {
     unix_ts_ms: Date.now()
   }
 
-  peer_stream.whoami = 'noop'
-  active_metastreams.add(peer_stream)
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
 
   db.put('chiefbiiko', { peers: [ 'noop' ], status: 'none' }, err => {
     if (err) t.end(err)
@@ -745,7 +750,7 @@ tape('status - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'STATUS',
     user: 'biiko',
@@ -754,8 +759,8 @@ tape('status - fail pt2', t => {
     unix_ts_ms: Date.now()
   }
 
-  peer_stream.whoami = 'noop'
-  active_metastreams.add(peer_stream)
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
 
   db.put('chiefbiiko', { peers: [ 'noop' ], status: 'none' }, err => {
     if (err) t.end(err)
@@ -782,7 +787,7 @@ tape('call - pass', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'CALL',
     user: 'chiefbiiko',
@@ -791,8 +796,8 @@ tape('call - pass', t => {
     unix_ts_ms: Date.now()
   }
 
-  peer_stream.whoami = 'noop'
-  active_metastreams.add(peer_stream)
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
 
   var pending = 2
 
@@ -803,7 +808,7 @@ tape('call - pass', t => {
     if (!--pending) t.end()
   })
 
-  peer_stream.once('data', notif => {
+  peerstream.once('data', notif => {
     t.same(notif, metadata, 'forwarded metadata to peer noop')
     t.equal(notif.tx, tx, 'transaction identifiers equal')
     if (!--pending) t.end()
@@ -851,7 +856,7 @@ tape('call - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'CALL',
     user: 'chiefbiiko',
@@ -860,8 +865,8 @@ tape('call - fail pt2', t => {
     unix_ts_ms: Date.now()
   }
 
-  peer_stream.whoami = 'noop'
-  active_metastreams.add(peer_stream)
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
 
   var pending = 2
 
@@ -872,13 +877,218 @@ tape('call - fail pt2', t => {
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
-  peer_stream.once('data', notif => {
+  peerstream.once('data', notif => {
     t.fail('should be unreachable')
   })
 
   call(metastream, metadata, err => {
     t.true(err.message.includes('can\'t forward'))
     t.end()
+  })
+})
+
+tape('stopRinging - pass', t => {
+  const active_metastreams = streamSet()
+
+  const forward = createForward(active_metastreams)
+  const call = createCall(forward)
+  const stopRinging = createStopRinging(forward)
+
+  const tx_1 = Math.random()
+  const tx_2 = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
+  const metadata_1 = {
+    type: 'CALL',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx: tx_1,
+    unix_ts_ms: Date.now()
+  }
+  const metadata_2 = {
+    type: 'STOP_RINGING',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx: tx_2,
+    unix_ts_ms: Date.now()
+  }
+
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
+
+  var pending = 4
+
+  var data_count = 0
+  metastream.on('data', res => {
+    switch (++data_count) {
+      case 1:
+        t.true(valid.schema_RESPONSE(res), 'valid response schema')
+        t.true(res.ok, 'response status ok')
+        t.equal(res.tx, tx_1, 'transaction identifiers equal')
+        break
+      case 2:
+        t.true(valid.schema_RESPONSE(res), 'valid response schema')
+        t.true(res.ok, 'response status ok')
+        t.equal(res.tx, tx_2, 'transaction identifiers equal')
+        break
+    }
+    if (!--pending) t.end()
+  })
+
+  var notif_count = 0
+  peerstream.on('data', notif => {
+    switch (++notif_count) {
+      case 1: t.same(notif, metadata_1, 'forwarded metadata #1'); break
+      case 2: t.same(notif, metadata_2, 'forwarded metadata #2'); break
+    }
+    if (!--pending) t.end()
+  })
+
+  call(metastream, metadata_1, err => {
+    if (err) t.end(err)
+    setTimeout(() => {
+      stopRinging(metastream, metadata_2, err => err && t.end(err))
+    }, 500)
+  })
+})
+
+
+tape('stopRinging - fail pt1', t => {
+  const active_metastreams = streamSet()
+
+  const forward = createForward(active_metastreams)
+  const call = createCall(forward)
+  const stopRinging = createStopRinging(forward)
+
+  const tx_1 = Math.random()
+  const tx_2 = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
+  const metadata_1 = {
+    type: 'CALL',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx: tx_1,
+    unix_ts_ms: Date.now()
+  }
+  const metadata_2 = {
+    type: 'STOP_RINGING',
+    user: 'chiefbiiko',
+    friend: 'noop',
+    tx: tx_2,
+    unix_ts_ms: Date.now()
+  }
+
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
+
+  var pending = 4
+
+  var data_count = 0
+  metastream.on('data', res => {
+    switch (++data_count) {
+      case 1:
+        t.true(valid.schema_RESPONSE(res), 'valid response schema')
+        t.true(res.ok, 'response status ok')
+        t.equal(res.tx, tx_1, 'transaction identifiers equal')
+        break
+      case 2:
+        t.true(valid.schema_RESPONSE(res), 'valid response schema')
+        t.false(res.ok, 'response status not ok...')
+        t.comment('...invalid schema')
+        t.equal(res.tx, tx_2, 'transaction identifiers equal')
+        break
+    }
+    if (!--pending) t.end()
+  })
+
+  var notif_count = 0
+  peerstream.on('data', notif => {
+    switch (++notif_count) {
+      case 1: t.same(notif, metadata_1, 'forwarded metadata #1'); break
+      case 2: t.same(notif, metadata_2, 'forwarded metadata #2'); break
+    }
+    if (!--pending) t.end()
+  })
+
+  call(metastream, metadata_1, err => {
+    if (err) t.end(err)
+    setTimeout(() => {
+      stopRinging(metastream, metadata_2, err => {
+        t.true(err.message.includes('invalid schema'))
+        t.end()
+      })
+    }, 500)
+  })
+})
+
+tape('stopRinging - fail pt2', t => {
+  const active_metastreams = streamSet()
+
+  const forward = createForward(active_metastreams)
+  const call = createCall(forward)
+  const stopRinging = createStopRinging(forward)
+
+  const tx_1 = Math.random()
+  const tx_2 = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
+  const metadata_1 = {
+    type: 'CALL',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx: tx_1,
+    unix_ts_ms: Date.now()
+  }
+  const metadata_2 = {
+    type: 'STOP_RINGING',
+    user: 'chiefbiiko',
+    peer: 'noop',
+    tx: tx_2,
+    unix_ts_ms: Date.now()
+  }
+
+  peerstream.whoami = 'poop'
+  active_metastreams.add(peerstream)
+
+  var pending = 4
+
+  var data_count = 0
+  metastream.on('data', res => {
+    switch (++data_count) {
+      case 1:
+        t.true(valid.schema_RESPONSE(res), 'valid response schema')
+        t.false(res.ok, 'response status not ok...')
+        t.comment('...unknown receiver')
+        t.equal(res.tx, tx_1, 'transaction identifiers equal')
+        break
+      case 2:
+        t.true(valid.schema_RESPONSE(res), 'valid response schema')
+        t.false(res.ok, 'response status not ok...')
+        t.comment('...unknown receiver')
+        t.equal(res.tx, tx_2, 'transaction identifiers equal')
+        break
+    }
+    if (!--pending) t.end()
+  })
+
+  var notif_count = 0
+  peerstream.on('data', notif => {
+    switch (++notif_count) {
+      case 1: t.same(notif, metadata_1, 'forwarded metadata #1'); break
+      case 2: t.same(notif, metadata_2, 'forwarded metadata #2'); break
+    }
+    if (!--pending) t.end()
+  })
+
+  call(metastream, metadata_1, err => {
+    t.true(err.message.includes('can\'t forward'))
+    setTimeout(() => {
+      stopRinging(metastream, metadata_2, err => {
+        t.true(err.message.includes('can\'t forward'))
+        t.end()
+      })
+    }, 500)
   })
 })
 
@@ -894,7 +1104,7 @@ tape('accept - pass', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'ACCEPT',
     user: 'chiefbiiko',
@@ -904,9 +1114,9 @@ tape('accept - pass', t => {
   }
 
   metastream.whoami = 'chiefbiiko'
-  peer_stream.whoami = 'noop'
+  peerstream.whoami = 'noop'
   active_metastreams.add(metastream)
-  active_metastreams.add(peer_stream)
+  active_metastreams.add(peerstream)
 
   var pending = 2
 
@@ -927,7 +1137,7 @@ tape('accept - pass', t => {
     }
   })
 
-  peer_stream.on('data', notif => {
+  peerstream.on('data', notif => {
     switch (notif.type) {
       case 'FORCE_CALL':
         t.true(valid.schema_FORCE_CALL(notif), 'valid schema 4 force-call msg')
@@ -966,7 +1176,7 @@ tape('accept - fail pt1', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'ACCEPTING',
     user: 'chiefbiiko',
@@ -1032,7 +1242,7 @@ tape('reject - pass', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'REJECT',
     user: 'chiefbiiko',
@@ -1041,8 +1251,8 @@ tape('reject - pass', t => {
     unix_ts_ms: Date.now()
   }
 
-  peer_stream.whoami = 'noop'
-  active_metastreams.add(peer_stream)
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
 
   var pending = 2
 
@@ -1053,7 +1263,7 @@ tape('reject - pass', t => {
     if (!--pending) t.end()
   })
 
-  peer_stream.once('data', notif => {
+  peerstream.once('data', notif => {
     t.same(notif, metadata, 'forwarded metadata to peer noop')
     t.equal(notif.tx, tx, 'transaction identifiers equal')
     if (!--pending) t.end()
@@ -1101,7 +1311,7 @@ tape('reject - fail pt2', t => {
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())
-  const peer_stream = jsonStream(new PassThrough())
+  const peerstream = jsonStream(new PassThrough())
   const metadata = {
     type: 'CALL',
     user: 'chiefbiiko',
@@ -1110,8 +1320,8 @@ tape('reject - fail pt2', t => {
     unix_ts_ms: Date.now()
   }
 
-  peer_stream.whoami = 'noop'
-  active_metastreams.add(peer_stream)
+  peerstream.whoami = 'noop'
+  active_metastreams.add(peerstream)
 
   var pending = 2
 
@@ -1122,7 +1332,7 @@ tape('reject - fail pt2', t => {
     t.equal(res.tx, tx, 'transaction identifiers equal')
   })
 
-  peer_stream.once('data', notif => {
+  peerstream.once('data', notif => {
     t.fail('should be unreachable')
   })
 
@@ -1661,6 +1871,7 @@ tape('unpair - pass', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
+    stopRinging: createStopRinging(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
     unpair: createUnpair(metaserver, forward)
@@ -1820,6 +2031,7 @@ tape('unpair - fail - invalid metadata', t => {
     logout: createLogout(db, logged_in_users, forward),
     status: createStatus(db, active_metastreams, forward),
     call: createCall(forward),
+    stopRinging: createStopRinging(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
     unpair: createUnpair(metaserver, forward)
