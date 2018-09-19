@@ -38,18 +38,33 @@ const passwordVisibilityReducer = (state = false, action) => {
 
 const peersReducer = (state = {}, action) => {
   switch (action.type) {
-    case 'OUTBOUND_CALL': return {
+    case 'OUTBOUND_CALL':
+    case 'INBOUND_CALL': return {
       ...state,
       [action.peer]: { ...state[action.peer], ringing: true }
     }
-    case 'OUTBOUND_ACCEPT': return {
+    case 'OUTBOUND_ACCEPT':
+    case 'INBOUND_ACCEPT': return {
       ...state,
       [action.peer]: { ...state[action.peer], ringing: false, calling: true }
     }
     case 'OUTBOUND_REJECT':
-    case 'OUTBOUND_UNPAIR': return {
+    case 'INBOUND_REJECT': return {
       ...state,
-      [action.peer]: { ...state[action.peer], ringing: false, calling: false }
+      [action.peer]: { ...state[action.peer], ringing: false }
+    }
+    case 'OUTBOUND_UNPAIR':
+    case 'INBOUND_UNPAIR': return {
+      ...state,
+      [action.peer]: { ...state[action.peer], calling: false }
+    }
+    case 'ONLINE': return {
+      ...state,
+      [action.peer]: { ...state[action.peer], online: true }
+    }
+    case 'OFFLINE': return {
+      ...state,
+      [action.peer]: { ...state[action.peer], online: false }
     }
     default: return state
   }

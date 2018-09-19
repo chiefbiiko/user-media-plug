@@ -588,8 +588,10 @@ tape('logout - fail pt2', t => {
 
 tape('avatar - pass', t => {
   const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+  const active_metastreams = streamSet()
+  const forward = createForward(active_metastreams)
 
-  const avatar = createAvatar(db)
+  const avatar = createAvatar(db, active_metastreams, forward)
 
   const tx = Math.random()
   const metastream = jsonStream(new PassThrough())

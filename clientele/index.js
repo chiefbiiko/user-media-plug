@@ -19,18 +19,18 @@ const ERR = {
   NOT_STRING_ARRAY (x) { return TypeError(`${x} is not a string array`) }
 }
 
+// TODO: method .avatar to set one as a base64 encoded data uri
 function Clientele (url, user) { // url can just be 'ws://localhost:10000'
   if (!(this instanceof Clientele)) return new Clientele(url, user)
   EventEmitter.call(this)
 
   if (!/firefox/i.test(navigator.userAgent))
-    debug(`clientele probly won't work on ${navigator.userAgent}`)
+    alert(`app probly won't work on ${navigator.userAgent}`)
   else if (!MediaSource.isTypeSupported(Clientele.MIME_CODEC) ||
            !MediaRecorder.isTypeSupported(Clientele.MIME))
     throw Error(`unsupported MIME type or codec: ${Clientele.MIME_CODEC}`)
 
   if (!isTruthyString(url)) throw ERR.NOT_TRUTHY_STRING('url')
-  // if (!isTruthyString(user)) throw ERR.NOT_TRUTHY_STRING('user')
 
   if (isTruthyString(user)) this._user = user
 
@@ -68,6 +68,10 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
     .subscribe(
       this.emit.bind(this, 'status'),
       msg => msg.type === 'STATUS'
+    )
+    .subscribe(
+      this.emit.bind(this, 'avatar'),
+      msg => msg.type === 'AVATAR'
     )
     .subscribe(
       this.emit.bind(this, 'online'),
