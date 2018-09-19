@@ -58,10 +58,8 @@ export function createRegisterAction (user, password) {
     client.setUser(user)
     try { await client.whoami() }
     catch (_) { return alert('identification failed') }
-
     try { await client.register(password) }
     catch (_) { return alert('registration failed') }
-
     dispatch(createLoginAction(user, password))
   }
 }
@@ -72,13 +70,10 @@ export function createLoginAction (user, password) {
       dispatch(craftUserAction(user))
       client.setUser(user)
     }
-
     try { await client.whoami() }
     catch (_) { return alert('identification failed') }
-
     try { await client.login(password) }
     catch (_) { return alert('login failed') }
-
     dispatch(craftLoginAction())
   }
 }
@@ -87,7 +82,56 @@ export function createLogoutAction () {
   return async (dispatch, getState, { client }) => {
     try { await client.logout() }
     catch (_) { return alert('logout failed') }
-
     dispatch(craftLogoutAction())
+  }
+}
+
+const craftOutboundCallAction = peer => ({
+  type: 'OUTBOUND_CALL',
+  unix_ts_ms: Date.now(),
+  peer
+})
+
+const craftOutboundAcceptAction = peer => ({
+  type: 'OUTBOUND_ACCEPT',
+  unix_ts_ms: Date.now(),
+  peer
+})
+
+const craftOutboundRejectAction = peer => ({
+  type: 'OUTBOUND_REJECT',
+  unix_ts_ms: Date.now(),
+  peer
+})
+
+export function createOutboundCallAction (peer) {
+  return async (dispatch, getState, { client }) => {
+    try { await client.call(peer) }
+    catch (_) { return alert(`calling ${peer} failed`) }
+    dispatch(craftOutboundCallAction(peer))
+  }
+}
+
+export function createOutboundAcceptAction (peer) {
+  return async (dispatch, getState, { client }) => {
+    try { await client.accept(peer) }
+    catch (_) { return alert(`accepting ${peer} failed`) }
+    dispatch(craftOutboundAcceptAction(peer))
+  }
+}
+
+export function createOutboundRejectAction () {
+  return async (dispatch, getState, { client }) => {
+    try { await client.reject(peer) }
+    catch (_) { return alert(`rejecting ${peer} failed`) }
+    dispatch(craftOutboundRejectAction(peer))
+  }
+}
+
+export function createOutboundUnpairAction (peer) {
+  return async (dispatch, getState, { client }) => {
+    try { await client.unpair(peer) }
+    catch (_) { return alert('unpair failed') }
+    // NOTE: check how unpairin performs in da real world: UI
   }
 }

@@ -1154,15 +1154,15 @@ tape('getPeers - pass', t => {
       db.put('og', { peers: [], status: 'busy' }, err => {
         if (err) t.end(err)
 
-        const expected = [
-          { peer: 'noop', status: 'noop', online: true },
-          { peer: 'og', status: 'busy', online: false }
-        ]
+        const expected = {
+          noop: { status: 'noop', online: true },
+          og: { status: 'busy', online: false }
+        }
 
         metastream.once('data', res => {
           t.true(valid.schema_RESPONSE_PEERS(res), 'valid response schema')
           t.true(res.ok, 'response status ok')
-          t.true(Array.isArray(res.peers), 'peer array')
+          t.true(res.peers.constructor === Object, 'pojo')
           t.same(res.peers, expected, 'peer n status n online')
           t.equal(res.tx, tx, 'transaction identifiers equal')
           t.end()

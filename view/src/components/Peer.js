@@ -8,7 +8,8 @@ export default function Peer (props) {
     accept,
     reject,
     unpair,
-    being_called,
+    being_ringed,
+    ringing,
     calling,
     peer,
     status,
@@ -20,14 +21,14 @@ export default function Peer (props) {
       <span>{ online ? 'ONLINE' : 'OFFLINE' }</span><br />
       <em>{ status }</em><br />
       {
-        being_called
+        being_ringed
           ? <div>
               <button onClick={ accept }>Accept</button>
               <button onClick={ reject }>Reject</button>
             </div>
           : <div>
-              <button onClick={ calling ? unpair : call }>
-                { calling ? 'Hang up' : 'Call' }
+              <button onClick={ calling ? unpair : ringing ? null : call }>
+                { calling ? 'Hang up' : ringing ? '...' : 'Call' }
               </button>
             </div>
       }

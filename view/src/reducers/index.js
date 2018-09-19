@@ -36,10 +36,41 @@ const passwordVisibilityReducer = (state = false, action) => {
   }
 }
 
+const outboundCallReducer = (state = {}, action) => {
+  switch (action.type) {
+    case 'OUTBOUND_CALL': return {
+      ...state,
+      [action.peer]: { ...state[action.peer], ringing: true }
+    }
+    default: return state
+  }
+}
+
+const outboundAcceptReducer = (state = {}, action) => {
+  switch (action.type) {
+    case 'OUTBOUND_ACCEPT': return {
+      ...state,
+      [action.peer]: { ...state[action.peer], ringing: false, calling: true }
+    }
+    default: return state
+  }
+}
+
+const outboundRejectReducer = (state = {}, action) => {
+  switch (action.type) {
+    case 'OUTBOUND_REJECT': return {
+      ...state,
+      [action.peer]: { ...state[action.peer], ringing: false, calling: false }
+    }
+    default: return state
+  }
+}
+
 export default combineReducers({
   io_log: ioReducer,
   crashed: crashReducer,
   user: userReducer,
   logged_in: loginLogoutReducer,
-  password_visible: passwordVisibilityReducer
+  password_visible: passwordVisibilityReducer,
+  peers: outboundCallReducer
 })
