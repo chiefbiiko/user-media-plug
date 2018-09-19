@@ -1,5 +1,7 @@
 import React from 'react'
 
+// TODO: investigate passing a props object to a subcomponent
+
 const PeerHeader = ({ peer, online, status }) => (
   <div>
     <strong>{ peer }</strong>&nbsp;
@@ -45,6 +47,8 @@ export default function Peer ({
   inbound_ringing,
   calling
 }) {
+  // TODO: only render main body if peer is online
+  // -> make another subcomponent sth like PeerButtons, etc...
   return (
     <div style={ peer_style }>
       <PeerHeader peer={ peer } status={ status } online={ online } />
