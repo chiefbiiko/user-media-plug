@@ -87,6 +87,16 @@ PromisedClientele.prototype.status = function status (status) {
   })
 }
 
+PromisedClientele.prototype.avatar = function avatar (avatar) {
+  return new Promise((resolve, reject) => {
+    Clientele.prototype.avatar.call(
+      this,
+      avatar,
+      err => err ? reject(err) : resolve()
+    )
+  })
+}
+
 PromisedClientele.prototype.call = function call (peer) {
   return new Promise((resolve, reject) => {
     Clientele.prototype.call.call(

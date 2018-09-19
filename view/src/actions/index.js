@@ -174,3 +174,37 @@ export function craftInboundUnpairAction (msg) {
     peer: msg.user
   }
 }
+
+export function craftPeerStatusAction (msg) {
+  return {
+    type: 'PEER_STATUS',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user,
+    status: msg.status
+  }
+}
+
+export function craftPeerAvatarAction (msg) {
+  return {
+    type: 'PEER_AVATAR',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user,
+    avatar: msg.avatar
+  }
+}
+
+export function craftPeerOnlineAction (msg) {
+  return {
+    type: 'PEER_ONLINE',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user,
+  }
+}
+
+export function craftPeerOfflineAction (msg) {
+  return {
+    type: 'PEER_OFFLINE',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user,
+  }
+}

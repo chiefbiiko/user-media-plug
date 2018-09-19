@@ -259,6 +259,7 @@ Clientele.prototype.getPeers = function getPeers (cb) {
       )
   })
 }
+
 Clientele.prototype.status = function status (status, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
   if (!isTruthyString(status)) return cb(ERR.NOT_TRUTHY_STRING('status'))
@@ -266,6 +267,26 @@ Clientele.prototype.status = function status (status, cb) {
   const self = this
   const tx = Math.random()
   const msg = outbound.status(self._user, status, tx)
+
+  self._metastream.write(msg, err => {
+    if (err) return cb(err)
+    self.emit('io', msg)
+    self._metastream_valve
+      .subscribe(
+        res => cb(res.ok ? null : ERR.RES_NOT_OK),
+        res => res.tx === tx,
+        1
+      )
+  })
+}
+
+Clientele.prototype.avatar = function avatar (avatar, cb) {
+  if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
+  if (!isTruthyString(avatar)) return cb(ERR.NOT_TRUTHY_STRING('avatar'))
+
+  const self = this
+  const tx = Math.random()
+  const msg = outbound.avatar(self._user, avatar, tx)
 
   self._metastream.write(msg, err => {
     if (err) return cb(err)

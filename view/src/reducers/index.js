@@ -41,30 +41,63 @@ const peersReducer = (state = {}, action) => {
     case 'OUTBOUND_CALL':
     case 'INBOUND_CALL': return {
       ...state,
-      [action.peer]: { ...state[action.peer], ringing: true }
+      [action.peer]: {
+        ...state[action.peer],
+        ringing: true
+      }
     }
     case 'OUTBOUND_ACCEPT':
     case 'INBOUND_ACCEPT': return {
       ...state,
-      [action.peer]: { ...state[action.peer], ringing: false, calling: true }
+      [action.peer]: {
+        ...state[action.peer],
+        ringing: false,
+        calling: true
+      }
     }
     case 'OUTBOUND_REJECT':
     case 'INBOUND_REJECT': return {
       ...state,
-      [action.peer]: { ...state[action.peer], ringing: false }
+      [action.peer]: {
+        ...state[action.peer],
+        ringing: false
+      }
     }
     case 'OUTBOUND_UNPAIR':
     case 'INBOUND_UNPAIR': return {
       ...state,
-      [action.peer]: { ...state[action.peer], calling: false }
+      [action.peer]: {
+        ...state[action.peer],
+        calling: false
+      }
     }
-    case 'ONLINE': return {
+    case 'PEER_STATUS': return {
       ...state,
-      [action.peer]: { ...state[action.peer], online: true }
+      [action.peer]: {
+        ...state[action.peer],
+        status: action.status
+      }
     }
-    case 'OFFLINE': return {
+    case 'PEER_AVATAR': return {
       ...state,
-      [action.peer]: { ...state[action.peer], online: false }
+      [action.peer]: {
+        ...state[action.peer],
+        avatar: action.avatar
+      }
+    }
+    case 'PEER_ONLINE': return {
+      ...state,
+      [action.peer]: {
+        ...state[action.peer],
+        online: true
+      }
+    }
+    case 'PEER_OFFLINE': return {
+      ...state,
+      [action.peer]: {
+        ...state[action.peer],
+        online: false
+      }
     }
     default: return state
   }

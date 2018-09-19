@@ -112,13 +112,13 @@ const outbound = {
     })
   },
   avatar (user, avatar, tx) {
-    return JSON.stringify({
+    return {
       type: 'AVATAR',
       user,
       avatar,
       tx,
       unix_ts_ms: Date.now()
-    })
+    }
   }
 }
 
