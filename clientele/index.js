@@ -19,7 +19,7 @@ const ERR = {
   NOT_STRING_ARRAY (x) { return TypeError(`${x} is not a string array`) }
 }
 
-// TODO: method .avatar to set one as a base64 encoded data uri
+// TODO: rethink browser compatibility check!
 function Clientele (url, user) { // url can just be 'ws://localhost:10000'
   if (!(this instanceof Clientele)) return new Clientele(url, user)
   EventEmitter.call(this)

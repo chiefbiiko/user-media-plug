@@ -3,6 +3,7 @@ import Peer from './Peer.js'
 
 const peers_style = {}
 
+// TODO: make this a function component and implement mapDispatchToProps
 class Peers extends Component {
   render () {
     return (
