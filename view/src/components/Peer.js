@@ -47,7 +47,7 @@ export default function Peer ({
 }) {
   return (
     <div style={ peer_style }>
-      <PeerHeader perr={ peer } status={ status } online={ online } />
+      <PeerHeader peer={ peer } status={ status } online={ online } />
       {
         inbound_ringing
           ? <AcceptRejectButtons accept={ accept } reject={ reject } />
