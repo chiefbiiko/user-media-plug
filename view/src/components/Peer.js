@@ -5,6 +5,7 @@ const peer_style = {}
 export default function Peer (props) {
   const {
     call,
+    stopRinging,
     accept,
     reject,
     unpair,
@@ -27,8 +28,8 @@ export default function Peer (props) {
               <button onClick={ reject }>Reject</button>
             </div>
           : <div>
-              <button onClick={ calling ? unpair : outbound_ringing ? null : call }>
-                { calling ? 'Hang up' : ringing ? '...' : 'Call' }
+              <button onClick={ calling ? unpair : outbound_ringing ? stopRinging : call }>
+                { calling ? 'Hang up' : outbound_ringing ? 'Hang Up' : 'Call' }
               </button>
             </div>
       }

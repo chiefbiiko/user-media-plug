@@ -29,7 +29,13 @@ tape('partial usage flow', async t => {
   t.pass('deleted peers')
   const peers = await chiefbiiko.getPeers()
   t.pass('got peers')
-  const expected = [ { peer: 'fraudster', status: 'noop', online: false } ]
+  const expected = {
+    fraudster: {
+      status: 'noop',
+      online: false,
+      avatar: 'data:image/*;base64,...'
+    }
+  }
   t.same(peers, expected, 'same peers')
   await chiefbiiko.logout()
   t.pass('logged out')

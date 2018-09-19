@@ -110,6 +110,12 @@ const craftOutboundUnpairAction = peer => ({
   peer
 })
 
+const craftOutboundStopRingingAction = peer => ({
+  type: 'OUTBOUND_STOP_RINGING',
+  unix_ts_ms: Date.now(),
+  peer
+})
+
 export function createOutboundCallAction (peer) {
   return async (dispatch, getState, { client }) => {
     try { await client.call(peer) }
@@ -140,6 +146,14 @@ export function createOutboundUnpairAction (peer) {
     catch (_) { return alert(`unpairing ${peer} failed`) }
     // NOTE: check how unpairin performs in da real world: UI
     dispatch(craftOutboundUnpairAction(peer))
+  }
+}
+
+export function createOutboundStopRingingAction (peer) {
+  return async (dispatch, getState, { client }) => {
+    try { await client.stopRinging(peer) }
+    catch (_) { return alert(`stopRinging ${peer} failed`) }
+    dispatch(craftOutboundStopRingingAction(peer))
   }
 }
 
@@ -197,7 +211,7 @@ export function craftPeerOnlineAction (msg) {
   return {
     type: 'PEER_ONLINE',
     unix_ts_ms: msg.unix_ts_ms,
-    peer: msg.user,
+    peer: msg.user
   }
 }
 
@@ -205,6 +219,14 @@ export function craftPeerOfflineAction (msg) {
   return {
     type: 'PEER_OFFLINE',
     unix_ts_ms: msg.unix_ts_ms,
-    peer: msg.user,
+    peer: msg.user
+  }
+}
+
+export function craftInboundStopRingingAction (msg) {
+  return {
+    type: 'INBOUND_STOP_RINGING',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user
   }
 }

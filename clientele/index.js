@@ -24,11 +24,11 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
   if (!(this instanceof Clientele)) return new Clientele(url, user)
   EventEmitter.call(this)
 
-  if (!/firefox/i.test(navigator.userAgent))
-    alert(`app probly won't work on ${navigator.userAgent}`)
-  else if (!MediaSource.isTypeSupported(Clientele.MIME_CODEC) ||
-           !MediaRecorder.isTypeSupported(Clientele.MIME))
-    throw Error(`unsupported MIME type or codec: ${Clientele.MIME_CODEC}`)
+  // if (!/firefox/i.test(navigator.userAgent))
+  //   alert(`app probly won't work on ${navigator.userAgent}`)
+  // else if (!MediaSource.isTypeSupported(Clientele.MIME_CODEC) ||
+  //          !MediaRecorder.isTypeSupported(Clientele.MIME))
+  //   throw Error(`unsupported MIME type or codec: ${Clientele.MIME_CODEC}`)
 
   if (!isTruthyString(url)) throw ERR.NOT_TRUTHY_STRING('url')
 

@@ -17,6 +17,7 @@ const mapStateToProps = state => ({ peers: state.peers })
 
 mapDispatchToProps = dispatch => ({
   call: null,
+  stopRinging: null,
   accept: null,
   reject: null,
   unpair: null

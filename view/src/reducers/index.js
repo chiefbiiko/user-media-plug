@@ -52,6 +52,20 @@ const peersReducer = (state = {}, action) => {
         inbound_ringing: true
       }
     }
+    case 'OUTBOUND_STOP_RINGING': return {
+      ...state,
+      [action.peer]: {
+        ...state[action.peer],
+        outbound_ringing: false
+      }
+    }
+    case 'INBOUND_STOP_RINGING': return {
+      ...state,
+      [action.peer]: {
+        ...state[action.peer],
+        inbound_ringing: false
+      }
+    }
     case 'OUTBOUND_ACCEPT': return {
       ...state,
       [action.peer]: {

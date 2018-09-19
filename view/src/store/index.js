@@ -10,9 +10,8 @@ const store = createStore(
   applyMiddleware(thunk.withExtraArgument({ client }))
 )
 
-// client events: call status online offline videostream
-// client.on('call', msg => {
-//   store.dispatch(createInboundCallAction({ ...msg, type: 'INBOUND_CALL'}))
-// })
+// TODO: dipatch ALL client inbound events as equivalent actions
+
+// client.on('call', bindActionCreators(craftInboundCallAction, store.dispatch))
 
 export default store
