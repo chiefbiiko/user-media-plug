@@ -104,6 +104,12 @@ const craftOutboundRejectAction = peer => ({
   peer
 })
 
+const craftOutboundUnpairAction = peer => ({
+  type: 'OUTBOUND_UNPAIR',
+  unix_ts_ms: Date.now(),
+  peer
+})
+
 export function createOutboundCallAction (peer) {
   return async (dispatch, getState, { client }) => {
     try { await client.call(peer) }
@@ -131,7 +137,40 @@ export function createOutboundRejectAction () {
 export function createOutboundUnpairAction (peer) {
   return async (dispatch, getState, { client }) => {
     try { await client.unpair(peer) }
-    catch (_) { return alert('unpair failed') }
+    catch (_) { return alert(`unpairing ${peer} failed`) }
     // NOTE: check how unpairin performs in da real world: UI
+    dispatch(craftOutboundUnpairAction(peer))
   }
 }
+
+export function craftInboundCallAction (msg) {
+  return {
+    type: 'INBOUND_CALL',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user
+  }
+}
+
+export function craftInboundAcceptAction (msg) {
+  return {
+    type: 'INBOUND_ACCEPT',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user
+  }
+}
+
+export function craftInboundRejectAction (msg) {
+  return {
+    type: 'INBOUND_REJECT',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user
+  }
+}
+
+// export function craftInboundUnpairAction (msg) {
+//   return {
+//     type: 'INBOUND_UNPAIR',
+//     unix_ts_ms: msg.unix_ts_ms,
+//     peer: msg.user
+//   }
+// }
