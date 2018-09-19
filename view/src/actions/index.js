@@ -167,10 +167,10 @@ export function craftInboundRejectAction (msg) {
   }
 }
 
-// export function craftInboundUnpairAction (msg) {
-//   return {
-//     type: 'INBOUND_UNPAIR',
-//     unix_ts_ms: msg.unix_ts_ms,
-//     peer: msg.user
-//   }
-// }
+export function craftInboundUnpairAction (msg) {
+  return {
+    type: 'INBOUND_UNPAIR',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user
+  }
+}

@@ -132,7 +132,7 @@ tape('handleMetadata - fail pt1', t => {
     call: createCall(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(metaserver)
+    unpair: createUnpair(metaserver, forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -182,7 +182,7 @@ tape('handleMetadata - fail pt2', t => {
     call: createCall(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(metaserver)
+    unpair: createUnpair(metaserver, forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -234,7 +234,7 @@ tape('handleMetadata - fail pt3', t => {
     call: createCall(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(metaserver)
+    unpair: createUnpair(metaserver, forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -285,7 +285,7 @@ tape('handleMetadata - switch fallthru', t => {
     call: createCall(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(metaserver)
+    unpair: createUnpair(metaserver, forward)
   }, logged_in_users)
 
   const tx = Math.random()
@@ -1661,7 +1661,7 @@ tape('unpair - pass', t => {
     call: createCall(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(metaserver)
+    unpair: createUnpair(metaserver, forward)
   }, logged_in_users)
 
   httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
@@ -1678,11 +1678,19 @@ tape('unpair - pass', t => {
   const b_ws = websocket('ws://localhost:10000/media')
 
   const done = () => {
-    const metastream = jsonStream(new PassThrough())
+    const a_metastream = jsonStream(new PassThrough())
+    const b_metastream = jsonStream(new PassThrough())
 
-    const WHOAMI_MSG = {
+    const WHOAMI_MSG_A = {
       type: 'WHOAMI',
       user: 'chiefbiiko',
+      tx: Math.random(),
+      unix_ts_ms: Date.now()
+    }
+
+    const WHOAMI_MSG_B = {
+      type: 'WHOAMI',
+      user: 'noop',
       tx: Math.random(),
       unix_ts_ms: Date.now()
     }
@@ -1704,7 +1712,7 @@ tape('unpair - pass', t => {
       unix_ts_ms: Date.now()
     }
 
-    metastream.on('data', res => {
+    a_metastream.on('data', res => {
       switch (res.for)  {
         case 'WHOAMI':
           t.true(valid.schema_RESPONSE(res), 'res is valid schema RESPONSE')
@@ -1729,11 +1737,14 @@ tape('unpair - pass', t => {
       }
     })
 
-    handleMetadata(metastream, WHOAMI_MSG)
+    handleMetadata(a_metastream, WHOAMI_MSG_A)
     setTimeout(() => {
-      handleMetadata(metastream, LOGIN_MSG)
+      handleMetadata(b_metastream, WHOAMI_MSG_B)
       setTimeout(() => {
-        handleMetadata(metastream, UNPAIR_MSG)
+        handleMetadata(a_metastream, LOGIN_MSG)
+        setTimeout(() => {
+          handleMetadata(a_metastream, UNPAIR_MSG)
+        }, 250)
       }, 250)
     }, 250)
   }
@@ -1809,7 +1820,7 @@ tape('unpair - fail - invalid metadata', t => {
     call: createCall(forward),
     accept: createAccept(metaserver, forward, sendForceCall),
     reject: createReject(forward),
-    unpair: createUnpair(metaserver)
+    unpair: createUnpair(metaserver, forward)
   }, logged_in_users)
 
   httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))

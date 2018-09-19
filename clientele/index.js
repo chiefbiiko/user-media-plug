@@ -54,6 +54,18 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
       msg => msg.type === 'CALL'
     )
     .subscribe(
+      this.emit.bind(this, 'accept'),
+      msg => msg.type === 'ACCEPT'
+    )
+    .subscribe(
+      this.emit.bind(this, 'reject'),
+      msg => msg.type === 'REJECT'
+    )
+    .subscribe(
+      this.emit.bind(this, 'unpair'),
+      msg => msg.type === 'UNPAIR'
+    )
+    .subscribe(
       this.emit.bind(this, 'status'),
       msg => msg.type === 'STATUS'
     )
