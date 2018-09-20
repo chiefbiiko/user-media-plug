@@ -1,67 +1,44 @@
 import React from 'react'
 
-// TODO: investigate passing a props object to a subcomponent
+// TODO: connect each Peer Component to the store to minimize rerenders!
 
-const PeerHeader = ({ peer, online, status }) => (
+const PeerHeader = props => (
   <div>
-    <strong>{ peer }</strong>&nbsp;
-    <span>{ online ? 'ONLINE' : 'OFFLINE' }</span>&nbsp;
-    <em>{ status }</em>
+    <strong>{ props.peer }</strong>&nbsp;
+    <span>{ props.online ? 'ONLINE' : 'OFFLINE' }</span>&nbsp;
+    <em>{ props.status }</em>
   </div>
 )
 
-const AcceptRejectButtons = ({ accept, reject }) => (
+const AcceptRejectButtons = props => (
   <div>
-    <button onClick={ accept }>Accept</button>
-    <button onClick={ reject }>Reject</button>
+    <button onClick={ props.accept }>Accept</button>
+    <button onClick={ props.reject }>Reject</button>
   </div>
 )
 
-const CallOrHangUpButton = ({
-  call,
-  stopRinging,
-  unpair,
-  calling,
-  outbound_ringing
-}) => {
-  if (calling)
-    return <button onClick={ unpair }>Hang up</button>
-  if (!calling && outbound_ringing)
-    return <button onClick={ stopRinging }>Hang up</button></div>
-  if (!calling && !outbound_ringing)
-    return <button onClick={ call }>Call</button></div>
+const CallOrHangUpButton = props => {
+  if (props.calling)
+    return <button onClick={ props.unpair }>Hang up</button>
+  if (!props.calling && props.outbound_ringing)
+    return <button onClick={ props.stopRinging }>Hang up</button></div>
+  if (!props.calling && !props.outbound_ringing)
+    return <button onClick={ props.call }>Call</button></div>
+}
+
+const PeerButtons = props => {
+  if (!props.online) return null // render some fun placeholder
+  if (props.inbound_ringing) return <AcceptRejectButtons { ...props } />
+  if (!props.inbound_ringing) return <CallOrHangUpButton { ...props } />
 }
 
 const peer_style = {}
 
-export default function Peer ({
-  call,
-  stopRinging,
-  accept,
-  reject,
-  unpair,
-  peer,
-  status,
-  online,
-  outbound_ringing,
-  inbound_ringing,
-  calling
-}) {
-  // TODO: only render main body if peer is online
-  // -> make another subcomponent sth like PeerButtons, etc...
+export default function Peer (props) {
   return (
     <div style={ peer_style }>
-      <PeerHeader peer={ peer } status={ status } online={ online } />
-      {
-        inbound_ringing
-          ? <AcceptRejectButtons accept={ accept } reject={ reject } />
-          : <CallOrHangUpButton
-              call={ call }
-              stopRinging={ stopRinging }
-              unpair={ unpair }
-              calling={ calling }
-              outbound_ringing={ outbound_ringing } />
-      }
+      <PeerHeader { ...props } />
+      <PeerButtons { ...props } />
     </div>
   )
 }
