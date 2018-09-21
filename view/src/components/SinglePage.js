@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { createCrashAction } from './../actions'
 import Gate from './Gate.js'
+import Peers from './Peers.js'
 
 const page_style = { textAlign: 'center' }
 
@@ -17,8 +18,8 @@ class SinglePage extends Component {
       <div style={ page_style }>
         {
           this.props.crashed
-            ? 'Damn, app crashed'
-            : <Gate />
+            ? 'Damn, app crashed' // REFACTOR below
+            : <div><Gate />{ this.props.logged_in ? <Peers /> : null }</div>
         }
         <ToastContainer autoClose={ 2000 } />
       </div>
@@ -26,7 +27,10 @@ class SinglePage extends Component {
   }
 }
 
-const mapStateToProps = state => ({ crashed: state.crashed })
+const mapStateToProps = state => ({
+  crashed: state.crashed,
+  logged_in: state.logged_in
+})
 
 const mapDispatchToProps = dispatch =>
   ({ crashApp: bindActionCreators(createCrashAction, dispatch) })

@@ -132,7 +132,7 @@ export function createOutboundAcceptAction (peer) {
   }
 }
 
-export function createOutboundRejectAction () {
+export function createOutboundRejectAction (peer) {
   return async (dispatch, getState, { client }) => {
     try { await client.reject(peer) }
     catch (_) { return alert(`rejecting ${peer} failed`) }
