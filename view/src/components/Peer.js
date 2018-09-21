@@ -1,7 +1,6 @@
 import React from 'react'
-import { connect } from 'react-redux'
-
-// TODO: connect each Peer Component to the store to minimize rerenders!
+// import { connect } from 'react-redux'
+// import { noop } from './../utils'
 
 const PeerHeader = props => (
   <div>
@@ -35,15 +34,15 @@ const PeerButtons = props => {
 
 const peer_style = {}
 
-const mapStateToProps = state => ({
+// const mapStateToProps = state => {
+//   state.peers.find(peer)
+// }
 
-})
+// const mapDispatchToProps = dispatch => ({
+//
+// })
 
-const mapDispatchToProps = dispatch => ({
-
-})
-
-const Peer = props => {
+export default function Peer (props) {
   return (
     <div style={ peer_style }>
       <PeerHeader { ...props } />
@@ -52,4 +51,6 @@ const Peer = props => {
   )
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Peer)
+// export default Peer
+
+// export default connect(mapStateToProps, noop)(Peer)
