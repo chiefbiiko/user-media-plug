@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Peer from './Peer.js'
+import { noop } from './../utils'
 
 const peers_style = {}
 
@@ -24,4 +25,4 @@ mapDispatchToProps = dispatch => ({
   unpair: null
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(Peers)
+export default connect(noop, mapDispatchToProps)(Peers)

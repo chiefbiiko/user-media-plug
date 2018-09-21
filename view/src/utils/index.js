@@ -8,3 +8,5 @@ export function blur (s) {
     .map(c => String.fromCharCode(c.charCodeAt(0) ^ 19))
     .join('')
 }
+
+export function noop () {}
