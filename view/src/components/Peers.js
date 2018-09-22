@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import TagsInput from 'react-tagsinput'
 import Peer from './Peer.js'
 import {
   createOutboundCallAction,
@@ -12,7 +13,7 @@ import {
 
 const peers_style = {}
 
-// TODO: addPeers, deletePeers functionality!
+// TODO: addPeers, deletePeers functionality using a taginput
 const Peers = ({ call, stopRinging, accept, reject, unpair, peers }) => (
   <div style={ peers_style }>
     {
