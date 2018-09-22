@@ -9,4 +9,12 @@ export function blur (s) {
     .join('')
 }
 
+export function isTruthyString (x) {
+  return x && typeof x === 'string'
+}
+
+export function isLengthyStringArray (x) {
+  return Array.isArray(x) && x.length && x.every(isTruthyString)
+}
+
 export function noop () {}
