@@ -230,3 +230,60 @@ export function craftInboundStopRingingAction (msg) {
     peer: msg.user
   }
 }
+
+// const craftDeletePeersAction = peer_names => ({
+//   type: 'DELETE_PEERS',
+//   unix_ts_ms: Date.now(),
+//   peers
+// })
+
+const craftGotPeersAction = peers => ({
+  type: 'GOT_PEERS',
+  unix_ts_ms: Date.now(),
+  peers
+})
+
+export function createSyncPeersAction (peer_names) {
+  return async (dispatch, getState, { client }) => {
+    const old_names = Object.keys(getState().peers)
+    const del_names = old_names.filter(oldie => !peer_names.includes(oldie))
+    const add_names = peer_names.filter(nubie => !old_names.includes(nubie))
+    var peers
+    try {
+      if (del_names.length) await client.delPeers(del_names)
+      if (add_names.length) await client.addPeers(add_names)
+      if (del_names.length || add_names.length) peers = await client.getPeers()
+    }
+    catch (_) { return alert(`syncing peers failed`) }
+    dispatch(craftGotPeersAction(peers))
+  }
+}
+//
+// export function createAddPeersAction (peer_names) {
+//   return async (dispatch, getState, { client }) => {
+//     var peers
+//     try {
+//       await client.addPeers(peer_names)
+//       peers = await client.getPeers()
+//     }
+//     catch (_) { return alert(`adding ${peer_names} failed`) }
+//     dispatch(craftGotPeersAction(peers))
+//   }
+// }
+//
+// export function createDeletePeersAction (peer_names) {
+//   return async (dispatch, getState, { client }) => {
+//     try { await client.deletePeers(peer_names) }
+//     catch (_) { return alert(`deleting ${peer_names} failed`) }
+//     dispatch(craftDeletePeersAction(peer_names))
+//   }
+// }
+//
+// export function createGetPeersAction () {
+//   return async (dispatch, getState, { client }) => {
+//     var peers
+//     try { peers = await client.getPeers() }
+//     catch (_) { return alert(`getting peers failed`) }
+//     dispatch(craftGotPeersAction(peers))
+//   }
+// }

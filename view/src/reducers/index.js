@@ -132,6 +132,10 @@ const peersReducer = (state = {}, action) => {
         online: false
       }
     }
+    case 'GOT_PEERS': return {
+      ...state,
+      ...action.peers
+    }
     default: return state
   }
 }

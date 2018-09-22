@@ -8,14 +8,24 @@ import {
   createOutboundStopRingingAction,
   createOutboundAcceptAction,
   createOutboundRejectAction,
-  createOutboundUnpairAction
+  createOutboundUnpairAction,
+  createSyncPeersAction
 } from './../actions'
 
 const peers_style = {}
 
-// TODO: addPeers, deletePeers functionality using a taginput
-const Peers = ({ call, stopRinging, accept, reject, unpair, peers }) => (
+const Peers = ({
+  call,
+  stopRinging,
+  accept,
+  reject,
+  unpair,
+  syncPeers,
+  peer_names,
+  peers
+}) => (
   <div style={ peers_style }>
+    <TagsInput value={ peer_names } onChange={ syncPeers } />
     {
       peers.map(peer => (
         <Peer
@@ -38,7 +48,8 @@ const Peers = ({ call, stopRinging, accept, reject, unpair, peers }) => (
 )
 
 const mapStateToProps = state => ({
-  peers: Object.entries(state.peers).map(([ k, v ]) => ({ ...v, name: k }))
+  peers: Object.entries(state.peers).map(([ k, v ]) => ({ ...v, name: k })),
+  peer_names: Object.keys(state.peers)
 })
 
 const mapDispatchToProps = dispatch => ({
@@ -46,7 +57,8 @@ const mapDispatchToProps = dispatch => ({
   stopRinging: bindActionCreators(createOutboundStopRingingAction, dispatch),
   accept: bindActionCreators(createOutboundAcceptAction, dispatch),
   reject: bindActionCreators(createOutboundRejectAction, dispatch),
-  unpair: bindActionCreators(createOutboundUnpairAction, dispatch)
+  unpair: bindActionCreators(createOutboundUnpairAction, dispatch),
+  syncPeers: bindActionCreators(createSyncPeersAction, dispatch)
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Peers)
