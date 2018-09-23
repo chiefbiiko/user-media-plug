@@ -15,6 +15,7 @@ import {
 
 const peers_style = {}
 
+// TODO: fix allow deleting peers
 const Peers = ({
   call,
   stopRinging,

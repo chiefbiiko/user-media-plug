@@ -73,6 +73,7 @@ const craftResetAction = () => ({
 export function createLoginAction (user, password) {
   return async (dispatch, getState, { client }) => {
     if (user !== getState().user) {
+      dispatch(craftResetAction())
       dispatch(craftUserAction(user))
       client.setUser(user)
     }
@@ -80,7 +81,8 @@ export function createLoginAction (user, password) {
     catch (_) { return alert('identification failed') }
     try { await client.login(password) }
     catch (_) { return alert('login failed') }
-    dispatch(craftResetAction())
+    try { dispatch(craftGotPeersAction(await client.getPeers()))  }
+    catch (_) { return alert('getting peers failed') }
     dispatch(craftLoginAction())
   }
 }
@@ -255,14 +257,13 @@ export function createSyncPeersAction (peer_names) {
     const old_names = Object.keys(getState().peers)
     const del_names = old_names.filter(oldie => !peer_names.includes(oldie))
     const add_names = peer_names.filter(nubie => !old_names.includes(nubie))
-    var peers = []
     try {
       if (del_names.length) await client.delPeers(del_names)
       if (add_names.length) await client.addPeers(add_names)
-      if (del_names.length || add_names.length) peers = await client.getPeers()
+      if (del_names.length || add_names.length)
+        dispatch(craftGotPeersAction(await client.getPeers()))
     }
     catch (_) { return alert(`syncing peers failed`) }
-    dispatch(craftGotPeersAction(peers))
   }
 }
 //
