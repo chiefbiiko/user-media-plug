@@ -1582,29 +1582,34 @@ tape('addPeers - pass', t => {
   const metadata = {
     type: 'ADD_PEERS',
     user: 'balou',
-    peers: [ 'mikey', 'kingsley' ],
+    peers: [ 'mikey' ],
     tx,
     unix_ts_ms: Date.now()
   }
 
-  const expected = [ 'og', 'mikey', 'kingsley' ]
+  const balou = { password: 'kd', peers: [], status: 'noop', avatar: '.' }
+  const mikey = { password: 'lo', peers: [], status: 'noop', avatar: '.' }
+  const expected = [ 'mikey' ]
 
-  db.put('balou', { password: 'kd', peers: [ 'og' ], status: 'noop' }, err => {
+  db.put('mikey', mikey, err => {
     if (err) t.end(err)
-
-    metastream.once('data', res => {
-      t.true(valid.schema_RESPONSE(res), 'valid response schema')
-      t.equal(res.tx, tx, 'transaction identifiers equal')
-      t.true(res.ok, 'response status ok')
-      db.get(metadata.user, function (err, user) {
-        if (err) t.end(err)
-        t.same(user.peers, expected, 'peers in db')
-        t.end()
-      })
-    })
-
-    addPeers(metastream, metadata, err => {
+    db.put('balou', balou, err => {
       if (err) t.end(err)
+
+      metastream.once('data', res => {
+        t.true(valid.schema_RESPONSE(res), 'valid response schema')
+        t.equal(res.tx, tx, 'transaction identifiers equal')
+        t.true(res.ok, 'response status ok')
+        db.get(metadata.user, function (err, user) {
+          if (err) t.end(err)
+          t.same(user.peers, expected, 'peers in db')
+          t.end()
+        })
+      })
+
+      addPeers(metastream, metadata, err => {
+        if (err) t.end(err)
+      })
     })
   })
 })
