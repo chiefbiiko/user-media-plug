@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import TagsInput from 'react-tagsinput'
+import 'react-tagsinput/react-tagsinput.css'
 import Peer from './Peer.js'
 import {
   createOutboundCallAction,
@@ -25,7 +26,11 @@ const Peers = ({
   peers
 }) => (
   <div style={ peers_style }>
-    <TagsInput value={ peer_names } onChange={ syncPeers } />
+    <TagsInput
+      value={ peer_names }
+      onChange={ syncPeers }
+      inputProps={ { placeholder: 'yo friend list' } }>
+    </TagsInput>
     {
       peers.map(peer => (
         <Peer
@@ -40,7 +45,7 @@ const Peers = ({
           stopRinging={ stopRinging }
           accept={ accept }
           reject={ reject }
-          unpair={ unpair } >
+          unpair={ unpair }>
         </Peer>
       ))
     }
