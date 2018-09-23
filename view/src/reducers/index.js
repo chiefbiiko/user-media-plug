@@ -140,7 +140,7 @@ const peersReducer = (state = {}, action) => {
   }
 }
 
-export default combineReducers({
+const appReducer = combineReducers({
   io_log: ioReducer,
   crashed: crashReducer,
   user: userReducer,
@@ -148,3 +148,17 @@ export default combineReducers({
   password_visible: passwordVisibilityReducer,
   peers: peersReducer
 })
+
+const rootReducer = (state, action) => {
+  if (action.type === 'RESET') state = undefined
+  return appReducer(state, action)
+}
+
+// export default combineReducers({
+//   io_log: ioReducer,
+//   crashed: crashReducer,
+//   user: userReducer,
+//   logged_in: loginLogoutReducer,
+//   password_visible: passwordVisibilityReducer,
+//   peers: peersReducer
+// })

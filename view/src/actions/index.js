@@ -64,6 +64,11 @@ export function createRegisterAction (user, password) {
   }
 }
 
+const craftResetAction = () => ({
+  type: 'RESET',
+  unix_ts_ms: Date.now()
+})
+
 // TODO: reset redux store to initial state!
 export function createLoginAction (user, password) {
   return async (dispatch, getState, { client }) => {
@@ -75,6 +80,7 @@ export function createLoginAction (user, password) {
     catch (_) { return alert('identification failed') }
     try { await client.login(password) }
     catch (_) { return alert('login failed') }
+    dispatch(craftResetAction())
     dispatch(craftLoginAction())
   }
 }
