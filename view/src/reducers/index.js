@@ -132,10 +132,7 @@ const peersReducer = (state = {}, action) => {
         online: false
       }
     }
-    case 'GOT_PEERS': return {
-      ...state,
-      ...action.peers
-    }
+    case 'GOT_PEERS': return { ...action.peers }
     default: return state
   }
 }
@@ -155,12 +152,3 @@ const rootReducer = (state, action) => {
 }
 
 export default rootReducer
-
-// export default combineReducers({
-//   io_log: ioReducer,
-//   crashed: crashReducer,
-//   user: userReducer,
-//   logged_in: loginLogoutReducer,
-//   password_visible: passwordVisibilityReducer,
-//   peers: peersReducer
-// })

@@ -69,7 +69,6 @@ const craftResetAction = () => ({
   unix_ts_ms: Date.now()
 })
 
-// TODO: reset redux store to initial state!
 export function createLoginAction (user, password) {
   return async (dispatch, getState, { client }) => {
     if (user !== getState().user) {
@@ -240,12 +239,6 @@ export function craftInboundStopRingingAction (msg) {
   }
 }
 
-// const craftDeletePeersAction = peer_names => ({
-//   type: 'DELETE_PEERS',
-//   unix_ts_ms: Date.now(),
-//   peers
-// })
-
 const craftGotPeersAction = peers => ({
   type: 'GOT_PEERS',
   unix_ts_ms: Date.now(),
@@ -258,40 +251,11 @@ export function createSyncPeersAction (peer_names) {
     const del_names = old_names.filter(oldie => !peer_names.includes(oldie))
     const add_names = peer_names.filter(nubie => !old_names.includes(nubie))
     try {
-      if (del_names.length) await client.delPeers(del_names)
+      if (del_names.length) await client.deletePeers(del_names)
       if (add_names.length) await client.addPeers(add_names)
       if (del_names.length || add_names.length)
         dispatch(craftGotPeersAction(await client.getPeers()))
     }
-    catch (_) { return alert(`syncing peers failed`) }
+    catch (_) { return alert('syncing peers failed') }
   }
 }
-//
-// export function createAddPeersAction (peer_names) {
-//   return async (dispatch, getState, { client }) => {
-//     var peers
-//     try {
-//       await client.addPeers(peer_names)
-//       peers = await client.getPeers()
-//     }
-//     catch (_) { return alert(`adding ${peer_names} failed`) }
-//     dispatch(craftGotPeersAction(peers))
-//   }
-// }
-//
-// export function createDeletePeersAction (peer_names) {
-//   return async (dispatch, getState, { client }) => {
-//     try { await client.deletePeers(peer_names) }
-//     catch (_) { return alert(`deleting ${peer_names} failed`) }
-//     dispatch(craftDeletePeersAction(peer_names))
-//   }
-// }
-//
-// export function createGetPeersAction () {
-//   return async (dispatch, getState, { client }) => {
-//     var peers
-//     try { peers = await client.getPeers() }
-//     catch (_) { return alert(`getting peers failed`) }
-//     dispatch(craftGotPeersAction(peers))
-//   }
-// }
