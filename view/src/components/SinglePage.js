@@ -33,6 +33,7 @@ const mapStateToProps = state => ({
   logged_in: state.logged_in
 })
 
+// TODO: compose cos ppl will understand that more likely
 const mapDispatchToProps = dispatch =>
   ({ crashApp: bindActionCreators(createCrashAction, dispatch) })
 

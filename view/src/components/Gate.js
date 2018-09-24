@@ -58,6 +58,7 @@ const mapStateToProps = state => ({
   password_visible: state.password_visible
 })
 
+// TODO: compose cos ppl will understand that more likely
 const mapDispatchToProps = dispatch => ({
   register: bindActionCreators(createRegisterAction, dispatch),
   login: bindActionCreators(createLoginAction, dispatch),

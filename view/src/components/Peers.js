@@ -57,6 +57,7 @@ const mapStateToProps = state => ({
   peer_names: Object.keys(state.peers)
 })
 
+// TODO: compose cos ppl will understand that more likely
 const mapDispatchToProps = dispatch => ({
   call: bindActionCreators(createOutboundCallAction, dispatch),
   stopRinging: bindActionCreators(createOutboundStopRingingAction, dispatch),
