@@ -259,3 +259,19 @@ export function createSyncPeersAction (peer_names) {
     catch (_) { return alert('syncing peers failed') }
   }
 }
+
+export function craftUserStatusAction (status) {
+  return {
+    type: 'USER_STATUS',
+    unix_ts_ms: Date.now(),
+    status
+  }
+}
+
+export function craftUserAvatarAction (avatar) {
+  return {
+    type: 'USER_AVATAR',
+    unix_ts_ms: Date.now(),
+    avatar
+  }
+}
