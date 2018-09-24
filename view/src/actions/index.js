@@ -260,18 +260,30 @@ export function createSyncPeersAction (peer_names) {
   }
 }
 
-export function craftUserStatusAction (status) {
-  return {
-    type: 'USER_STATUS',
-    unix_ts_ms: Date.now(),
-    status
+const craftUserStatusAction = status => ({
+  type: 'USER_STATUS',
+  unix_ts_ms: Date.now(),
+  status
+})
+
+const craftUserAvatarAction = avatar => ({
+  type: 'USER_AVATAR',
+  unix_ts_ms: Date.now(),
+  avatar
+})
+
+export function createUserStatusAction (status) {
+  return async (dispatch, getState, { client }) => {
+    try { await client.status(status) }
+    catch (_) { return alert('setting status failed') }
+    dispatch(craftUserStatusAction(status))
   }
 }
 
-export function craftUserAvatarAction (avatar) {
-  return {
-    type: 'USER_AVATAR',
-    unix_ts_ms: Date.now(),
-    avatar
+export function createUserAvatarAction (avatar) {
+  return async (dispatch, getState, { client }) => {
+    try { await client.avatar(avatar) }
+    catch (_) { return alert('setting avatar failed') }
+    dispatch(craftUserAvatarAction(avatar))
   }
 }

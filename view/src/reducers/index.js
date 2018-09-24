@@ -137,13 +137,30 @@ const peersReducer = (state = {}, action) => {
   }
 }
 
+const statusReducer = (state = 'noop', action) => {
+  switch (action.type) {
+    case 'USER_STATUS': return action.status
+    default: return state
+  }
+}
+
+// TODO: choose some default avatar!
+const avatarReducer = (state = '...', action) => {
+  switch (action.type) {
+    case 'USER_AVATAR': return action.avatar
+    default: return state
+  }
+}
+
 const appReducer = combineReducers({
   io_log: ioReducer,
   crashed: crashReducer,
   user: userReducer,
   logged_in: loginLogoutReducer,
   password_visible: passwordVisibilityReducer,
-  peers: peersReducer
+  peers: peersReducer,
+  status: statusReducer,
+  avatar: avatarReducer
 })
 
 const rootReducer = (state, action) => {
