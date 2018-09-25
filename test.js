@@ -1364,20 +1364,27 @@ tape('getPeers - pass', t => {
 
   logged_in_users.add('noop')
 
-  db.put('chiefbiiko', { peers: [ 'noop', 'og' ], status: 'offline' }, err => {
+  const chiefbiiko = {
+    password: '...',
+    peers: [ 'noop', 'og' ],
+    status: 'offline',
+    avatar: '...'
+  }
+
+  db.put('chiefbiiko', chiefbiiko, err => {
     if (err) t.end(err)
-    db.put('noop', { peers: [], status: 'noop' }, err => {
+    db.put('noop', { peers: [], status: 'noop', avatar: '...' }, err => {
       if (err) t.end(err)
-      db.put('og', { peers: [], status: 'busy' }, err => {
+      db.put('og', { peers: [], status: 'busy', avatar: '...' }, err => {
         if (err) t.end(err)
 
         const expected = {
-          noop: { status: 'noop', online: true },
-          og: { status: 'busy', online: false }
+          noop: { status: 'noop', online: true, avatar: '...' },
+          og: { status: 'busy', online: false, avatar: '...' }
         }
 
         metastream.once('data', res => {
-          t.true(valid.schema_RESPONSE_PEERS(res), 'valid response schema')
+          t.true(valid.schema_RESPONSE(res), 'valid response schema')
           t.true(res.ok, 'response status ok')
           t.true(res.peers.constructor === Object, 'pojo')
           t.same(res.peers, expected, 'peer n status n online')
@@ -1484,6 +1491,105 @@ tape('getPeers - fail pt3', t => {
         })
       })
     })
+  })
+})
+
+tape('getUser - pass', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const getUser = createGetUser(db)
+
+  const tx = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const metadata = {
+    type: 'GET_USER',
+    user: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
+
+  const chiefbiiko = {
+    password: '...',
+    peers: [ 'noop', 'og' ],
+    status: 'offline',
+    avatar: '...'
+  }
+
+  db.put('chiefbiiko', chiefbiiko, err => {
+    if (err) t.end(err)
+
+    const expected = {
+      peers: [ 'noop', 'og' ],
+      status: 'offline',
+      avatar: '...'
+    }
+
+    metastream.once('data', res => {
+      t.true(valid.schema_RESPONSE(res), 'valid response schema')
+      t.true(res.ok, 'response status ok')
+      t.true(res.user.constructor === Object, 'pojo')
+      t.same(res.user, expected, 'expected user')
+      t.equal(res.tx, tx, 'transaction identifiers equal')
+      t.end()
+    })
+
+    getUser(metastream, metadata, err => {
+      if (err) t.end(err)
+    })
+  })
+})
+
+tape('getUser - fail pt1', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const getUser = createGetUser(db)
+
+  const tx = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const metadata = {
+    type: 'GET_USER',
+    usr: 'chiefbiiko',
+    tx,
+    unix_ts_ms: Date.now()
+  }
+
+  metastream.once('data', res => {
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...invalid schema')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  getUser(metastream, metadata, err => {
+    t.true(err.message.startsWith('invalid schema'), 'invalid schema err')
+    t.end()
+  })
+})
+
+tape('getUser - fail pt2', t => {
+  const db = levelup(enc(memdown('./users.db'), { valueEncoding: 'json' }))
+
+  const getUser = createGetUser(db)
+
+  const tx = Math.random()
+  const metastream = jsonStream(new PassThrough())
+  const metadata = {
+    type: 'GET_USER',
+    user: 'chief',
+    tx,
+    unix_ts_ms: Date.now()
+  }
+
+  metastream.once('data', res => {
+    t.true(valid.schema_RESPONSE(res), 'valid response schema')
+    t.false(res.ok, 'response status not ok...')
+    t.comment('...bc of a db error (notFound)')
+    t.equal(res.tx, tx, 'transaction identifiers equal')
+  })
+
+  getUser(metastream, metadata, err => {
+    t.ok(err.notFound, 'db triggered cb err not found')
+    t.end()
   })
 })
 
