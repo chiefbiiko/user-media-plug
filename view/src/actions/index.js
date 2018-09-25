@@ -71,11 +71,8 @@ const craftResetAction = () => ({
 
 export function createLoginAction (user, password) {
   return async (dispatch, getState, { client }) => {
-    if (user !== getState().user) {
-      dispatch(craftResetAction())
-      dispatch(craftUserAction(user))
-      client.setUser(user)
-    }
+    if (user !== getState().user) dispatch(craftUserAction(user))
+    if (user !== client.user) client.setUser(user)
     try { await client.whoami() }
     catch (_) { return alert('identification failed') }
     try { await client.login(password) }
@@ -91,6 +88,7 @@ export function createLogoutAction () {
     try { await client.logout() }
     catch (_) { return alert('logout failed') }
     dispatch(craftLogoutAction())
+    dispatch(craftResetAction())
   }
 }
 
