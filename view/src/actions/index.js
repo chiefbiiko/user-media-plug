@@ -80,10 +80,10 @@ export function createLoginAction (user, password) {
     try {
       const hydr_user = await client.getUser()
       dispatch(craftUserAvatarAction(hydr_user.avatar))
-      dispatch(craftUserStatusAction(hydr_user.status))  
+      dispatch(craftUserStatusAction(hydr_user.status))
     }
     catch (_) { return alert('fetching user data failed') }
-    try { dispatch(craftGotPeersAction(await client.getPeers()))  }
+    try { dispatch(craftGotPeersAction(await client.getPeers())) }
     catch (_) { return alert('fetching peers failed') }
     dispatch(craftLoginAction())
   }

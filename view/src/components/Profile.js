@@ -21,13 +21,12 @@ const mute = e => {
   e.preventDefault()
 }
 
-const _setAvatar = (dispatchAvatar, e) => {
+const makeAvatar = (dispatchAvatar, e) => {
   mute(e)
-  const file = e.dataTransfer.files[0]
   const file_reader = new FileReader()
   file_reader.onerror = _ => toast.error('setting avatar failed')
   file_reader.onload = () => dispatchAvatar(file_reader.result)
-  file_reader.readAsDataURL(file)
+  file_reader.readAsDataURL(e.dataTransfer.files[0])
 }
 
 const mapStateToProps = state => ({
@@ -35,9 +34,11 @@ const mapStateToProps = state => ({
   status: state.status
 })
 
+const e2InnerText = e => e.target.innerText
+
 const mapDispatchToProps = dispatch => ({
-  setAvatar: _setAvatar.bind(null, compose(dispatch, createUserAvatarAction)),
-  setStatus: compose(dispatch, createUserStatusAction, e => e.target.value)
+  setAvatar: makeAvatar.bind(null, compose(dispatch, createUserAvatarAction)),
+  setStatus: compose(dispatch, createUserStatusAction, e2InnerText)
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Profile)
