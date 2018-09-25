@@ -260,6 +260,25 @@ Clientele.prototype.getPeers = function getPeers (cb) {
   })
 }
 
+Clientele.prototype.getUser = function getUser (cb) {
+  if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
+
+  const self = this
+  const tx = Math.random()
+  const msg = outbound.getUser(self._user, tx)
+
+  self._metastream.write(msg, err => {
+    if (err) return cb(err)
+    self.emit('io', msg)
+    self._metastream_valve
+      .subscribe(
+        res => res.ok ? cb(null, res.user) : cb(ERR.RES_NOT_OK),
+        res => res.tx === tx,
+        1
+      )
+  })
+}
+
 Clientele.prototype.status = function status (status, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
   if (!isTruthyString(status)) return cb(ERR.NOT_TRUTHY_STRING('status'))

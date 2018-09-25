@@ -23,10 +23,10 @@ tape('partial usage flow', async t => {
   t.pass('logged in')
   await chiefbiiko.status('chiefin')
   t.pass('set status')
-  await chiefbiiko.addPeers([ 'og', 'fraudster' ])
+  t.equal((await chiefbiiko.getUser()).status, 'chiefin', 'user status')
+  t.pass('got user')
+  await chiefbiiko.addPeers([ 'fraudster' ])
   t.pass('added peers')
-  await chiefbiiko.deletePeers([ 'og' ])
-  t.pass('deleted peers')
   const peers = await chiefbiiko.getPeers()
   t.pass('got peers')
   const expected = {
@@ -37,6 +37,8 @@ tape('partial usage flow', async t => {
     }
   }
   t.same(peers, expected, 'same peers')
+  await chiefbiiko.deletePeers([ 'fraudster' ])
+  t.pass('deleted peers')
   await chiefbiiko.logout()
   t.pass('logged out')
 

@@ -77,6 +77,15 @@ PromisedClientele.prototype.getPeers = function getPeers () {
   })
 }
 
+PromisedClientele.prototype.getUser = function getUser () {
+  return new Promise((resolve, reject) => {
+    Clientele.prototype.getUser.call(
+      this,
+      (err, user) => err ? reject(err) : resolve(user)
+    )
+  })
+}
+
 PromisedClientele.prototype.status = function status (status) {
   return new Promise((resolve, reject) => {
     Clientele.prototype.status.call(

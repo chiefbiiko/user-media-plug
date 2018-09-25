@@ -59,6 +59,14 @@ const outbound = {
       unix_ts_ms: Date.now()
     }
   },
+  getUser (user, tx) {
+    return {
+      type: 'GET_USER',
+      user,
+      tx,
+      unix_ts_ms: Date.now()
+    }
+  },
   status (user, status, tx) {
     return {
       type: 'STATUS',
