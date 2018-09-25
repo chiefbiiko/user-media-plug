@@ -1,13 +1,15 @@
-import { createStore, applyMiddleware/*, bindActionCreators*/ } from 'redux'
+import { applyMiddleware, compose, createStore } from 'redux'
 import thunk from 'redux-thunk'
 import clientele from 'clientele/promised'
 import rootReducer from './../reducers'
+
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 
 const client = clientele('ws://localhost:10000')
 
 const store = createStore(
   rootReducer,
-  applyMiddleware(thunk.withExtraArgument({ client }))
+  composeEnhancers(applyMiddleware(thunk.withExtraArgument({ client })))
 )
 
 // TODO: dipatch ALL client inbound events as equivalent actions
