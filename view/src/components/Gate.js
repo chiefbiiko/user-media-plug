@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
+import { compose } from 'redux'
 import { toast } from 'react-toastify'
 import { areTruthyStrings, blur } from './../utils'
 import {
@@ -58,13 +58,11 @@ const mapStateToProps = state => ({
   password_visible: state.password_visible
 })
 
-// TODO: compose cos ppl will understand that more likely
 const mapDispatchToProps = dispatch => ({
-  register: bindActionCreators(createRegisterAction, dispatch),
-  login: bindActionCreators(createLoginAction, dispatch),
-  logout: bindActionCreators(createLogoutAction, dispatch),
-  togglePasswordVisibility:
-    bindActionCreators(craftTogglePasswordVisibilityAction, dispatch)
+  register: compose(dispatch, createRegisterAction),
+  login: compose(dispatch, createLoginAction),
+  logout: compose(dispatch, createLogoutAction),
+  togglePasswordVisibility: compose(dispatch, craftTogglePasswordVisibilityAction)
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Gate)

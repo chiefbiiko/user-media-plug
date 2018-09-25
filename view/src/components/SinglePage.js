@@ -4,8 +4,6 @@ import { bindActionCreators } from 'redux'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { createCrashAction } from './../actions'
-// import Gate from './Gate.js'
-// import Peers from './Peers.js'
 import { Gate, Peers, Profile } from '.'
 
 const page_style = { textAlign: 'center' }
@@ -33,8 +31,7 @@ const mapStateToProps = state => ({
   logged_in: state.logged_in
 })
 
-// TODO: compose cos ppl will understand that more likely
 const mapDispatchToProps = dispatch =>
-  ({ crashApp: bindActionCreators(createCrashAction, dispatch) })
+  ({ crashApp: compose(dispatch, createCrashAction) })
 
 export default connect(mapStateToProps, mapDispatchToProps)(SinglePage)

@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
+import { compose } from 'redux'
 import TagsInput from 'react-tagsinput'
 import 'react-tagsinput/react-tagsinput.css'
 import Peer from './Peer.js'
@@ -57,14 +57,13 @@ const mapStateToProps = state => ({
   peer_names: Object.keys(state.peers)
 })
 
-// TODO: compose cos ppl will understand that more likely
 const mapDispatchToProps = dispatch => ({
-  call: bindActionCreators(createOutboundCallAction, dispatch),
-  stopRinging: bindActionCreators(createOutboundStopRingingAction, dispatch),
-  accept: bindActionCreators(createOutboundAcceptAction, dispatch),
-  reject: bindActionCreators(createOutboundRejectAction, dispatch),
-  unpair: bindActionCreators(createOutboundUnpairAction, dispatch),
-  syncPeers: bindActionCreators(createSyncPeersAction, dispatch)
+  call: compose(dispatch, createOutboundCallAction),
+  stopRinging: compose(dispatch, createOutboundStopRingingAction),
+  accept: compose(dispatch, createOutboundAcceptAction),
+  reject: compose(dispatch, createOutboundRejectAction),
+  unpair: compose(dispatch, createOutboundUnpairAction),
+  syncPeers: compose(dispatch, createSyncPeersAction)
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Peers)

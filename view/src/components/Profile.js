@@ -21,11 +21,11 @@ const mute = e => {
   e.preventDefault()
 }
 
-const makeAvatar = (dispatchAvatar, e) => {
+const makeAvatar = (dispatchUserAvatar, e) => {
   mute(e)
   const file_reader = new FileReader()
   file_reader.onerror = _ => toast.error('setting avatar failed')
-  file_reader.onload = () => dispatchAvatar(file_reader.result)
+  file_reader.onload = () => dispatchUserAvatar(file_reader.result)
   file_reader.readAsDataURL(e.dataTransfer.files[0])
 }
 
