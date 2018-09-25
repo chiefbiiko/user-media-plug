@@ -77,8 +77,14 @@ export function createLoginAction (user, password) {
     catch (_) { return alert('identification failed') }
     try { await client.login(password) }
     catch (_) { return alert('login failed') }
+    try {
+      const hydr_user = await client.getUser()
+      dispatch(craftUserAvatarAction(hydr_user.avatar))
+      dispatch(craftUserStatusAction(hydr_user.status))  
+    }
+    catch (_) { return alert('fetching user data failed') }
     try { dispatch(craftGotPeersAction(await client.getPeers()))  }
-    catch (_) { return alert('getting peers failed') }
+    catch (_) { return alert('fetching peers failed') }
     dispatch(craftLoginAction())
   }
 }
