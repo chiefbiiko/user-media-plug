@@ -13,13 +13,11 @@ class SinglePage extends Component {
     this.props.crashApp(err)
   }
   render () {
+    if (this.props.crashed) return 'Damn, app crashed'
     return (
       <div style={ page_style }>
-        {
-          this.props.crashed
-            ? 'Damn, app crashed' // REFACTOR below
-            : <div><Gate />{ this.props.logged_in ? <Profile /> : null }</div>
-        }
+        <Gate />
+        { this.props.logged_in ? <div><Profile /><Peers /></div> : null }
         <ToastContainer autoClose={ 2000 } />
       </div>
     )
