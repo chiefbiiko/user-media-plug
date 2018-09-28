@@ -33,7 +33,7 @@ tape('partial usage flow', async t => {
     fraudster: {
       status: 'noop',
       online: false,
-      avatar: 'data:image/*;base64,...'
+      avatar: null
     }
   }
   t.same(peers, expected, 'same peers')

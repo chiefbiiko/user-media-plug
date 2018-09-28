@@ -5,7 +5,8 @@
   "main": "./index.js",
   "scripts": {
     "start": "node ./index.js",
-    "test": "tape ./test.js"
+    "test": "ternary op in shell to check win/unix: start cmd /b, cmd ?",
+    "test": "tape ./test.js && start npm start /b && browserify ./clientele/test.js | tape-puppet"
   },
   "repository": {
     "type": "git",
