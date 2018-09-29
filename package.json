@@ -5,8 +5,10 @@
   "main": "./index.js",
   "scripts": {
     "start": "node ./index.js",
-    "test": "ternary op in shell to check win/unix: start cmd /b, cmd ?",
-    "test": "tape ./test.js && start npm start /b && browserify ./clientele/test.js | tape-puppet"
+    "bg-start": "run-script-os",
+    "bg-start:win32": "start npm start /b",
+    "bg-start:darwin:linux": "npm start ?",
+    "test": "tape ./test.js && npm run bg-start && browserify ./clientele/test.js | tape-puppet"
   },
   "repository": {
     "type": "git",
@@ -27,9 +29,12 @@
   "homepage": "https://github.com/chiefbiiko/user-media-plug#readme",
   "devDependencies": {
     "browser-run": "^5.0.0",
+    "browserify": "^16.2.3",
     "debug": "^3.1.0",
     "del": "^3.0.0",
-    "tape": "^4.9.0"
+    "run-script-os": "^1.0.3",
+    "tape": "^4.9.0",
+    "tape-puppet": "^0.1.5"
   },
   "dependencies": {
     "cache-set": "^0.3.0",
