@@ -54,6 +54,10 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
       msg => msg.type === 'CALL'
     )
     .subscribe(
+      this.emit.bind(this, 'stop-ringing'),
+      msg => msg.type === 'STOP_RINGING'
+    )
+    .subscribe(
       this.emit.bind(this, 'accept'),
       msg => msg.type === 'ACCEPT'
     )

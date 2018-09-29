@@ -1,4 +1,4 @@
-// TODO: swap all alerts with react-toastify or similar
+// TODO: swap all alerts with toasts
 
 export function craftIOAction (msg) {
   return {
@@ -180,6 +180,14 @@ export function craftInboundCallAction (msg) {
 export function craftInboundAcceptAction (msg) {
   return {
     type: 'INBOUND_ACCEPT',
+    unix_ts_ms: msg.unix_ts_ms,
+    peer: msg.user
+  }
+}
+
+export function craftInboundStopRingingAction (msg) {
+  return {
+    type: 'INBOUND_STOP_RINGING',
     unix_ts_ms: msg.unix_ts_ms,
     peer: msg.user
   }
