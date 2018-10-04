@@ -251,6 +251,15 @@ export function craftInboundStopRingingAction (msg) {
   }
 }
 
+export function craftPeerVideoAction (video, peer) {
+  return {
+    type: 'PEER_VIDEO',
+    unix_ts_ms: Date.now(),
+    peer,
+    video
+  }
+}
+
 const craftGotPeersAction = peers => ({
   type: 'GOT_PEERS',
   unix_ts_ms: Date.now(),

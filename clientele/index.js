@@ -110,7 +110,7 @@ Clientele.prototype._makeVideoStream = function makeVideoStream (msg) {
       var mediasource_buf = mediasource.addSourceBuffer(Clientele.MIME_CODEC)
       mediastream.on('data', chunk => mediasource_buf.appendBuffer(chunk))
       mediastream.once('readable', () => video.play())
-      self.emit('videostream', video)
+      self.emit('video', video, msg.peer)
     }
     // o
     getMedia({ audio: true, video: true }, (err, media) => {

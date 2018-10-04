@@ -152,6 +152,16 @@ const avatarReducer = (state = '...', action) => {
   }
 }
 
+const videosReducer = (state = {}, action) => {
+  switch (action.type) {
+    case 'PEER_VIDEO': return {
+      ...state,
+      [action.peer]: action.video
+    }
+    default: return state
+  }
+}
+
 const appReducer = combineReducers({
   io_log: ioReducer,
   crashed: crashReducer,
@@ -160,7 +170,8 @@ const appReducer = combineReducers({
   password_visible: passwordVisibilityReducer,
   peers: peersReducer,
   status: statusReducer,
-  avatar: avatarReducer
+  avatar: avatarReducer,
+  videos: videosReducer
 })
 
 const rootReducer = (state, action) => {
