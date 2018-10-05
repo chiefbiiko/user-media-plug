@@ -37,6 +37,7 @@ export default function Peer (props) {
     <div style={ peer_style }>
       <PeerHeader { ...props } />
       <PeerButtons { ...props } />
+      { props.video }
     </div>
   )
 }

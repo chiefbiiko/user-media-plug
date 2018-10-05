@@ -132,6 +132,13 @@ const peersReducer = (state = {}, action) => {
         online: false
       }
     }
+    case 'PEER_VIDEO': return {
+      ...state,
+      [action.peer]: {
+        ...state[action.peer],
+        video: action.video
+      }
+    }
     case 'GOT_PEERS': return { ...action.peers }
     default: return state
   }
@@ -152,15 +159,15 @@ const avatarReducer = (state = '...', action) => {
   }
 }
 
-const videosReducer = (state = {}, action) => {
-  switch (action.type) {
-    case 'PEER_VIDEO': return {
-      ...state,
-      [action.peer]: action.video
-    }
-    default: return state
-  }
-}
+// const videosReducer = (state = {}, action) => {
+//   switch (action.type) {
+//     case 'PEER_VIDEO': return {
+//       ...state,
+//       [action.peer]: action.video
+//     }
+//     default: return state
+//   }
+// }
 
 const appReducer = combineReducers({
   io_log: ioReducer,
@@ -170,8 +177,8 @@ const appReducer = combineReducers({
   password_visible: passwordVisibilityReducer,
   peers: peersReducer,
   status: statusReducer,
-  avatar: avatarReducer,
-  videos: videosReducer
+  avatar: avatarReducer
+  // ,videos: videosReducer
 })
 
 const rootReducer = (state, action) => {

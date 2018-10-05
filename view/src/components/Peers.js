@@ -41,6 +41,7 @@ const Peers = ({
           calling={ peer.calling }
           inbound_ringing={ peer.inbound_ringing }
           outbound_ringing={ peer.outbound_ringing }
+          video={ peer.video }
           call={ call }
           stopRinging={ stopRinging }
           accept={ accept }
