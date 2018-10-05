@@ -1,8 +1,18 @@
 import { applyMiddleware, compose, createStore } from 'redux'
 import thunk from 'redux-thunk'
-// import clientele from 'clientele/promised'
-// TODO: impoort all required action creators
-import {/**/} from './../actions'
+import clientele from 'clientele/promised'
+import {
+  craftInboundCallAction,
+  craftInboundStopRingingAction,
+  craftInboundAcceptAction,
+  craftInboundRejectAction,
+  craftInboundUnpairAction,
+  craftPeerStatusAction,
+  craftPeerAvatarAction,
+  craftPeerOnlineAction,
+  craftPeerOfflineAction,
+  craftPeerVideoAction
+} from './../actions'
 import rootReducer from './../reducers'
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
