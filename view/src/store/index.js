@@ -19,13 +19,6 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 
 const client = clientele('ws://localhost:10000')
 
-// export default function configureStore (client) {
-//   return createStore(
-//     rootReducer,
-//     composeEnhancers(applyMiddleware(thunk.withExtraArgument({ client })))
-//   )
-// }
-
 const store = createStore(
   rootReducer,
   composeEnhancers(applyMiddleware(thunk.withExtraArgument({ client })))
