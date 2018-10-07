@@ -19,7 +19,7 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "webpack": "webpack --config ./webpack.config.js",
-    "ballify": "node ./ballify.js ./build/bundle.min.js > ./../ball.html",
+    "ballify": "node ./ballify.js ./build/bundle.min.js > ./ball.html",
     "cookup": "npm run build && npm run webpack && npm run ballify"
   },
   "browserslist": [
