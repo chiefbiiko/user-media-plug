@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { toast } from 'react-toastify'
@@ -12,7 +12,7 @@ import {
 
 const gate_style = {}
 
-class Gate extends Component {
+class Gate extends React.Component {
   constructor (props) {
     super(props)
     this.name = React.createRef()
