@@ -1,6 +1,6 @@
 {
   "name": "user-media-plug",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
@@ -13,6 +13,21 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chiefbiiko/user-media-plug.git"
+  },
+  "now": {
+    "name": "plugtube",
+    "alias": "plugtube",
+    "env": {
+      "NODE_ENV": "production",
+      "HOST": "0.0.0.0",
+      "PORT": "41900"
+    },
+    "scale": {
+      "bru1": {
+        "min": 1,
+        "max": 1
+      }
+    }
   },
   "keywords": [
     "user-media",
