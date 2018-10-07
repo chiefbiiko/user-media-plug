@@ -28,9 +28,7 @@
   },
   "homepage": "https://github.com/chiefbiiko/user-media-plug#readme",
   "devDependencies": {
-    "browser-run": "5.0.0",
     "browserify": "16.2.3",
-    "del": "3.0.0",
     "run-script-os": "1.0.3",
     "tape": "4.9.0",
     "tape-puppet": "0.1.5"
