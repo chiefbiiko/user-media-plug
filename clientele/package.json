@@ -5,15 +5,15 @@
     "test": "browserify ./test.js | tape-puppet"
   },
   "dependencies": {
-    "duplex-json-stream": "^1.0.1",
-    "getusermedia": "^2.0.1",
-    "media-recorder-stream": "^2.1.1",
-    "readable-valve": "^0.3.1",
-    "websocket-stream": "^5.1.2"
+    "duplex-json-stream": "1.0.1",
+    "getusermedia": "2.0.1",
+    "media-recorder-stream": "2.1.1",
+    "readable-valve": "0.3.1",
+    "websocket-stream": "5.1.2"
   },
   "devDependencies": {
-    "browserify": "^16.2.2",
-    "tape": "^4.9.1",
-    "tape-puppet": "^0.1.1"
+    "browserify": "16.2.2",
+    "tape": "4.9.1",
+    "tape-puppet": "0.1.5"
   }
 }
