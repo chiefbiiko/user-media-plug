@@ -243,14 +243,6 @@ export function craftPeerOfflineAction (msg) {
   }
 }
 
-export function craftInboundStopRingingAction (msg) {
-  return {
-    type: 'INBOUND_STOP_RINGING',
-    unix_ts_ms: msg.unix_ts_ms,
-    peer: msg.user
-  }
-}
-
 export function craftPeerVideoAction (video, peer) {
   return {
     type: 'PEER_VIDEO',
