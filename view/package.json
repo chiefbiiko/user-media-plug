@@ -16,10 +16,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && npm run ballify",
+    "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "ballify": "ballify ./build/index.html --brotli=false --base64Images=false --base64GoogleFonts=false --uglifyJS=false --minifyCSS=false --mergeCSS=false --crunchHTML=false -o=./../ball.html"
+    "ballify": "ballify ./build/index.html ./../ball.html --brotli=false --base64Images=false --base64GoogleFonts=false --uglifyJS=false --minifyCSS=false --mergeCSS=false --crunchHTML=false"
   },
   "browserslist": [
     ">0.2%",
