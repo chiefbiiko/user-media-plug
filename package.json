@@ -8,13 +8,13 @@
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start npm start /b",
-    "bg-start:darwin:linux": "npm start ?",
-    "kill-node": "run-script-os",
-    "kill-node:win32": "taskkill /im node.exe /f",
-    "kill-node:darwin:linux": "killall node",
+    "bg-start:darwin:linux": "node ./index.js ?",
+    "killer": "run-script-os",
+    "killer:win32": "node ./killer_win32.js",
+    "killer:darwin:linux": "killall node",
     "pretest": "npm run bg-start",
     "test": "tape ./test.js && browserify ./clientele/test.js | tape-puppet",
-    "posttest": "npm run kill-node"
+    "posttest": "npm run killer"
   },
   "repository": {
     "type": "git",
