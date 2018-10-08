@@ -8,13 +8,13 @@
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start node ./index.js /b",
-    "bg-start:darwin:linux": "node ./index.js ?",
-    "killer": "run-script-os",
-    "killer:win32": "node ./killer_win32.js",
-    "killer:darwin:linux": "killall node",
+    "bg-start:darwin:linux": "PID=$(node ./index.js > /dev/null 2>&1 & | grep -o -E '[0-9]+$')",
+    "bg-kill": "run-script-os",
+    "bg-kill:win32": "node ./bg_kill_win32.js",
+    "bg-kill:darwin:linux": "kill -SIGKILL $PID",
     "pretest": "npm run bg-start",
     "test": "tape ./test.js && browserify ./clientele/test.js | tape-puppet",
-    "posttest": "npm run killer"
+    "posttest": "npm run bg-kill"
   },
   "repository": {
     "type": "git",
