@@ -1,6 +1,6 @@
 {
   "name": "user-media-plug",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
