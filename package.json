@@ -7,7 +7,7 @@
     "postinstall": "cd ./clientele && npm i && cd ..",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
-    "bg-start:win32": "start npm start && exit /b",
+    "bg-start:win32": "start npm start /b",
     "bg-start:darwin:linux": "npm start ?",
     "kill-node": "run-script-os",
     "kill-node:win32": "taskkill /im node.exe /f",

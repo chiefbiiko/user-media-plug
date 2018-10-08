@@ -50,10 +50,10 @@ tape('handleUpgrade - pass', t => {
   const handleUpgrade = createHandleUpgrade(metaserver, mediaserver)
 
   httpserver.on('upgrade', handleUpgrade)
-  httpserver.listen(10000, 'localhost')
+  httpserver.listen(10001, 'localhost')
 
-  const a_ws = websocket('ws://localhost:10000/meta')
-  const b_ws = websocket('ws://localhost:10000/media')
+  const a_ws = websocket('ws://localhost:10001/meta')
+  const b_ws = websocket('ws://localhost:10001/media')
 
   a_ws.on('error', t.end)
   b_ws.on('error', t.end)
@@ -75,10 +75,10 @@ tape('handleUpgrade - fail - switch fallthru', t => {
   const handleUpgrade = createHandleUpgrade(metaserver, mediaserver)
 
   httpserver.on('upgrade', handleUpgrade)
-  httpserver.listen(10000, 'localhost')
+  httpserver.listen(10001, 'localhost')
 
-  const a_ws = websocket('ws://localhost:10000/')
-  const b_ws = websocket('ws://localhost:10000/noop')
+  const a_ws = websocket('ws://localhost:10001/')
+  const b_ws = websocket('ws://localhost:10001/noop')
 
   a_ws.on('error', err => t.ok(err, 'got a\'s connection error'))
   b_ws.on('error', err => t.ok(err, 'got b\'s connection error'))
