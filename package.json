@@ -6,9 +6,14 @@
   "scripts": {
     "start": "node ./index.js",
     "bg-start": "run-script-os",
-    "bg-start:win32": "start npm start /b",
+    "bg-start:win32": "start npm start && exit /b",
     "bg-start:darwin:linux": "npm start ?",
-    "test": "tape ./test.js && npm run bg-start && browserify ./clientele/test.js | tape-puppet"
+    "kill-node": "run-script-os",
+    "kill-node:win32": "taskkill /im node.exe /f",
+    "kill-node:darwin:linux": "killall node",
+    "pretest": "npm run bg-start",
+    "test": "tape ./test.js && browserify ./clientele/test.js | tape-puppet",
+    "posttest": "npm run kill-node"
   },
   "repository": {
     "type": "git",

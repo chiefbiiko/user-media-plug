@@ -1837,8 +1837,8 @@ tape('handlePair - pass', t => {
   const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
   const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
-  const a_ws = websocket('ws://localhost:10000/media')
-  const b_ws = websocket('ws://localhost:10000/media')
+  const a_ws = websocket('ws://localhost:10001/media')
+  const b_ws = websocket('ws://localhost:10001/media')
 
   const shutdown = () => {
     a_ws.destroy()
@@ -1862,7 +1862,7 @@ tape('handlePair - pass', t => {
   })
 
   httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
-  httpserver.listen(10000, 'localhost')
+  httpserver.listen(10001, 'localhost')
 
   handlePair(a, b)
 
@@ -1892,8 +1892,8 @@ tape('handlePair - fail pt1 - invalid schema', t => {
   const a_info = JSON.stringify({ uname: a, peer: b, unix_ts_ms: Date.now() })
   const b_info = JSON.stringify({ user: b, pname: a, unix_ts_ms: Date.now() })
 
-  const a_ws = websocket('ws://localhost:10000/media')
-  const b_ws = websocket('ws://localhost:10000/media')
+  const a_ws = websocket('ws://localhost:10001/media')
+  const b_ws = websocket('ws://localhost:10001/media')
 
   a_ws.on('error', t.end)
   b_ws.on('error', t.end)
@@ -1902,7 +1902,7 @@ tape('handlePair - fail pt1 - invalid schema', t => {
   b_ws.on('data', chunk => t.fail('should be unreachable'))
 
   httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
-  httpserver.listen(10000, 'localhost')
+  httpserver.listen(10001, 'localhost')
 
   handlePair(a, b)
 
@@ -1932,8 +1932,8 @@ tape('handlePair - fail pt2 - no pair', t => {
   const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
   const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
-  const a_ws = websocket('ws://localhost:10000/media')
-  const b_ws = websocket('ws://localhost:10000/media')
+  const a_ws = websocket('ws://localhost:10001/media')
+  const b_ws = websocket('ws://localhost:10001/media')
 
   a_ws.on('error', t.end)
   b_ws.on('error', t.end)
@@ -1942,7 +1942,7 @@ tape('handlePair - fail pt2 - no pair', t => {
   b_ws.on('data', chunk => t.fail('should be unreachable'))
 
   httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
-  httpserver.listen(10000, 'localhost')
+  httpserver.listen(10001, 'localhost')
 
   handlePair(a, 'oj pic')
 
@@ -1995,7 +1995,7 @@ tape('unpair - pass', t => {
   }, logged_in_users)
 
   httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
-  httpserver.listen(10000, 'localhost')
+  httpserver.listen(10001, 'localhost')
 
   metaserver.on('unpair', createHandleUnpair(active_mediastreams))
 
@@ -2004,8 +2004,8 @@ tape('unpair - pass', t => {
   const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
   const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
-  const a_ws = websocket('ws://localhost:10000/media')
-  const b_ws = websocket('ws://localhost:10000/media')
+  const a_ws = websocket('ws://localhost:10001/media')
+  const b_ws = websocket('ws://localhost:10001/media')
 
   const done = () => {
     const a_metastream = jsonStream(new PassThrough())
@@ -2156,15 +2156,15 @@ tape('unpair - fail - invalid metadata', t => {
   }, logged_in_users)
 
   httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
-  httpserver.listen(10000, 'localhost')
+  httpserver.listen(10001, 'localhost')
 
   const a = 'chiefbiiko'
   const b = 'noop'
   const a_info = JSON.stringify({ user: a, peer: b, unix_ts_ms: Date.now() })
   const b_info = JSON.stringify({ user: b, peer: a, unix_ts_ms: Date.now() })
 
-  const a_ws = websocket('ws://localhost:10000/media')
-  const b_ws = websocket('ws://localhost:10000/media')
+  const a_ws = websocket('ws://localhost:10001/media')
+  const b_ws = websocket('ws://localhost:10001/media')
 
   const done = () => {
     const metastream = jsonStream(new PassThrough())
