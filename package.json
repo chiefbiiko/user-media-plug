@@ -4,6 +4,7 @@
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
+    "postinstall": "cd ./clientele && npm i && cd ..",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start npm start && exit /b",
