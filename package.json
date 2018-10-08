@@ -8,10 +8,10 @@
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start node ./index.js /b",
-    "bg-start:darwin:linux": "node ./index.js > /dev/null 2>&1 &; PID=$!",
+    "bg-start:darwin:linux": "node ./index.js > /dev/null 2>&1 &",
     "bg-kill": "run-script-os",
     "bg-kill:win32": "node ./bg_kill_win32.js",
-    "bg-kill:darwin:linux": "kill -SIGKILL $PID",
+    "bg-kill:darwin:linux": "kill $(jobs -p)",
     "pretest": "npm run bg-start",
     "test": "tape ./test.js && browserify ./clientele/test.js | tape-puppet",
     "posttest": "npm run bg-kill"
