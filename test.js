@@ -2058,10 +2058,7 @@ tape('unpair - pass', t => {
           t.equal(res.tx, tx, 'transaction identifiers equal')
           a_ws.on('data', _ => t.fail('media_stream unstopped'))
           b_ws.on('data', _ => t.fail('media_stream unstopped'))
-          setTimeout(() => {
-            httpserver.close()
-            t.end()
-          }, 750)
+          setTimeout(() => httpserver.close(t.end), 750)
           break
         default: t.fail('should be unreachable')
       }
@@ -2212,8 +2209,7 @@ tape('unpair - fail - invalid metadata', t => {
           setTimeout(() => {
             a_ws.destroy()
             b_ws.destroy()
-            httpserver.close()
-            t.end()
+            httpserver.close(t.end)
           }, 750)
           break
         default: t.fail('should be unreachable')
