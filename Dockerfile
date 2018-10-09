@@ -5,5 +5,5 @@ COPY . /home/plugtube
 RUN npm install --only=production
 COPY . .
 EXPOSE 41900
-RUN npm run prod-url
+RUN npm run prod-url # need to fix da server addy !!!!!
 CMD npm start
