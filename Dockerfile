@@ -1,9 +1,6 @@
 FROM node:10-jessie
 WORKDIR /home/plugtube
-COPY ./package*.json ./
-COPY ./clientele ./
-COPY ./utils ./
-COPY ./view ./
+COPY ./* ./
 RUN apt-get update
 RUN apt-get install -y git
 RUN npm install --only=production && \
