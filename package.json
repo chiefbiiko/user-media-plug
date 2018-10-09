@@ -4,8 +4,8 @@
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
+    "preinstall": "npm run prod-url",
     "postinstall": "cd ./clientele && npm i && cd ..",
-    "build": "npm run prod-url",
     "prod-url": "node ./prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
