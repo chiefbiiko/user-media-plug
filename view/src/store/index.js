@@ -17,6 +17,7 @@ import rootReducer from './../reducers'
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 
+// TODO: get dynamically assigned now url and connect to wss://xyz:41900 4 prod!
 const client = clientele('ws://localhost:10000')
 
 const store = createStore(
