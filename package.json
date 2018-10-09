@@ -6,8 +6,8 @@
   "scripts": {
     "preinstall": "npm run prod-url",
     "postinstall": "cd ./clientele && npm i && cd ..",
-    "prod-url": "run-script-os",
-    "prod-url:darwin:linux": "sudo node ./prod_url.js",
+    "prod-url": "node -e \"process.env.NOW&&require('child_process').execSync('npm run prod-url:now')\"",
+    "prod-url:now": "sudo node ./prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start node ./index.js /b",
@@ -57,11 +57,11 @@
   "homepage": "https://github.com/chiefbiiko/user-media-plug#readme",
   "devDependencies": {
     "browserify": "16.2.3",
+    "run-script-os": "1.0.3",
     "tape": "4.9.0",
     "tape-puppet": "0.1.5"
   },
   "dependencies": {
-    "run-script-os": "1.0.3",
     "cache-set": "0.3.0",
     "debug": "3.1.0",
     "duplex-json-stream": "1.0.1",
