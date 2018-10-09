@@ -5,6 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "postinstall": "cd ./clientele && npm i && cd ..",
+    "build": "npm run prod-url",
     "prod-url": "node ./prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
@@ -24,7 +25,6 @@
   "now": {
     "name": "plugtube",
     "alias": "plugtube",
-    "build": "npm run prod-url",
     "env": {
       "NODE_ENV": "production",
       "HOST": "0.0.0.0",
