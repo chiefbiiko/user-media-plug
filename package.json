@@ -27,7 +27,7 @@
     "env": {
       "NODE_ENV": "production",
       "HOST": "0.0.0.0",
-      "PORT": 41900,
+      "PORT": "41900",
       "DEBUG": "user-media-plug:*"
     },
     "static": {
