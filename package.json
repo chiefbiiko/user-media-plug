@@ -4,10 +4,9 @@
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
-    "preinstall": "npm run prod-url",
+    "build": "npm run prod-url",
     "postinstall": "cd ./clientele && npm i && cd ..",
-    "prod-url": "node -e \"process.env.NOW && require('child_process').execSync('npm run prod-url:now')\"",
-    "prod-url:now": "sudo node ./prod_url.js",
+    "prod-url": "node ./prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start node ./index.js /b",
