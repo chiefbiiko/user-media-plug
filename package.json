@@ -6,13 +6,13 @@
   "scripts": {
     "build": "npm run prod-url",
     "postinstall": "cd ./clientele && npm i && cd ..",
-    "prod-url": "node ./prod_url.js",
+    "prod-url": "node ./utils/prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start node ./index.js /b",
     "bg-start:darwin:linux": "node ./index.js > /dev/null 2>&1 &",
     "bg-kill": "run-script-os",
-    "bg-kill:win32": "node ./bg_kill_win32.js",
+    "bg-kill:win32": "node ./utils/bg_kill_win32.js",
     "bg-kill:darwin:linux": "kill $(jobs -p)",
     "pretest": "npm run bg-start",
     "test": "tape ./test.js && browserify ./clientele/test.js | tape-puppet",
@@ -23,6 +23,7 @@
     "url": "git+https://github.com/chiefbiiko/user-media-plug.git"
   },
   "now": {
+    "type": "docker",
     "name": "plugtube",
     "alias": "plugtube",
     "env": {
