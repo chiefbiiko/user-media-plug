@@ -2,7 +2,8 @@ if (!process.env.NOW_URL) return
 
 const { readFile, writeFile } = require('fs')
 
-const fix = `wss://${process.env.NOW_URL}:${process.env.PORT}`
+const addy = process.env.NOW_URL.replace(/^https?/, 'wss')
+const fix = `wss://${addy}:${process.env.PORT}`
 
 readFile('./view/src/store/index.js', 'utf8', (err, txt) => {
   if (err) throw err
