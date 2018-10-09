@@ -6,7 +6,8 @@
   "scripts": {
     "preinstall": "npm run prod-url",
     "postinstall": "cd ./clientele && npm i && cd ..",
-    "prod-url": "node ./prod_url.js",
+    "prod-url": "run-script-os",
+    "prod-url:darwin:linux": "sudo node ./prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
     "bg-start:win32": "start node ./index.js /b",
