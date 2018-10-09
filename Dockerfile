@@ -3,9 +3,8 @@ RUN mkdir -p /home/plugtube
 WORKDIR /home/plugtube
 COPY . /home/plugtube
 RUN apt-get update
-RUN apt-get install -y git
+RUN apt-get install -y git-core
 RUN npm install --only=production && \
-    npm cache clean --force && \
     npm run prod-url
 COPY . .
 EXPOSE 41900
