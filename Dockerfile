@@ -1,4 +1,4 @@
-FROM node:10-alpine
+FROM node:10-jessie
 WORKDIR /home/plugtube
 COPY ./package*.json ./
 RUN apt-get update
