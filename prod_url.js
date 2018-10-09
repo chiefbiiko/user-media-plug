@@ -5,10 +5,10 @@ const { readFile, writeFile } = require('fs')
 const addy = process.env.NOW_URL.replace(/^https?:\/\//, '')
 const fix = `wss://${addy}:${process.env.PORT}`
 
-readFile('./view/src/store/index.js', 'utf8', (err, txt) => {
+readFile('./view/src/store/index.js', (err, txt) => {
   if (err) throw err
 
-  txt = txt.replace(/ws:\/\/localhost:\d+/, fix)
+  txt = txt.toString().replace(/ws:\/\/localhost:\d+/, fix)
 
   writeFile('./view/src/store/index.js', txt, err => {
     if (err) throw err
