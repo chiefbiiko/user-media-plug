@@ -6,7 +6,7 @@
   "scripts": {
     "preinstall": "npm run prod-url",
     "postinstall": "cd ./clientele && npm i && cd ..",
-    "prod-url": "node -e \"process.env.NOW&&require('child_process').execSync('npm run prod-url:now')\"",
+    "prod-url": "node -e \"process.env.NOW && require('child_process').execSync('npm run prod-url:now')\"",
     "prod-url:now": "sudo node ./prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
