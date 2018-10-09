@@ -4,7 +4,7 @@
   "description": "servers that manage user media connections",
   "main": "./index.js",
   "scripts": {
-    "postinstall": "cd ./clientele && npm i && cd .. && npm run prod-url",
+    "postinstall": "cd ./clientele && npm i && cd ..",
     "prod-url": "node ./prod_url.js",
     "start": "node ./index.js",
     "bg-start": "run-script-os",
@@ -24,6 +24,7 @@
   "now": {
     "name": "plugtube",
     "alias": "plugtube",
+    "build": "npm run prod-url",
     "env": {
       "NODE_ENV": "production",
       "HOST": "0.0.0.0",
