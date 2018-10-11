@@ -1,0 +1,6 @@
+.git
+.gitignore
+node_modules
+.travis.yml
+appveyor.yml
+test.js

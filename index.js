@@ -9,7 +9,7 @@ const hashtagStreamSet = require('hashtag-stream-set')
 const debug = require('debug')('user-media-plug:index')
 
 const {
-  // createHandleRequest,
+  createHandleRequest,
   createHandleUpgrade,
   createHandleMetastream,
   createHandlePair,
@@ -37,7 +37,7 @@ httpserver.on('error', handleError)
 metaserver.on('error', handleError)
 mediaserver.on('error', handleError)
 
-// httpserver.on('request', createHandleRequest())
+httpserver.on('request', createHandleRequest())
 httpserver.on('upgrade', createHandleUpgrade(metaserver, mediaserver))
 metaserver.on('stream', createHandleMetastream({
   db,
