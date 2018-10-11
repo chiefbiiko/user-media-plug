@@ -11,6 +11,8 @@ RUN ls /buildtube/view/build/
 
 FROM node:10-alpine
 WORKDIR /plugtube/
+COPY --from=build-art /buildtube/view/build/ /plugtube/view/build/
+RUN ls /plugtube/view/build/
 COPY package.json /plugtube/
 RUN npm i --only=production
 COPY . /plugtube/
@@ -19,6 +21,4 @@ ENV HOST 0.0.0.0
 ENV DEBUG user-media-plug:*
 ENV NODE_ENV production
 EXPOSE 41900
-COPY --from=build-art /buildtube/view/build/ /plugtube/view/build/
-RUN ls /plugtube/view/build/
 CMD npm start
