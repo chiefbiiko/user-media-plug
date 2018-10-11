@@ -5,6 +5,7 @@
     "test": "browserify ./test.js | tape-puppet"
   },
   "dependencies": {
+    "debug": "3.1.0",
     "duplex-json-stream": "1.0.1",
     "getusermedia": "2.0.1",
     "media-recorder-stream": "2.1.1",
