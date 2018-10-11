@@ -1,5 +1,5 @@
 FROM node:10-alpine as build-art
-mkdir -p /buildtube/view/
+RUN mkdir -p /buildtube/view/
 WORKDIR /buildtube/view/
 COPY view /buildtube/view/
 COPY clientele /buildtube/clientele/
