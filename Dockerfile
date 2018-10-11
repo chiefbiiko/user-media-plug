@@ -1,6 +1,7 @@
 FROM node:10-alpine as build-art
 WORKDIR /buildtube/
 COPY view /buildtube/
+COPY clientele /clientele/
 ARG NOW_URL
 ENV REACT_APP_NOW_URL ${NOW_URL}
 ENV REACT_APP_PORT 41900
