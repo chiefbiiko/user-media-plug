@@ -22,26 +22,6 @@
     "type": "git",
     "url": "git+https://github.com/chiefbiiko/user-media-plug.git"
   },
-  "now": {
-    "type": "docker",
-    "name": "plugtube",
-    "alias": "plugtube",
-    "env": {
-      "NODE_ENV": "production",
-      "HOST": "0.0.0.0",
-      "PORT": "41900",
-      "DEBUG": "user-media-plug:*"
-    },
-    "static": {
-      "public": "./view/build"
-    },
-    "scale": {
-      "bru1": {
-        "min": 0,
-        "max": 1
-      }
-    }
-  },
   "keywords": [
     "user-media",
     "chat",
@@ -72,6 +52,7 @@
     "memdown": "3.0.0",
     "preactor": "0.7.0",
     "pump": "3.0.0",
+    "serve-handler": "5.0.5",
     "stream-set": "1.1.0",
     "websocket-stream": "5.1.2"
   }
