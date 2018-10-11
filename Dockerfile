@@ -9,5 +9,4 @@ ENV PORT 41900
 ENV HOST 0.0.0.0
 ENV DEBUG user-media-plug:*
 EXPOSE 41900
-RUN npm run prod-url
-CMD npm start
+CMD npm run prod-url && npm start
