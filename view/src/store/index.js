@@ -17,8 +17,15 @@ import rootReducer from './../reducers'
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 
+var ADDY
+if (process.env.REACT_APP_NOW_URL && process.env.REACT_APP_PORT) {
+  ADDY = `wss://${process.env.REACT_APP_NOW_URL.replace(/^https?:\/\//, '')}:${process.env.REACT_APP_PORT}`
+} else {
+  ADDY = 'ws://localhost:10000'
+}
+
 // TODO: get dynamically assigned now url and connect to wss://xyz:41900 4 prod!
-const client = clientele('ws://localhost:10000')
+const client = clientele(ADDY)
 
 const store = createStore(
   rootReducer,
