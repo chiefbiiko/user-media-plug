@@ -1,5 +1,5 @@
 FROM node:10-alpine as build-art
-WORKDIR /buildtube/view
+WORKDIR /buildtube/view/
 COPY view /buildtube/view/
 COPY clientele /buildtube/clientele/
 ARG NOW_URL
