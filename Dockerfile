@@ -11,5 +11,5 @@ ENV HOST 0.0.0.0
 ENV DEBUG user-media-plug:*
 ENV NODE_ENV production
 EXPOSE 41900
-RUN cd /plugtube/view/ && npm i && npm run build && cd /plugtube
+RUN cd /plugtube/view/ && npm i && npm run build && rm -rf /plugtube/view/node_modules && cd /plugtube
 CMD npm start
