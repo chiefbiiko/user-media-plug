@@ -4,7 +4,8 @@ COPY view /buildtube/
 ARG NOW_URL
 ENV REACT_APP_NOW_URL ${NOW_URL}
 ENV REACT_APP_PORT 41900
-RUN cd view && npm i && npm run build
+RUN npm i
+RUN npm run build
 
 FROM node:10-alpine
 WORKDIR /plugtube/
@@ -20,5 +21,5 @@ ENV DEBUG user-media-plug:*
 ENV NODE_ENV production
 EXPOSE 41900
 #RUN cd /plugtube/view/ && npm i && npm run build && rm -rf /plugtube/view/node_modules && cd /plugtube
-COPY --from=build-art /buildtube/build/ /plugtube/view/
+COPY --from=build-art /buildtube/build/ /plugtube/view/build/
 CMD npm start
