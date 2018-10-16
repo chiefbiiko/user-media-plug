@@ -9,9 +9,6 @@
     "DEBUG": "user-media-plug:*",
     "NOW_URL_HUB_PASSWORD": "@now_url_hub_password"
   },
-  "files": [
-    "./view"
-  ],
   "scale": {
     "bru1": {
       "min": 0,
