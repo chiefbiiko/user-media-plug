@@ -7,7 +7,7 @@ const getMedia = require('getusermedia')
 const createRecorder = require('media-recorder-stream')
 const pump = require('pump')
 
-const { isTruthyString, isStringArray } = require('./lib/is.js')
+const { isTruStr, isStrArr } = require('./lib/is.js')
 const outbound = require('./lib/outbound.js')
 
 const debug = require('debug')('clientele')
@@ -20,19 +20,30 @@ const ERR = {
 }
 
 // TODO: rethink browser compatibility check!
-function Clientele (url, user) { // url can just be 'ws://localhost:10000'
+// url can just be 'ws://localhost:10000'
+function Clientele (url, user) {
   if (!(this instanceof Clientele)) return new Clientele(url, user)
   EventEmitter.call(this)
+  this._user = user
+  this._url = url
+}
 
+inherits(Clientele, EventEmitter)
+
+Clientele.MIME = 'video/webm'
+Clientele.MIME_CODEC = `${Clientele.MIME};codecs=vorbis,vp8`
+
+Clientele.prototype.init = function init (url, user) {
   // if (!/firefox/i.test(navigator.userAgent))
   //   alert(`app probly won't work on ${navigator.userAgent}`)
   // else if (!MediaSource.isTypeSupported(Clientele.MIME_CODEC) ||
   //          !MediaRecorder.isTypeSupported(Clientele.MIME))
   //   throw Error(`unsupported MIME type or codec: ${Clientele.MIME_CODEC}`)
 
-  if (!isTruthyString(url)) throw ERR.NOT_TRUTHY_STRING('url')
+  url = url || this._url
+  this._user = this._user || user
 
-  if (isTruthyString(user)) this._user = user
+  if (!isTruStr(url)) throw ERR.NOT_TRUTHY_STRING('url')
 
   if (!/(?:\/meta|\/media)$/.test(url))
     url = `${url.replace(/^(.+:\d+).*$/, '$1')}/meta`
@@ -85,15 +96,12 @@ function Clientele (url, user) { // url can just be 'ws://localhost:10000'
       this.emit.bind(this, 'offline'),
       msg => msg.type === 'OFFLINE'
     )
+
+    return this
 }
 
-inherits(Clientele, EventEmitter)
-
-Clientele.MIME = 'video/webm'
-Clientele.MIME_CODEC = `${Clientele.MIME};codecs=vorbis,vp8`
-
 Clientele.prototype.setUser = function setUser (user) {
-  if (!isTruthyString(user)) throw ERR.NOT_TRUTHY_STRING('user')
+  if (!isTruStr(user)) throw ERR.NOT_TRUTHY_STRING('user')
   this._user = user
 }
 
@@ -148,7 +156,7 @@ Clientele.prototype.whoami = function whoami (cb) {
 
 Clientele.prototype.register = function register (password, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(password)) return cb(ERR.NOT_TRUTHY_STRING('password'))
+  if (!isTruStr(password)) return cb(ERR.NOT_TRUTHY_STRING('password'))
 
   const self = this
   const tx = Math.random()
@@ -168,7 +176,7 @@ Clientele.prototype.register = function register (password, cb) {
 
 Clientele.prototype.login = function login (password, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(password)) return cb(ERR.NOT_TRUTHY_STRING('password'))
+  if (!isTruStr(password)) return cb(ERR.NOT_TRUTHY_STRING('password'))
 
   const self = this
   const tx = Math.random()
@@ -207,7 +215,7 @@ Clientele.prototype.logout = function logout (cb) {
 
 Clientele.prototype.addPeers = function addPeers (peers, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isStringArray(peers)) return cb(ERR.NOT_STRING_ARRAY('peers'))
+  if (!isStrArr(peers)) return cb(ERR.NOT_STRING_ARRAY('peers'))
 
   const self = this
   const tx = Math.random()
@@ -227,7 +235,7 @@ Clientele.prototype.addPeers = function addPeers (peers, cb) {
 
 Clientele.prototype.deletePeers = function deletePeers (peers, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isStringArray(peers)) return cb(ERR.NOT_STRING_ARRAY('peers'))
+  if (!isStrArr(peers)) return cb(ERR.NOT_STRING_ARRAY('peers'))
 
   const self = this
   const tx = Math.random()
@@ -285,7 +293,7 @@ Clientele.prototype.getUser = function getUser (cb) {
 
 Clientele.prototype.status = function status (status, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(status)) return cb(ERR.NOT_TRUTHY_STRING('status'))
+  if (!isTruStr(status)) return cb(ERR.NOT_TRUTHY_STRING('status'))
 
   const self = this
   const tx = Math.random()
@@ -305,7 +313,7 @@ Clientele.prototype.status = function status (status, cb) {
 
 Clientele.prototype.avatar = function avatar (avatar, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(avatar)) return cb(ERR.NOT_TRUTHY_STRING('avatar'))
+  if (!isTruStr(avatar)) return cb(ERR.NOT_TRUTHY_STRING('avatar'))
 
   const self = this
   const tx = Math.random()
@@ -325,7 +333,7 @@ Clientele.prototype.avatar = function avatar (avatar, cb) {
 
 Clientele.prototype.call = function call (peer, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
+  if (!isTruStr(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
 
   const self = this
   const tx = Math.random()
@@ -352,7 +360,7 @@ Clientele.prototype.call = function call (peer, cb) {
 
 Clientele.prototype.stopRinging = function stopRinging (peer, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
+  if (!isTruStr(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
 
   const self = this
   const tx = Math.random()
@@ -372,7 +380,7 @@ Clientele.prototype.stopRinging = function stopRinging (peer, cb) {
 
 Clientele.prototype.accept = function accept (peer, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
+  if (!isTruStr(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
 
   const self = this
   const tx = Math.random()
@@ -392,7 +400,7 @@ Clientele.prototype.accept = function accept (peer, cb) {
 
 Clientele.prototype.reject = function reject (peer, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
+  if (!isTruStr(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
 
   const self = this
   const tx = Math.random()
@@ -412,7 +420,7 @@ Clientele.prototype.reject = function reject (peer, cb) {
 
 Clientele.prototype.unpair = function unpair (peer, cb) {
   if (typeof cb !== 'function') throw ERR.CB_NOT_FUNC
-  if (!isTruthyString(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
+  if (!isTruStr(peer)) return cb(ERR.NOT_TRUTHY_STRING('peer'))
 
   const self = this
   const tx = Math.random()

@@ -3,7 +3,7 @@ const clientele = require('./promised/index.js')
 
 tape('partial usage flow', async t => {
   t.comment('fraudster:')
-  const fraudster = clientele('ws://localhost:10000', 'fraudster')
+  const fraudster = clientele('ws://localhost:10000', 'fraudster').init()
   t.pass('connected')
   await fraudster.whoami()
   t.pass('identified')
@@ -11,7 +11,7 @@ tape('partial usage flow', async t => {
   t.pass('registered')
 
   t.comment('chiefbiiko:')
-  const chiefbiiko = clientele('ws://localhost:10000')
+  const chiefbiiko = clientele('ws://localhost:10000').init()
   t.pass('connected')
   chiefbiiko.setUser('chiefbiiko')
   t.pass('set user')

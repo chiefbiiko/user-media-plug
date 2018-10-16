@@ -1,4 +1,4 @@
-const isTruthyString = x => x && typeof x === 'string'
-const isStringArray = x => Array.isArray(x) && x.every(isTruthyString)
+const isTruStr = x => x && typeof x === 'string'
+const isStrArr = x => Array.isArray(x) && x.every(isTruStr)
 
-module.exports = { isTruthyString, isStringArray }
+module.exports = { isTruStr, isStrArr }
