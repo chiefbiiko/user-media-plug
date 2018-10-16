@@ -10,7 +10,7 @@
     "NOW_URL_HUB_PASSWORD": "@now_url_hub_password"
   },
   "files": [
-    "./view/build"
+    "./view"
   ],
   "scale": {
     "bru1": {
