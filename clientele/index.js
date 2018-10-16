@@ -97,7 +97,8 @@ Clientele.prototype.init = function init (url, user) {
       msg => msg.type === 'OFFLINE'
     )
 
-    return this
+  this.ready = true  
+  return this
 }
 
 Clientele.prototype.setUser = function setUser (user) {

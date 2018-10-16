@@ -1,5 +1,7 @@
 // TODO: swap all alerts with toasts
 
+import { load as nowurlhubLoad } from 'now-url-hub'
+
 export function craftIOAction (msg) {
   return {
     type: 'IO',
@@ -71,6 +73,11 @@ const craftResetAction = () => ({
 
 export function createLoginAction (user, password) {
   return async (dispatch, getState, { client }) => {
+    if (!client.ready) { // the source of truth
+      const res = await nowurlhubLoad('plugtube')
+      const url = `wss://${res.url.replace(/^https?:\/\//, '')}`
+      client.init(url, user)
+    }
     if (user !== getState().user) dispatch(craftUserAction(user))
     if (user !== client.user) client.setUser(user)
     try { await client.whoami() }
