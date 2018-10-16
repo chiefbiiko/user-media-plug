@@ -50,6 +50,7 @@
     "hooked-ttl-map": "0.0.0",
     "levelup": "3.1.1",
     "memdown": "3.0.0",
+    "now-url-hub": "0.1.0",
     "preactor": "0.7.0",
     "pump": "3.0.0",
     "serve-handler": "5.0.5",

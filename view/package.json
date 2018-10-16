@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "now-url-hub": "0.0.0",
+    "now-url-hub": "0.1.0",
     "clientele": "file:../clientele",
     "react": "16.5.0",
     "react-dom": "16.5.0",

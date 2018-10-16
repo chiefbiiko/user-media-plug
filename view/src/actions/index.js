@@ -74,8 +74,9 @@ const craftResetAction = () => ({
 export function createLoginAction (user, password) {
   return async (dispatch, getState, { client }) => {
     if (!client.ready) { // the source of truth
+      // TODO: try catch
       const res = await nowurlhubLoad('plugtube')
-      const url = `wss://${res.url.replace(/^https?:\/\//, '')}`
+      const url = `wss://${res.url.replace(/^https?:\/\//, '')}:41900` // magic port
       client.init(url, user)
     }
     if (user !== getState().user) dispatch(craftUserAction(user))

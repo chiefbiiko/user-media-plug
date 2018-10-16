@@ -6,7 +6,8 @@
     "NODE_ENV": "production",
     "HOST": "0.0.0.0",
     "PORT": "41900",
-    "DEBUG": "user-media-plug:*"
+    "DEBUG": "user-media-plug:*",
+    "NOW_URL_HUB_PASSWORD": "@now_url_hub_password"
   },
   "files": [
     "./view/build"
